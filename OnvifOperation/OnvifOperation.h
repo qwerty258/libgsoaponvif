@@ -32,12 +32,12 @@
 extern "C" {
 #endif // __cplusplus
 
-    //listOfURI
+    //device info struct
     typedef struct
     {
         char ip[17];
         char URI[256];
-    }deviceInfoArray;
+    }deviceInfo;
 
     // tt:VideoEncoding
     enum videoEncoding
@@ -47,7 +47,7 @@ extern "C" {
         videoEncoding__H264 = 2
     };
 
-    //listOfVideo
+    //video info struct
     typedef struct
     {
         char URI[256];
@@ -55,7 +55,7 @@ extern "C" {
         int width;
         int height;
         enum videoEncoding encoding;
-    }videoNode;
+    }videoInfo;
 
 
     //function : initial dll, locate some memory
@@ -67,6 +67,8 @@ extern "C" {
     ONVIFOPERATION_API int uninitDll(void);
 
     //function : search onvif device
+    //input    :
+    //////waitTime    : interval for cameras to response, in seconds
     //on return: 0 success, -1 failure
     ONVIFOPERATION_API int searchDev(size_t waitTime);
 
@@ -87,7 +89,7 @@ extern "C" {
     //////URI         : pointer to the head of C-style URI string
     //////URIBufferLen: bytes of the URI string
     //on return: 0 success, -1 failure
-    ONVIFOPERATION_API int getURIFromIP(char* IP, size_t IPBufferLen, char* URI, size_t URIBufferLen, char* username = "", char* password = "");
+    ONVIFOPERATION_API int getURLFromIP(char* IP, size_t IPBufferLen, char* URL, size_t URLBufferLen, char* username, char* password);
 
     //function : get all onvif device URI
     /****************************************************
@@ -96,7 +98,7 @@ extern "C" {
     //input    : Num: number of all onvif device
     //output   : nodeList: pointer to the head of deviceInfoArray
     //on return: the number of onvif device info put into deviceInfoArray, -1 failure
-    ONVIFOPERATION_API int getAllDevURI(deviceInfoArray* infoArray, size_t Num);
+    ONVIFOPERATION_API int getAllDevURL(deviceInfo* deviceInfoArray, size_t num);
 
     //function : get the number of profiles specified by IP
     //input    :
@@ -115,11 +117,11 @@ extern "C" {
     //////password    : C-sytle string of pass word
     //output   : nodeList: pointer to the head of videoNode
     //on return: the number of profiles, -1 failure
-    ONVIFOPERATION_API int getVideoInfoFromIP(char *IP, size_t IPBufferLen, videoNode *headVideo, char* username = "", char* password = "");
+    ONVIFOPERATION_API int getVideoInfoFromIP(char* IP, size_t IPBufferLen, videoInfo* videoInfoArray, char* username = "", char* password = "");
 
     //function : clear the onvif device list maintained by this DLL
     //on return: 0 success, -1 failure.
-    ONVIFOPERATION_API int clearDeviceList(void);
+    ONVIFOPERATION_API int clearDevList(void);
 
     //function : reset everything in dll, think before use this function!
     //on return: 0 success, -1 failure. if failed, reload the DLL.

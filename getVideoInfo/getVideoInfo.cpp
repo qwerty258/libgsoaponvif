@@ -17,35 +17,35 @@ int _tmain(int argc, _TCHAR* argv[])
     searchDev(5);
     int num = getNumOfOnvifDev();
 
-    deviceInfoArray* infoArray = new deviceInfoArray[num];
+    deviceInfo* deviceInfoArray = new deviceInfo[num];
 
-    getAllDevURI(infoArray, num);
+    getAllDevURL(deviceInfoArray, num);
 
     for(int i = 0; i < num; i++)
     {
-        cout << infoArray[i].ip << ":" << infoArray[i].URI << endl;
+        cout << deviceInfoArray[i].ip << ":" << deviceInfoArray[i].URI << endl;
     }
 
 
     cout << "-------------------------------------\n";
 
-    num = getNumOfProfilesFromIP(infoArray[0].ip, strlen(infoArray[0].ip) + 1, "admin", "12345");
+    num = getNumOfProfilesFromIP(deviceInfoArray[0].ip, strlen(deviceInfoArray[0].ip) + 1, "admin", "12345");
 
     if(-1 == num)
     {
         cout << "File: " << __FILE__ << " Line: " << __LINE__ << ' ' << "getNumOfProfilesFromIP error" << endl;
     }
 
-    videoNode* videoNodeArray = new videoNode[num];
+    videoInfo* videoInfoArray = new videoInfo[num];
 
-    getVideoInfoFromIP(infoArray[0].ip, strlen(infoArray[0].ip) + 1, videoNodeArray, "admin", "12345");
+    getVideoInfoFromIP(deviceInfoArray[0].ip, strlen(deviceInfoArray[0].ip) + 1, videoInfoArray, "admin", "12345");
 
-    cout << infoArray[0].ip << ':' << endl;
+    cout << deviceInfoArray[0].ip << ':' << endl;
 
     for(int i = 0; i < num; i++)
     {
         cout << "-------------" << i << "---------------\n";
-        switch(videoNodeArray[i].encoding)
+        switch(videoInfoArray[i].encoding)
         {
             case videoEncoding__JPEG:
                 cout << "Encoding: JPEG\n";
@@ -60,16 +60,16 @@ int _tmain(int argc, _TCHAR* argv[])
                 cout << "Encoding: Unknow\n";
                 break;
         }
-        cout << "Width: " << videoNodeArray[i].width << ' ' << "Height: " << videoNodeArray[i].height << endl;
-        cout << "FrameRateLimit: " << videoNodeArray[i].frame << endl;
-        cout << "URI: " << videoNodeArray[i].URI << endl;
+        cout << "Width: " << videoInfoArray[i].width << ' ' << "Height: " << videoInfoArray[i].height << endl;
+        cout << "FrameRateLimit: " << videoInfoArray[i].frame << endl;
+        cout << "URI: " << videoInfoArray[i].URI << endl;
     }
 
-    delete[] videoNodeArray;
-    videoNodeArray = NULL;
+    delete[] videoInfoArray;
+    videoInfoArray = NULL;
 
-    delete[] infoArray;
-    infoArray = NULL;
+    delete[] deviceInfoArray;
+    deviceInfoArray = NULL;
 
     uninitDll();
 

@@ -33,9 +33,9 @@ int _tmain(int argc, _TCHAR* argv[])
         return -1;
     }
 
-    deviceInfoArray* infoArray = new deviceInfoArray[num];
+    deviceInfo* deviceInfoArray = new deviceInfo[num];
 
-    if(-1 == getAllDevURI(infoArray, num))
+    if(-1 == getAllDevURL(deviceInfoArray, num))
     {
         cout << "getAllDevURI failed\n";
         system("pause");
@@ -44,7 +44,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
     for(int i = 0; i < num; i++)
     {
-        cout << infoArray[i].ip << ":" << infoArray[i].URI << endl;
+        cout << deviceInfoArray[i].ip << ":" << deviceInfoArray[i].URI << endl;
     }
 
     cout << "-------------------------------------\n";
@@ -54,7 +54,7 @@ int _tmain(int argc, _TCHAR* argv[])
     cout << "\nGet URI by IP\n\n";
     system("pause");
 
-    if(-1 == getURIFromIP("192.168.10.185", sizeof("192.168.10.185"), URI, 256, "admin", "12345"))
+    if(-1 == getURLFromIP("192.168.10.185", sizeof("192.168.10.185"), URI, 256, "admin", "12345"))
     {
         cout << "192.168.10.185 getURIFromIP failed\n";
     }
@@ -63,7 +63,7 @@ int _tmain(int argc, _TCHAR* argv[])
         cout << "192.168.10.185:" << URI << endl;
     }
 
-    if(-1 == getURIFromIP("192.168.10.142", sizeof("192.168.10.142"), URI, 256, "admin", "12345"))
+    if(-1 == getURLFromIP("192.168.10.142", sizeof("192.168.10.142"), URI, 256, "admin", "12345"))
     {
         cout << "192.168.10.142 getURIFromIP failed\n";
     }
@@ -72,7 +72,7 @@ int _tmain(int argc, _TCHAR* argv[])
         cout << "192.168.10.142:" << URI << endl;
     }
 
-    if(-1 == getURIFromIP("192.168.10.147", sizeof("192.168.10.147"), URI, 256, "admin", "12345"))
+    if(-1 == getURLFromIP("192.168.10.147", sizeof("192.168.10.147"), URI, 256, "admin", "12345"))
     {
         cout << "192.168.10.147 getURIFromIP failed\n";
     }
@@ -81,7 +81,7 @@ int _tmain(int argc, _TCHAR* argv[])
         cout << "192.168.10.147:" << URI << endl;
     }
 
-    if(-1 == getURIFromIP("192.168.10.195", sizeof("192.168.10.195"), URI, 256, "admin", "12345"))
+    if(-1 == getURLFromIP("192.168.10.195", sizeof("192.168.10.195"), URI, 256, "admin", "12345"))
     {
         cout << "192.168.10.195 getURIFromIP failed\n";
     }
@@ -90,7 +90,7 @@ int _tmain(int argc, _TCHAR* argv[])
         cout << "192.168.10.195:" << URI << endl;
     }
 
-    if(-1 == getURIFromIP("192.168.10.141", sizeof("192.168.10.141"), URI, 256, "admin", "12345"))
+    if(-1 == getURLFromIP("192.168.10.141", sizeof("192.168.10.141"), URI, 256, "admin", "12345"))
     {
         cout << "192.168.10.141 getURIFromIP failed\n";
     }
@@ -101,7 +101,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
     cout << "-------------------------------------\n";
 
-    if(-1 == getAllDevURI(infoArray, num))
+    if(-1 == getAllDevURL(deviceInfoArray, num))
     {
         cout << "getAllDevURI failed\n";
         system("pause");
@@ -110,12 +110,12 @@ int _tmain(int argc, _TCHAR* argv[])
 
     for(int i = 0; i < num; i++)
     {
-        cout << infoArray[i].ip << ":" << infoArray[i].URI << endl;
+        cout << deviceInfoArray[i].ip << ":" << deviceInfoArray[i].URI << endl;
     }
 
     cout << "-------------------------------------\n";
 
-    delete[] infoArray;
+    delete[] deviceInfoArray;
 
     cout << "\nSearch again\n\n";
     system("pause");
@@ -129,7 +129,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
     num = getNumOfOnvifDev();
 
-    infoArray = new deviceInfoArray[num];
+    deviceInfoArray = new deviceInfo[num];
 
     if(-1 == num)
     {
@@ -140,7 +140,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
     cout << "getNumOfOnvifDev: " << num << endl;
 
-    if(-1 == getAllDevURI(infoArray, num))
+    if(-1 == getAllDevURL(deviceInfoArray, num))
     {
         cout << "getAllDevURI failed\n";
         system("pause");
@@ -149,7 +149,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
     for(int i = 0; i < num; i++)
     {
-        cout << infoArray[i].ip << ":" << infoArray[i].URI << endl;
+        cout << deviceInfoArray[i].ip << ":" << deviceInfoArray[i].URI << endl;
     }
 
     cout << "-------------------------------------\n";
@@ -165,7 +165,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
     cout << "getNumOfOnvifDev: " << getNumOfOnvifDev() << endl;
 
-    delete[] infoArray;
+    delete[] deviceInfoArray;
 
     delete URI;
 

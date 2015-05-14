@@ -18,26 +18,26 @@ DWORD WINAPI getAllDeviceURI(LPVOID lpParameter)
         return num;
     }
 
-    deviceInfoArray* infoArray = new deviceInfoArray[num];
+    deviceInfo* deviceInfoArray = new deviceInfo[num];
 
-    int result = getAllDevURI(infoArray, num);
+    int result = getAllDevURL(deviceInfoArray, num);
 
     if(-1 == result)
     {
         std::cout << "getAllDevURI failed\n";
         std::cout << "Thread getAllDeviceURI end\n";
-        delete[] infoArray;
+        delete[] deviceInfoArray;
         return num;
     }
 
     for(int i = 0; i < num; i++)
     {
-        std::cout << infoArray[i].ip << ':' << infoArray[i].URI << std::endl;
+        std::cout << deviceInfoArray[i].ip << ':' << deviceInfoArray[i].URI << std::endl;
     }
 
     std::cout << "Thread getAllDeviceURI end\n";
 
-    delete[] infoArray;
+    delete[] deviceInfoArray;
 
     return num;
 }
@@ -65,7 +65,7 @@ DWORD WINAPI getURIbyIP(LPVOID lpParameter)
 
     char* URI = new char[256];
 
-    int num = getURIFromIP("192.168.10.142", strlen("192.168.10.142") + 1, URI, 256, "admin", "12345");
+    int num = getURLFromIP("192.168.10.142", strlen("192.168.10.142") + 1, URI, 256, "admin", "12345");
 
     if(-1 == num)
     {
@@ -97,7 +97,7 @@ DWORD WINAPI getVideoInfoByIP(LPVOID lpParameter)
         return num;
     }
 
-    videoNode* videoInfoArray = new videoNode[num];
+    videoInfo* videoInfoArray = new videoInfo[num];
 
     int result = getVideoInfoFromIP("192.168.10.142", strlen("192.168.10.142") + 1, videoInfoArray, "admin", "12345");
 
@@ -148,6 +148,7 @@ int _tmain(int argc, _TCHAR* argv[])
     HANDLE handleArray[5];
 
     handleArray[1] = CreateThread(NULL, 0, searchDevice, NULL, 0, NULL);
+    handleArray[4] = CreateThread(NULL, 0, searchDevice, NULL, 0, NULL);
     handleArray[0] = CreateThread(NULL, 0, getAllDeviceURI, NULL, 0, NULL);
     handleArray[2] = CreateThread(NULL, 0, getURIbyIP, NULL, 0, NULL);
     handleArray[3] = CreateThread(NULL, 0, getVideoInfoByIP, NULL, 0, NULL);

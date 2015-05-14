@@ -3,11 +3,11 @@ EXPORTS
     initDll                @1
     searchDev              @2
     getNumOfOnvifDev       @3
-    getURIFromIP           @4
-    getAllDevURI           @5
+    getURLFromIP           @4
+    getAllDevURL           @5
     getNumOfProfilesFromIP @6
     getVideoInfoFromIP     @7
-    clearDeviceList        @8
+    clearDevList           @8
     uninitDll              @9
     resetDll               @10
     test                   @11

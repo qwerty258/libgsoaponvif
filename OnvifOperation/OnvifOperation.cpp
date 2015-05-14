@@ -112,7 +112,7 @@ int getRTSP(vector<deviceInfoContainer*>::iterator& Iterator, char* username, ch
 
 ONVIFOPERATION_API int initDll(void)
 {
-    clearDeviceList();
+    clearDevList();
 
     pSoap = soap_new1(SOAP_IO_DEFAULT | SOAP_XML_IGNORENS); // ignore namespace, avoid namespace mismatch
     if(NULL == pSoap)
@@ -170,7 +170,7 @@ ONVIFOPERATION_API int uninitDll(void)
     pTemp2 = NULL;
     pTemp1 = NULL;
 
-    clearDeviceList();
+    clearDevList();
 
     soap_destroy(pSoap);
     soap_end(pSoap);
@@ -184,7 +184,7 @@ ONVIFOPERATION_API int uninitDll(void)
     return 0;
 }
 
-ONVIFOPERATION_API int clearDeviceList(void)
+ONVIFOPERATION_API int clearDevList(void)
 {
     while(listLocked)
     {
@@ -207,6 +207,12 @@ ONVIFOPERATION_API int clearDeviceList(void)
 
 ONVIFOPERATION_API int resetDll(void)
 {
+    while(listLocked)
+    {
+        Sleep(200);
+    }
+    listLocked = true;
+
     if(-1 == uninitDll())
     {
         return -1;
@@ -215,6 +221,8 @@ ONVIFOPERATION_API int resetDll(void)
     {
         return -1;
     }
+
+    listLocked = false;
     return 0;
 }
 
@@ -379,7 +387,7 @@ ONVIFOPERATION_API int getNumOfOnvifDev(void)
     return temp;
 }
 
-ONVIFOPERATION_API int getURIFromIP(char* IP, size_t IPBufferLen, char* URI, size_t URIBufferLen, char* username, char* password)
+ONVIFOPERATION_API int getURLFromIP(char* IP, size_t IPBufferLen, char* URL, size_t URLBufferLen, char* username, char* password)
 {
     while(listLocked)
     {
@@ -387,7 +395,7 @@ ONVIFOPERATION_API int getURIFromIP(char* IP, size_t IPBufferLen, char* URI, siz
     }
     listLocked = true;
 
-    if(NULL == IP || NULL == URI || NULL == username || NULL == password || strlen(IP) + 1 > IPBufferLen || !initialsuccess || !searchsuccess)
+    if(NULL == IP || NULL == URL || NULL == username || NULL == password || strlen(IP) + 1 > IPBufferLen || !initialsuccess || !searchsuccess)
     {
         listLocked = false;
         return -1;
@@ -426,7 +434,7 @@ ONVIFOPERATION_API int getURIFromIP(char* IP, size_t IPBufferLen, char* URI, siz
         return -1;
     }
 
-    if(!strncpy(URI, (*deviceInfoListIterator)->getStreamUriResponse.MediaUri->Uri.c_str(), URIBufferLen))
+    if(!strncpy(URL, (*deviceInfoListIterator)->getStreamUriResponse.MediaUri->Uri.c_str(), URLBufferLen))
     {
         listLocked = false;
         return -1;
@@ -436,7 +444,7 @@ ONVIFOPERATION_API int getURIFromIP(char* IP, size_t IPBufferLen, char* URI, siz
     return 0;
 }
 
-ONVIFOPERATION_API int getAllDevURI(deviceInfoArray* infoArray, size_t Num)
+ONVIFOPERATION_API int getAllDevURL(deviceInfo* deviceInfoArray, size_t num)
 {
     while(listLocked)
     {
@@ -444,7 +452,7 @@ ONVIFOPERATION_API int getAllDevURI(deviceInfoArray* infoArray, size_t Num)
     }
     listLocked = true;
 
-    if(NULL == infoArray || !initialsuccess || !searchsuccess || Num != deviceInfoList.size())
+    if(NULL == deviceInfoArray || !initialsuccess || !searchsuccess || num != deviceInfoList.size())
     {
         listLocked = false;
         return -1;
@@ -457,7 +465,7 @@ ONVIFOPERATION_API int getAllDevURI(deviceInfoArray* infoArray, size_t Num)
 
     for(deviceInfoListIterator = deviceInfoList.begin(), i = 0; deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator, ++i)
     {
-        memset(&infoArray[i], 0x0, sizeof(deviceInfoArray));
+        memset(&deviceInfoArray[i], 0x0, sizeof(deviceInfoArray));
         if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches)
         {
             continue;
@@ -480,18 +488,18 @@ ONVIFOPERATION_API int getAllDevURI(deviceInfoArray* infoArray, size_t Num)
             match = *iterator;
         }
 
-        strcpy(infoArray[i].ip, match.str().c_str());
+        strcpy(deviceInfoArray[i].ip, match.str().c_str());
 
         if(NULL == (*deviceInfoListIterator)->getStreamUriResponse.MediaUri)
         {
             continue;
         }
 
-        strcpy(infoArray[i].URI, (*deviceInfoListIterator)->getStreamUriResponse.MediaUri->Uri.c_str());
+        strcpy(deviceInfoArray[i].URI, (*deviceInfoListIterator)->getStreamUriResponse.MediaUri->Uri.c_str());
     }
 
     listLocked = false;
-    return Num;
+    return num;
 }
 
 ONVIFOPERATION_API int getNumOfProfilesFromIP(char* IP, size_t IPBufferLen, char* username, char* password)
@@ -562,7 +570,7 @@ ONVIFOPERATION_API int getNumOfProfilesFromIP(char* IP, size_t IPBufferLen, char
     return -1;
 }
 
-ONVIFOPERATION_API int getVideoInfoFromIP(char *IP, size_t IPBufferLen, videoNode *headVideo, char* username, char* password)
+ONVIFOPERATION_API int getVideoInfoFromIP(char *IP, size_t IPBufferLen, videoInfo* videoInfoArray, char* username, char* password)
 {
     while(listLocked)
     {
@@ -570,7 +578,7 @@ ONVIFOPERATION_API int getVideoInfoFromIP(char *IP, size_t IPBufferLen, videoNod
     }
     listLocked = true;
 
-    if(NULL == IP || NULL == headVideo || strlen(IP) + 1 > IPBufferLen)
+    if(NULL == IP || NULL == videoInfoArray || strlen(IP) + 1 > IPBufferLen)
     {
         listLocked = false;
         return -1;
@@ -609,17 +617,17 @@ ONVIFOPERATION_API int getVideoInfoFromIP(char *IP, size_t IPBufferLen, videoNod
 
     for(i = 0; i < (*deviceInfoListIterator)->getProfilesResponse.Profiles.size(); ++i)
     {
-        memset(&headVideo[i], 0x0, sizeof(videoNode));
-        headVideo[i].encoding = (enum videoEncoding)(*deviceInfoListIterator)->getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Encoding;
-        headVideo[i].frame = (*deviceInfoListIterator)->getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->RateControl->FrameRateLimit;
-        headVideo[i].width = (*deviceInfoListIterator)->getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Resolution->Width;
-        headVideo[i].height = (*deviceInfoListIterator)->getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Resolution->Height;
+        memset(&videoInfoArray[i], 0x0, sizeof(videoInfo));
+        videoInfoArray[i].encoding = (enum videoEncoding)(*deviceInfoListIterator)->getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Encoding;
+        videoInfoArray[i].frame = (*deviceInfoListIterator)->getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->RateControl->FrameRateLimit;
+        videoInfoArray[i].width = (*deviceInfoListIterator)->getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Resolution->Width;
+        videoInfoArray[i].height = (*deviceInfoListIterator)->getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Resolution->Height;
 
         getStreamUri.ProfileToken = (*deviceInfoListIterator)->getProfilesResponse.Profiles[i]->token;
         soap_wsse_add_UsernameTokenDigest(pSoap, "user", username, password);
         soap_call___trt__GetStreamUri(pSoap, (*deviceInfoListIterator)->getCapabilitiesResponse.Capabilities->Media->XAddr.c_str(), NULL, &getStreamUri, _getStreamUriResponse);
 
-        strncpy(headVideo[i].URI, _getStreamUriResponse.MediaUri->Uri.c_str(), sizeof(headVideo[i].URI));
+        strncpy(videoInfoArray[i].URI, _getStreamUriResponse.MediaUri->Uri.c_str(), sizeof(videoInfoArray[i].URI));
     }
 
     listLocked = false;
