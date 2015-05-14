@@ -178,19 +178,19 @@ ONVIFOPERATION_API int uninitDll(void)
 
     pSoap = NULL;
 
+    initialsuccess = false;
+    searchsuccess = false;
+
     return 0;
 }
 
 ONVIFOPERATION_API int clearDeviceList(void)
 {
-    if(listLocked)
+    while(listLocked)
     {
-        Sleep(1);
+        Sleep(200);
     }
-    else
-    {
-        listLocked = true;
-    }
+    listLocked = true;
 
     if(0 != deviceInfoList.size())
     {
@@ -202,7 +202,6 @@ ONVIFOPERATION_API int clearDeviceList(void)
     }
 
     listLocked = false;
-
     return 0;
 }
 
@@ -221,9 +220,17 @@ ONVIFOPERATION_API int resetDll(void)
 
 ONVIFOPERATION_API int searchDev(size_t waitTime)
 {
+    while(listLocked)
+    {
+        Sleep(200);
+    }
+    listLocked = true;
+
+
     if(!initialsuccess)
     {
         searchsuccess = false;
+        listLocked = false;
         return -1;
     }
 
@@ -235,6 +242,7 @@ ONVIFOPERATION_API int searchDev(size_t waitTime)
     if(NULL == header.wsa__MessageID)
     {
         searchsuccess = false;
+        listLocked = false;
         return -1;
     }
 
@@ -247,15 +255,6 @@ ONVIFOPERATION_API int searchDev(size_t waitTime)
     soap_default_wsdd__ProbeType(pSoap, &probe);
     probe.Scopes = &scopes;
     probe.Types = "ns1:NetworkVideoTransmitter";
-
-    if(listLocked)
-    {
-        Sleep(1);
-    }
-    else
-    {
-        listLocked = true;
-    }
 
     // set not duplicated
     for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
@@ -362,60 +361,36 @@ ONVIFOPERATION_API int searchDev(size_t waitTime)
 
 ONVIFOPERATION_API int getNumOfOnvifDev(void)
 {
+    while(listLocked)
+    {
+        Sleep(200);
+    }
+    listLocked = true;
+
     if(!initialsuccess)
     {
+        listLocked = false;
         return -1;
     }
 
-    if(!searchsuccess)
-    {
-        return -1;
-    }
-
-    if(listLocked)
-    {
-        Sleep(1);
-    }
-    else
-    {
-        listLocked = true;
-    }
-
-    return deviceInfoList.size();
+    int temp = deviceInfoList.size();
 
     listLocked = false;
+    return temp;
 }
 
 ONVIFOPERATION_API int getURIFromIP(char* IP, size_t IPBufferLen, char* URI, size_t URIBufferLen, char* username, char* password)
 {
-    if(NULL == IP || NULL == URI || NULL == username || NULL == password)
+    while(listLocked)
     {
+        Sleep(200);
+    }
+    listLocked = true;
+
+    if(NULL == IP || NULL == URI || NULL == username || NULL == password || strlen(IP) + 1 > IPBufferLen || !initialsuccess || !searchsuccess)
+    {
+        listLocked = false;
         return -1;
-    }
-
-    if(strlen(IP) + 1 > IPBufferLen)
-    {
-        return -1;
-    }
-
-
-    if(!initialsuccess)
-    {
-        return -1;
-    }
-
-    if(!searchsuccess)
-    {
-        return -1;
-    }
-
-    if(listLocked)
-    {
-        Sleep(1);
-    }
-    else
-    {
-        listLocked = true;
     }
 
     for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
@@ -457,36 +432,19 @@ ONVIFOPERATION_API int getURIFromIP(char* IP, size_t IPBufferLen, char* URI, siz
         return -1;
     }
 
+    listLocked = false;
     return 0;
 }
 
 ONVIFOPERATION_API int getAllDevURI(deviceInfoArray* infoArray, size_t Num)
 {
-    if(NULL == infoArray)
+    while(listLocked)
     {
-        return -1;
+        Sleep(200);
     }
+    listLocked = true;
 
-    if(!initialsuccess)
-    {
-        return -1;
-    }
-
-    if(!searchsuccess)
-    {
-        return -1;
-    }
-
-    if(listLocked)
-    {
-        Sleep(1);
-    }
-    else
-    {
-        listLocked = true;
-    }
-
-    if(Num != deviceInfoList.size())
+    if(NULL == infoArray || !initialsuccess || !searchsuccess || Num != deviceInfoList.size())
     {
         listLocked = false;
         return -1;
@@ -533,39 +491,21 @@ ONVIFOPERATION_API int getAllDevURI(deviceInfoArray* infoArray, size_t Num)
     }
 
     listLocked = false;
-
     return Num;
 }
 
 ONVIFOPERATION_API int getNumOfProfilesFromIP(char* IP, size_t IPBufferLen, char* username, char* password)
 {
-    if(NULL == IP)
+    while(listLocked)
     {
-        return -1;
+        Sleep(200);
     }
+    listLocked = true;
 
-    if(strlen(IP) + 1 > IPBufferLen)
+    if(NULL == IP || strlen(IP) + 1 > IPBufferLen || !initialsuccess || !searchsuccess)
     {
+        listLocked = false;
         return -1;
-    }
-
-    if(!initialsuccess)
-    {
-        return -1;
-    }
-
-    if(!searchsuccess)
-    {
-        return -1;
-    }
-
-    if(listLocked)
-    {
-        Sleep(1);
-    }
-    else
-    {
-        listLocked = true;
     }
 
     for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
@@ -618,30 +558,23 @@ ONVIFOPERATION_API int getNumOfProfilesFromIP(char* IP, size_t IPBufferLen, char
         return profilesSize;
     }
 
+    listLocked = false;
     return -1;
 }
 
 ONVIFOPERATION_API int getVideoInfoFromIP(char *IP, size_t IPBufferLen, videoNode *headVideo, char* username, char* password)
 {
-    if(NULL == IP || NULL == headVideo)
+    while(listLocked)
     {
+        Sleep(200);
+    }
+    listLocked = true;
+
+    if(NULL == IP || NULL == headVideo || strlen(IP) + 1 > IPBufferLen)
+    {
+        listLocked = false;
         return -1;
     }
-
-    if(strlen(IP) + 1 > IPBufferLen)
-    {
-        return -1;
-    }
-
-    if(listLocked)
-    {
-        Sleep(1);
-    }
-    else
-    {
-        listLocked = true;
-    }
-
 
     for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
     {
@@ -690,7 +623,6 @@ ONVIFOPERATION_API int getVideoInfoFromIP(char *IP, size_t IPBufferLen, videoNod
     }
 
     listLocked = false;
-
     return i;
 }
 
