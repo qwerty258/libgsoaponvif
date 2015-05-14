@@ -18,7 +18,7 @@ int _tmain(int argc, _TCHAR* argv[])
         return -1;
     }
 
-    if(-1 == searchDev())
+    if(-1 == searchDev(5))
     {
         cout << "search device failed\n";
         system("pause");
@@ -117,56 +117,55 @@ int _tmain(int argc, _TCHAR* argv[])
 
     delete[] infoArray;
 
-    test();
+    cout << "\nSearch again\n\n";
+    system("pause");
 
-    //cout << "\nSearch again\n\n";
-    //system("pause");
+    if(-1 == searchDev(5))
+    {
+        cout << "search device failed\n";
+        system("pause");
+        return -1;
+    }
 
-    //if(-1 == searchDev())
-    //{
-    //    cout << "search device failed\n";
-    //    system("pause");
-    //    return -1;
-    //}
+    num = getNumOfOnvifDev();
 
-    //num = getNumOfOnvifDev();
+    infoArray = new deviceInfoArray[num];
 
-    //infoArray = new deviceInfoArray[num];
+    if(-1 == num)
+    {
+        cout << "getNumOfOnvifDev failed\n";
+        system("pause");
+        return -1;
+    }
 
-    //if(-1 == num)
-    //{
-    //    cout << "getNumOfOnvifDev failed\n";
-    //    system("pause");
-    //    return -1;
-    //}
+    cout << "getNumOfOnvifDev: " << num << endl;
 
-    //cout << "getNumOfOnvifDev: " << num << endl;
+    if(-1 == getAllDevURI(infoArray, num))
+    {
+        cout << "getAllDevURI failed\n";
+        system("pause");
+        return -1;
+    }
 
-    //if(-1 == getAllDevURI(infoArray, num))
-    //{
-    //    cout << "getAllDevURI failed\n";
-    //    system("pause");
-    //    return -1;
-    //}
+    for(int i = 0; i < num; i++)
+    {
+        cout << infoArray[i].ip << ":" << infoArray[i].URI << endl;
+    }
 
-    //for(int i = 0; i < num; i++)
-    //{
-    //    cout << infoArray[i].ip << ":" << infoArray[i].URI << endl;
-    //}
+    cout << "-------------------------------------\n";
+    cout << "\nresetDll\n\n";
+    system("pause");
 
-    //cout << "-------------------------------------\n";
-    //cout << "\nresetDll\n\n";
+    if(-1 == resetDll())
+    {
+        cout << "resetDll failed\n";
+        system("pause");
+        return -1;
+    }
 
-    //if(-1 == resetDll())
-    //{
-    //    cout << "resetDll failed\n";
-    //    system("pause");
-    //    return -1;
-    //}
+    cout << "getNumOfOnvifDev: " << getNumOfOnvifDev() << endl;
 
-    //cout << "getNumOfOnvifDev: " << getNumOfOnvifDev() << endl;
-
-    //delete[] infoArray;
+    delete[] infoArray;
 
     delete URI;
 

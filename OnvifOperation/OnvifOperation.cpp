@@ -46,6 +46,7 @@ static tt__Transport*                         pTemp3;
 
 static bool initialsuccess = false;
 static bool searchsuccess = false;
+static bool listLocked = false;
 
 int getRTSP(vector<deviceInfoContainer*>::iterator& Iterator, char* username, char* password)
 {
@@ -111,14 +112,7 @@ int getRTSP(vector<deviceInfoContainer*>::iterator& Iterator, char* username, ch
 
 ONVIFOPERATION_API int initDll(void)
 {
-    if(0 != deviceInfoList.size())
-    {
-        for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
-        {
-            delete (*deviceInfoListIterator);
-        }
-        deviceInfoList.clear();
-    }
+    clearDeviceList();
 
     pSoap = soap_new1(SOAP_IO_DEFAULT | SOAP_XML_IGNORENS); // ignore namespace, avoid namespace mismatch
     if(NULL == pSoap)
@@ -176,14 +170,7 @@ ONVIFOPERATION_API int uninitDll(void)
     pTemp2 = NULL;
     pTemp1 = NULL;
 
-    if(0 != deviceInfoList.size())
-    {
-        for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
-        {
-            delete (*deviceInfoListIterator);
-        }
-        deviceInfoList.clear();
-    }
+    clearDeviceList();
 
     soap_destroy(pSoap);
     soap_end(pSoap);
@@ -196,6 +183,15 @@ ONVIFOPERATION_API int uninitDll(void)
 
 ONVIFOPERATION_API int clearDeviceList(void)
 {
+    if(listLocked)
+    {
+        Sleep(1);
+    }
+    else
+    {
+        listLocked = true;
+    }
+
     if(0 != deviceInfoList.size())
     {
         for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
@@ -204,6 +200,9 @@ ONVIFOPERATION_API int clearDeviceList(void)
         }
         deviceInfoList.clear();
     }
+
+    listLocked = false;
+
     return 0;
 }
 
@@ -220,7 +219,7 @@ ONVIFOPERATION_API int resetDll(void)
     return 0;
 }
 
-ONVIFOPERATION_API int searchDev(void)
+ONVIFOPERATION_API int searchDev(size_t waitTime)
 {
     if(!initialsuccess)
     {
@@ -230,7 +229,7 @@ ONVIFOPERATION_API int searchDev(void)
 
     soap_default_SOAP_ENV__Header(pSoap, &header);
     soap_set_namespaces(pSoap, probeNamespace);
-    pSoap->recv_timeout = 5;
+    pSoap->recv_timeout = waitTime;
 
     header.wsa__MessageID = (char*)soap_wsa_rand_uuid(pSoap);
     if(NULL == header.wsa__MessageID)
@@ -249,16 +248,26 @@ ONVIFOPERATION_API int searchDev(void)
     probe.Scopes = &scopes;
     probe.Types = "ns1:NetworkVideoTransmitter";
 
-    if(SOAP_OK != soap_send___wsdd__Probe(pSoap, "soap.udp://239.255.255.250:3702", NULL, &probe))
+    if(listLocked)
     {
-        searchsuccess = false;
-        return -1;
+        Sleep(1);
+    }
+    else
+    {
+        listLocked = true;
     }
 
     // set not duplicated
     for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
     {
         (*deviceInfoListIterator)->duplicated = FALSE;
+    }
+
+    if(SOAP_OK != soap_send___wsdd__Probe(pSoap, "soap.udp://239.255.255.250:3702", NULL, &probe))
+    {
+        searchsuccess = false;
+        listLocked = false;
+        return -1;
     }
 
     // get match result and put into vector
@@ -345,6 +354,7 @@ ONVIFOPERATION_API int searchDev(void)
         getRTSP(deviceInfoListIterator, "", "");
     }
 
+    listLocked = false;
     searchsuccess = true;
 
     return 0;
@@ -362,7 +372,18 @@ ONVIFOPERATION_API int getNumOfOnvifDev(void)
         return -1;
     }
 
+    if(listLocked)
+    {
+        Sleep(1);
+    }
+    else
+    {
+        listLocked = true;
+    }
+
     return deviceInfoList.size();
+
+    listLocked = false;
 }
 
 ONVIFOPERATION_API int getURIFromIP(char* IP, size_t IPBufferLen, char* URI, size_t URIBufferLen, char* username, char* password)
@@ -388,6 +409,15 @@ ONVIFOPERATION_API int getURIFromIP(char* IP, size_t IPBufferLen, char* URI, siz
         return -1;
     }
 
+    if(listLocked)
+    {
+        Sleep(1);
+    }
+    else
+    {
+        listLocked = true;
+    }
+
     for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
     {
         if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches)
@@ -411,16 +441,19 @@ ONVIFOPERATION_API int getURIFromIP(char* IP, size_t IPBufferLen, char* URI, siz
 
     if(deviceInfoListIterator == deviceInfoList.end())
     {
+        listLocked = false;
         return -1;
     }
 
     if(NULL == (*deviceInfoListIterator)->getStreamUriResponse.MediaUri)
     {
+        listLocked = false;
         return -1;
     }
 
     if(!strncpy(URI, (*deviceInfoListIterator)->getStreamUriResponse.MediaUri->Uri.c_str(), URIBufferLen))
     {
+        listLocked = false;
         return -1;
     }
 
@@ -444,8 +477,18 @@ ONVIFOPERATION_API int getAllDevURI(deviceInfoArray* infoArray, size_t Num)
         return -1;
     }
 
+    if(listLocked)
+    {
+        Sleep(1);
+    }
+    else
+    {
+        listLocked = true;
+    }
+
     if(Num != deviceInfoList.size())
     {
+        listLocked = false;
         return -1;
     }
 
@@ -488,6 +531,9 @@ ONVIFOPERATION_API int getAllDevURI(deviceInfoArray* infoArray, size_t Num)
 
         strcpy(infoArray[i].URI, (*deviceInfoListIterator)->getStreamUriResponse.MediaUri->Uri.c_str());
     }
+
+    listLocked = false;
+
     return Num;
 }
 
@@ -513,6 +559,15 @@ ONVIFOPERATION_API int getNumOfProfilesFromIP(char* IP, size_t IPBufferLen, char
         return -1;
     }
 
+    if(listLocked)
+    {
+        Sleep(1);
+    }
+    else
+    {
+        listLocked = true;
+    }
+
     for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
     {
         if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches)
@@ -535,22 +590,32 @@ ONVIFOPERATION_API int getNumOfProfilesFromIP(char* IP, size_t IPBufferLen, char
 
     if(deviceInfoListIterator == deviceInfoList.end())
     {
+        listLocked = false;
         return -1;
     }
 
-    if(0 < (*deviceInfoListIterator)->getProfilesResponse.Profiles.size())
+    size_t profilesSize;
+
+    profilesSize = (*deviceInfoListIterator)->getProfilesResponse.Profiles.size();
+
+    if(0 < profilesSize)
     {
-        return (*deviceInfoListIterator)->getProfilesResponse.Profiles.size();
+        listLocked = false;
+        return profilesSize;
     }
 
     if(-1 == getRTSP(deviceInfoListIterator, username, password))
     {
+        listLocked = false;
         return -1;
     }
 
-    if(0 < (*deviceInfoListIterator)->getProfilesResponse.Profiles.size())
+    profilesSize = (*deviceInfoListIterator)->getProfilesResponse.Profiles.size();
+
+    if(0 < profilesSize)
     {
-        return (*deviceInfoListIterator)->getProfilesResponse.Profiles.size();
+        listLocked = false;
+        return profilesSize;
     }
 
     return -1;
@@ -568,6 +633,16 @@ ONVIFOPERATION_API int getVideoInfoFromIP(char *IP, size_t IPBufferLen, videoNod
         return -1;
     }
 
+    if(listLocked)
+    {
+        Sleep(1);
+    }
+    else
+    {
+        listLocked = true;
+    }
+
+
     for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
     {
         if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches)
@@ -590,6 +665,7 @@ ONVIFOPERATION_API int getVideoInfoFromIP(char *IP, size_t IPBufferLen, videoNod
 
     if(deviceInfoListIterator == deviceInfoList.end())
     {
+        listLocked = false;
         return -1;
     }
 
@@ -612,6 +688,8 @@ ONVIFOPERATION_API int getVideoInfoFromIP(char *IP, size_t IPBufferLen, videoNod
 
         strncpy(headVideo[i].URI, _getStreamUriResponse.MediaUri->Uri.c_str(), sizeof(headVideo[i].URI));
     }
+
+    listLocked = false;
 
     return i;
 }

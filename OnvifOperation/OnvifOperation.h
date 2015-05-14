@@ -68,7 +68,7 @@ extern "C" {
 
     //function : search onvif device
     //on return: 0 success, -1 failure
-    ONVIFOPERATION_API int searchDev(void);
+    ONVIFOPERATION_API int searchDev(size_t waitTime);
 
     //function : get number of onvif device
     //on return: number of onvif device, -1 something went wrong

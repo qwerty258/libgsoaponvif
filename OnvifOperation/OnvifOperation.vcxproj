@@ -41,13 +41,15 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\OpenSSL-Win32\include;$(IncludePath)</IncludePath>
-    <LibraryPath>..\OpenSSL-Win32\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\OpenSSL-Win32\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\OpenSSL-Win32\lib;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\OpenSSL-Win32\include;$(IncludePath)</IncludePath>
-    <LibraryPath>..\OpenSSL-Win32\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\OpenSSL-Win32\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\OpenSSL-Win32\lib;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)$(Platform)$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -56,7 +58,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ONVIFOPERATION_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/bigobj /DDBUG %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -73,6 +75,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;ONVIFOPERATION_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalOptions>/bigobj /DDBUG %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -90,6 +93,7 @@
     <ClInclude Include="mecevp.h" />
     <ClInclude Include="OnvifOperation.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="resource1.h" />
     <ClInclude Include="smdevp.h" />
     <ClInclude Include="soapH.h" />
     <ClInclude Include="soapStub.h" />
@@ -122,6 +126,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="OnvifOperation.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="OnvifOperation.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

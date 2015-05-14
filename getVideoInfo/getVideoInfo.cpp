@@ -14,7 +14,7 @@ int _tmain(int argc, _TCHAR* argv[])
     system("pause");
 
     initDll();
-    searchDev();
+    searchDev(5);
     int num = getNumOfOnvifDev();
 
     deviceInfoArray* infoArray = new deviceInfoArray[num];
@@ -30,6 +30,11 @@ int _tmain(int argc, _TCHAR* argv[])
     cout << "-------------------------------------\n";
 
     num = getNumOfProfilesFromIP(infoArray[0].ip, strlen(infoArray[0].ip) + 1, "admin", "12345");
+
+    if(-1 == num)
+    {
+        cout << "File: " << __FILE__ << " Line: " << __LINE__ << ' ' << "getNumOfProfilesFromIP error" << endl;
+    }
 
     videoNode* videoNodeArray = new videoNode[num];
 
