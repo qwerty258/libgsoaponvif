@@ -11,6 +11,13 @@ DWORD WINAPI getAllDeviceURI(LPVOID lpParameter)
 
     int num = getNumOfOnvifDev();
 
+    if(-1 == num)
+    {
+        std::cout << "Thread getAllDeviceURI getNumOfOnvifDev failed\n";
+        std::cout << "Thread getAllDeviceURI end\n";
+        return num;
+    }
+
     deviceInfoArray* infoArray = new deviceInfoArray[num];
 
     int result = getAllDevURI(infoArray, num);
@@ -18,6 +25,9 @@ DWORD WINAPI getAllDeviceURI(LPVOID lpParameter)
     if(-1 == result)
     {
         std::cout << "getAllDevURI failed\n";
+        std::cout << "Thread getAllDeviceURI end\n";
+        delete[] infoArray;
+        return num;
     }
 
     for(int i = 0; i < num; i++)
@@ -34,18 +44,14 @@ DWORD WINAPI getAllDeviceURI(LPVOID lpParameter)
 
 DWORD WINAPI searchDevice(LPVOID lpParameter)
 {
-    int num;
-
     std::cout << "Thread searchDevice begin\n";
 
-    for(size_t i = 0; i < 20; i++)
+    int  num = searchDev(1);
+    if(-1 == num)
     {
-        num = searchDev(1);
-
-        if(-1 == num)
-        {
-            std::cout << "searchDev failed\n";
-        }
+        std::cout << "searchDev failed\n";
+        std::cout << "Thread searchDevice end\n";
+        return num;
     }
 
     std::cout << "Thread searchDevice end\n";
@@ -61,12 +67,15 @@ DWORD WINAPI getURIbyIP(LPVOID lpParameter)
 
     int num = getURIFromIP("192.168.10.142", strlen("192.168.10.142") + 1, URI, 256, "admin", "12345");
 
-    std::cout << URI << std::endl;
-
     if(-1 == num)
     {
         std::cout << "getURIFromIP failed\n";
+        std::cout << "Thread getURIbyIP end\n";
+        delete[] URI;
+        return num;
     }
+
+    std::cout << URI << std::endl;
 
     std::cout << "Thread getURIbyIP end\n";
 
@@ -91,6 +100,14 @@ DWORD WINAPI getVideoInfoByIP(LPVOID lpParameter)
     videoNode* videoInfoArray = new videoNode[num];
 
     int result = getVideoInfoFromIP("192.168.10.142", strlen("192.168.10.142") + 1, videoInfoArray, "admin", "12345");
+
+    if(-1 == result)
+    {
+        std::cout << "getVideoInfoFromIP failed\n";
+        std::cout << "Thread getNumOfProfilesByIP end\n";
+        delete[] videoInfoArray;
+        return num;
+    }
 
     std::cout << "192.168.10.142: " << num << std::endl;
 
@@ -138,6 +155,9 @@ int _tmain(int argc, _TCHAR* argv[])
     WaitForMultipleObjects(3, handleArray, TRUE, INFINITE);
 
     uninitDll();
+
+    system("pause");
+
     return 0;
 }
 
