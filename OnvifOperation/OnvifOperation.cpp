@@ -47,28 +47,28 @@ static tt__Transport*                         pTemp3;
 static bool initialsuccess = false;
 static bool searchsuccess = false;
 
-void getRTSP(vector<deviceInfoContainer*>::iterator& Iterator, char* username, char* password)
+int getRTSP(vector<deviceInfoContainer*>::iterator& Iterator, char* username, char* password)
 {
     if(NULL != (*Iterator)->getStreamUriResponse.MediaUri)
     {
         if(1 < (*Iterator)->getStreamUriResponse.MediaUri->Uri.size())
         {
-            return;
+            return -1;
         }
     }
 
     // get capabilities 
     if(NULL == (*Iterator)->probeMatches.wsdd__ProbeMatches)
     {
-        return;
+        return -1;
     }
     if(NULL == (*Iterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch)
     {
-        return;
+        return -1;
     }
     if(NULL == (*Iterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch->XAddrs)
     {
-        return;
+        return -1;
     }
 
     soap_set_namespaces(pSoap, getCapabilitiesNamespace);
@@ -80,11 +80,11 @@ void getRTSP(vector<deviceInfoContainer*>::iterator& Iterator, char* username, c
     // get profiles 
     if(NULL == (*Iterator)->getCapabilitiesResponse.Capabilities)
     {
-        return;
+        return -1;
     }
     if(NULL == (*Iterator)->getCapabilitiesResponse.Capabilities->Media)
     {
-        return;
+        return -1;
     }
 
     soap_set_namespaces(pSoap, getProfilesNamespace);
@@ -96,7 +96,7 @@ void getRTSP(vector<deviceInfoContainer*>::iterator& Iterator, char* username, c
     // get stream uri
     if(0 == (*Iterator)->getProfilesResponse.Profiles.size())
     {
-        return;
+        return -1;
     }
 
     getStreamUri.ProfileToken = (*(*Iterator)->getProfilesResponse.Profiles.begin())->token;
@@ -105,9 +105,11 @@ void getRTSP(vector<deviceInfoContainer*>::iterator& Iterator, char* username, c
 
     soap_wsse_add_UsernameTokenDigest(pSoap, "user", username, password);
     soap_call___trt__GetStreamUri(pSoap, (*Iterator)->getCapabilitiesResponse.Capabilities->Media->XAddr.c_str(), NULL, &getStreamUri, (*Iterator)->getStreamUriResponse);
+
+    return 0;
 }
 
-int ONVIFOPERATION_API initDll(void)
+ONVIFOPERATION_API int initDll(void)
 {
     if(0 != deviceInfoList.size())
     {
@@ -159,7 +161,7 @@ int ONVIFOPERATION_API initDll(void)
     return 0;
 }
 
-int ONVIFOPERATION_API uninitDll(void)
+ONVIFOPERATION_API int uninitDll(void)
 {
     if(!initialsuccess)
     {
@@ -192,7 +194,7 @@ int ONVIFOPERATION_API uninitDll(void)
     return 0;
 }
 
-int ONVIFOPERATION_API clearDeviceList(void)
+ONVIFOPERATION_API int clearDeviceList(void)
 {
     if(0 != deviceInfoList.size())
     {
@@ -205,7 +207,7 @@ int ONVIFOPERATION_API clearDeviceList(void)
     return 0;
 }
 
-int ONVIFOPERATION_API resetDll(void)
+ONVIFOPERATION_API int resetDll(void)
 {
     if(-1 == uninitDll())
     {
@@ -218,7 +220,7 @@ int ONVIFOPERATION_API resetDll(void)
     return 0;
 }
 
-int ONVIFOPERATION_API searchDev(void)
+ONVIFOPERATION_API int searchDev(void)
 {
     if(!initialsuccess)
     {
@@ -348,7 +350,7 @@ int ONVIFOPERATION_API searchDev(void)
     return 0;
 }
 
-int ONVIFOPERATION_API getNumOfOnvifDev(void)
+ONVIFOPERATION_API int getNumOfOnvifDev(void)
 {
     if(!initialsuccess)
     {
@@ -363,12 +365,18 @@ int ONVIFOPERATION_API getNumOfOnvifDev(void)
     return deviceInfoList.size();
 }
 
-int ONVIFOPERATION_API getURIFromIP(char* IP, size_t IPBufferLen, char* URI, size_t URIBufferLen, char* username, char* password)
+ONVIFOPERATION_API int getURIFromIP(char* IP, size_t IPBufferLen, char* URI, size_t URIBufferLen, char* username, char* password)
 {
     if(NULL == IP || NULL == URI || NULL == username || NULL == password)
     {
         return -1;
     }
+
+    if(strlen(IP) + 1 > IPBufferLen)
+    {
+        return -1;
+    }
+
 
     if(!initialsuccess)
     {
@@ -419,7 +427,7 @@ int ONVIFOPERATION_API getURIFromIP(char* IP, size_t IPBufferLen, char* URI, siz
     return 0;
 }
 
-int ONVIFOPERATION_API getAllDevURI(deviceInfoArray* infoArray, size_t Num)
+ONVIFOPERATION_API int getAllDevURI(deviceInfoArray* infoArray, size_t Num)
 {
     if(NULL == infoArray)
     {
@@ -481,4 +489,174 @@ int ONVIFOPERATION_API getAllDevURI(deviceInfoArray* infoArray, size_t Num)
         strcpy(infoArray[i].URI, (*deviceInfoListIterator)->getStreamUriResponse.MediaUri->Uri.c_str());
     }
     return Num;
+}
+
+ONVIFOPERATION_API int getNumOfProfilesFromIP(char* IP, size_t IPBufferLen, char* username, char* password)
+{
+    if(NULL == IP)
+    {
+        return -1;
+    }
+
+    if(strlen(IP) + 1 > IPBufferLen)
+    {
+        return -1;
+    }
+
+    if(!initialsuccess)
+    {
+        return -1;
+    }
+
+    if(!searchsuccess)
+    {
+        return -1;
+    }
+
+    for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
+    {
+        if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches)
+        {
+            continue;
+        }
+        if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch)
+        {
+            continue;
+        }
+        if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch->XAddrs)
+        {
+            continue;
+        }
+        if(NULL != strstr((*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch->XAddrs, IP))
+        {
+            break;
+        }
+    }
+
+    if(deviceInfoListIterator == deviceInfoList.end())
+    {
+        return -1;
+    }
+
+    if(0 < (*deviceInfoListIterator)->getProfilesResponse.Profiles.size())
+    {
+        return (*deviceInfoListIterator)->getProfilesResponse.Profiles.size();
+    }
+
+    if(-1 == getRTSP(deviceInfoListIterator, username, password))
+    {
+        return -1;
+    }
+
+    if(0 < (*deviceInfoListIterator)->getProfilesResponse.Profiles.size())
+    {
+        return (*deviceInfoListIterator)->getProfilesResponse.Profiles.size();
+    }
+
+    return -1;
+}
+
+ONVIFOPERATION_API int getVideoInfoFromIP(char *IP, size_t IPBufferLen, videoNode *headVideo, char* username, char* password)
+{
+    if(NULL == IP || NULL == headVideo)
+    {
+        return -1;
+    }
+
+    if(strlen(IP) + 1 > IPBufferLen)
+    {
+        return -1;
+    }
+
+    for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
+    {
+        if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches)
+        {
+            continue;
+        }
+        if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch)
+        {
+            continue;
+        }
+        if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch->XAddrs)
+        {
+            continue;
+        }
+        if(NULL != strstr((*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch->XAddrs, IP))
+        {
+            break;
+        }
+    }
+
+    if(deviceInfoListIterator == deviceInfoList.end())
+    {
+        return -1;
+    }
+
+    size_t i;
+    _trt__GetStreamUriResponse _getStreamUriResponse;
+
+    soap_set_namespaces(pSoap, getStreamUriNamespace);
+
+    for(i = 0; i < (*deviceInfoListIterator)->getProfilesResponse.Profiles.size(); ++i)
+    {
+        memset(&headVideo[i], 0x0, sizeof(videoNode));
+        headVideo[i].encoding = (enum videoEncoding)(*deviceInfoListIterator)->getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Encoding;
+        headVideo[i].frame = (*deviceInfoListIterator)->getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->RateControl->FrameRateLimit;
+        headVideo[i].width = (*deviceInfoListIterator)->getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Resolution->Width;
+        headVideo[i].height = (*deviceInfoListIterator)->getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Resolution->Height;
+
+        getStreamUri.ProfileToken = (*deviceInfoListIterator)->getProfilesResponse.Profiles[i]->token;
+        soap_wsse_add_UsernameTokenDigest(pSoap, "user", username, password);
+        soap_call___trt__GetStreamUri(pSoap, (*deviceInfoListIterator)->getCapabilitiesResponse.Capabilities->Media->XAddr.c_str(), NULL, &getStreamUri, _getStreamUriResponse);
+
+        strncpy(headVideo[i].URI, _getStreamUriResponse.MediaUri->Uri.c_str(), sizeof(headVideo[i].URI));
+    }
+
+    return i;
+}
+
+
+ONVIFOPERATION_API void test(void)
+{
+    vector<tt__Profile*>::iterator it;
+    for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
+    {
+        if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches)
+        {
+            continue;
+        }
+        if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch)
+        {
+            continue;
+        }
+        if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch->XAddrs)
+        {
+            continue;
+        }
+        cout << "++++++++++++++++++++++++++++\n";
+        printf("%s:::", (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch->XAddrs);
+        cout << (*deviceInfoListIterator)->getProfilesResponse.Profiles.size() << endl;
+        for(it = (*deviceInfoListIterator)->getProfilesResponse.Profiles.begin(); it < (*deviceInfoListIterator)->getProfilesResponse.Profiles.end(); ++it)
+        {
+            switch((*it)->VideoEncoderConfiguration->Encoding)
+            {
+                case tt__VideoEncoding__JPEG:
+                    cout << "Encoding: JPEG\n";
+                    break;
+                case tt__VideoEncoding__MPEG4:
+                    cout << "Encoding: MPEG4\n";
+                    break;
+                case tt__VideoEncoding__H264:
+                    cout << "Encoding: H264\n";
+                    break;
+                default:
+                    cout << "Encoding: Unknow\n";
+                    break;
+            }
+            cout << "Width: " << (*it)->VideoEncoderConfiguration->Resolution->Width << ' ' << "Height: " << (*it)->VideoEncoderConfiguration->Resolution->Height << endl;
+            cout << "FrameRateLimit: " << (*it)->VideoEncoderConfiguration->RateControl->FrameRateLimit << ' ' << "BitrateLimit: " << (*it)->VideoEncoderConfiguration->RateControl->BitrateLimit << endl;
+            cout << "****************\n";
+        }
+    }
 }

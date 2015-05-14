@@ -39,23 +39,42 @@ extern "C" {
         char URI[256];
     }deviceInfoArray;
 
+    // tt:VideoEncoding
+    enum videoEncoding
+    {
+        videoEncoding__JPEG = 0,
+        videoEncoding__MPEG4 = 1,
+        videoEncoding__H264 = 2
+    };
+
+    //listOfVideo
+    typedef struct
+    {
+        char URI[256];
+        int frame;
+        int width;
+        int height;
+        enum videoEncoding encoding;
+    }videoNode;
+
+
     //function : initial dll, locate some memory
     //on return: 0 success, -1 failure
-    int ONVIFOPERATION_API initDll(void);
+    ONVIFOPERATION_API int initDll(void);
 
     //function : uninitial dll
     //on return: 0 success, -1 failure
-    int ONVIFOPERATION_API uninitDll(void);
+    ONVIFOPERATION_API int uninitDll(void);
 
     //function : search onvif device
     //on return: 0 success, -1 failure
-    int ONVIFOPERATION_API searchDev(void);
+    ONVIFOPERATION_API int searchDev(void);
 
     //function : get number of onvif device
     //on return: number of onvif device, -1 something went wrong
-    int ONVIFOPERATION_API getNumOfOnvifDev(void);
+    ONVIFOPERATION_API int getNumOfOnvifDev(void);
 
-    //function : get the URI specified by caller according to IP
+    //function : get the main URI specified by IP
     /****************************************************
      you should locate all the memory this function needs
      ****************************************************/
@@ -68,7 +87,7 @@ extern "C" {
     //////URI         : pointer to the head of C-style URI string
     //////URIBufferLen: bytes of the URI string
     //on return: 0 success, -1 failure
-    int ONVIFOPERATION_API getURIFromIP(char* IP, size_t IPBufferLen, char* URI, size_t URIBufferLen, char* username, char* password);
+    ONVIFOPERATION_API int getURIFromIP(char* IP, size_t IPBufferLen, char* URI, size_t URIBufferLen, char* username = "", char* password = "");
 
     //function : get all onvif device URI
     /****************************************************
@@ -77,15 +96,36 @@ extern "C" {
     //input    : Num: number of all onvif device
     //output   : nodeList: pointer to the head of deviceInfoArray
     //on return: the number of onvif device info put into deviceInfoArray, -1 failure
-    int ONVIFOPERATION_API getAllDevURI(deviceInfoArray* infoArray, size_t Num);
+    ONVIFOPERATION_API int getAllDevURI(deviceInfoArray* infoArray, size_t Num);
+
+    //function : get the number of profiles specified by IP
+    //input    :
+    //////IP          : pointer to the head of C-style IP string
+    //////IPBufferLen : bytes of the IP string
+    //////username    : C-style string of user name
+    //////password    : C-sytle string of pass word
+    //on return: the number of profiles, -1 failure
+    ONVIFOPERATION_API int getNumOfProfilesFromIP(char* IP, size_t IPBufferLen, char* username = "", char* password = "");
+
+    //function : get the array of profiles specified by IP
+    //input    :
+    //////IP          : pointer to the head of C-style IP string
+    //////IPBufferLen : bytes of the IP string
+    //////username    : C-style string of user name
+    //////password    : C-sytle string of pass word
+    //output   : nodeList: pointer to the head of videoNode
+    //on return: the number of profiles, -1 failure
+    ONVIFOPERATION_API int getVideoInfoFromIP(char *IP, size_t IPBufferLen, videoNode *headVideo, char* username = "", char* password = "");
 
     //function : clear the onvif device list maintained by this DLL
     //on return: 0 success, -1 failure.
-    int ONVIFOPERATION_API clearDeviceList(void);
+    ONVIFOPERATION_API int clearDeviceList(void);
 
     //function : reset everything in dll, think before use this function!
     //on return: 0 success, -1 failure. if failed, reload the DLL.
-    int ONVIFOPERATION_API resetDll(void);
+    ONVIFOPERATION_API int resetDll(void);
+
+    ONVIFOPERATION_API void test(void);
 
 #ifdef __cplusplus
 }
