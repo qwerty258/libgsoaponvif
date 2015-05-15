@@ -153,7 +153,7 @@ int _tmain(int argc, _TCHAR* argv[])
     handleArray[2] = CreateThread(NULL, 0, getURIbyIP, NULL, 0, NULL);
     handleArray[3] = CreateThread(NULL, 0, getVideoInfoByIP, NULL, 0, NULL);
 
-    WaitForMultipleObjects(3, handleArray, TRUE, INFINITE);
+    WaitForMultipleObjects(5, handleArray, TRUE, INFINITE);
 
     uninitDll();
 
