@@ -465,7 +465,7 @@ ONVIFOPERATION_API int getAllDevURL(deviceInfo* deviceInfoArray, size_t num)
 
     for(deviceInfoListIterator = deviceInfoList.begin(), i = 0; deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator, ++i)
     {
-        memset(&deviceInfoArray[i], 0x0, sizeof(deviceInfoArray));
+        memset(&deviceInfoArray[i], 0x0, sizeof(deviceInfo));
         if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches)
         {
             continue;
