@@ -18,7 +18,7 @@ int _tmain(int argc, _TCHAR* argv[])
         return -1;
     }
 
-    if(-1 == searchDev(5))
+    if(-1 == searchDev(1))
     {
         cout << "search device failed\n";
         system("pause");

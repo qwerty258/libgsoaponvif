@@ -207,12 +207,6 @@ ONVIFOPERATION_API int clearDevList(void)
 
 ONVIFOPERATION_API int resetDll(void)
 {
-    while(listLocked)
-    {
-        Sleep(200);
-    }
-    listLocked = true;
-
     if(-1 == uninitDll())
     {
         return -1;
@@ -222,7 +216,6 @@ ONVIFOPERATION_API int resetDll(void)
         return -1;
     }
 
-    listLocked = false;
     return 0;
 }
 
