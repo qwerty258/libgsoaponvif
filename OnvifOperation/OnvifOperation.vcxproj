@@ -93,7 +93,6 @@
     <ClInclude Include="mecevp.h" />
     <ClInclude Include="OnvifOperation.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="resource1.h" />
     <ClInclude Include="smdevp.h" />
     <ClInclude Include="soapH.h" />
     <ClInclude Include="soapStub.h" />
