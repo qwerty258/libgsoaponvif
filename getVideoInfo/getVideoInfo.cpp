@@ -14,7 +14,7 @@ int _tmain(int argc, _TCHAR* argv[])
     system("pause");
 
     initDll();
-    searchDev(5);
+    searchDev(1);
     int num = getNumOfOnvifDev();
 
     deviceInfo* deviceInfoArray = new deviceInfo[num];
