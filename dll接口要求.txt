@@ -1,29 +1,29 @@
-//º¯Êı×÷ÓÃ£º³õÊ¼»¯dll
-//º¯ÊıÊäÈë£ºÎŞ
-//º¯ÊıÊä³ö£ºÎŞ
-//º¯Êı·µ»Ø£º0³É¹¦£¬-1Ê§°Ü
+//å‡½æ•°ä½œç”¨ï¼šåˆå§‹åŒ–dll
+//å‡½æ•°è¾“å…¥ï¼šæ— 
+//å‡½æ•°è¾“å‡ºï¼šæ— 
+//å‡½æ•°è¿”å›ï¼š0æˆåŠŸï¼Œ-1å¤±è´¥
 int initDll();
 
 
-//º¯Êı×÷ÓÃ£ºËÑË÷Éè±¸
-//º¯ÊıÊäÈë£ºÎŞ
-//º¯ÊıÊä³ö£ºÎŞ
-//º¯Êı·µ»Ø£º0³É¹¦£¬-1Ê§°Ü
+//å‡½æ•°ä½œç”¨ï¼šæœç´¢è®¾å¤‡
+//å‡½æ•°è¾“å…¥ï¼šæ— 
+//å‡½æ•°è¾“å‡ºï¼šæ— 
+//å‡½æ•°è¿”å›ï¼š0æˆåŠŸï¼Œ-1å¤±è´¥
 int search();
 
 
-//º¯Êı×÷ÓÃ£º»ñÈ¡onvifÉè±¸ÊıÁ¿
-//º¯ÊıÊäÈë£ºÎŞ
-//º¯ÊıÊä³ö£ºÎŞ
-//º¯Êı·µ»Ø£ºonvifÉè±¸ÊıÁ¿£¬-1±íÊ¾´íÎó
+//å‡½æ•°ä½œç”¨ï¼šè·å–onvifè®¾å¤‡æ•°é‡
+//å‡½æ•°è¾“å…¥ï¼šæ— 
+//å‡½æ•°è¾“å‡ºï¼šæ— 
+//å‡½æ•°è¿”å›ï¼šonvifè®¾å¤‡æ•°é‡ï¼Œ-1è¡¨ç¤ºé”™è¯¯
 int getNumOfOnvifDev();
 
 
-//º¯Êı×÷ÓÃ£º»ñÈ¡Ö¸¶¨IPµÄÉè±¸µÄURI
-//º¯ÊıÊäÈë£ºchar *ip ip×Ö·û´®µÄÍ·Ö¸Õë£¬char * IPBufferLen Ip×Ö·û´®µÄ³¤¶È£¬char * username ÓÃ»§Ãû£¬char* password ÃÜÂë
-//º¯ÊıÊä³ö£ºchar *URI URI×Ö·û´®µÄÍ·Ö¸Õë£¬ int URIBUfferLen URI×Ö·û´®µÄ³¤¶È
-//º¯Êı·µ»Ø£º-1±íÊ¾´íÎó£¬0±íÊ¾³É¹¦
-int getURIFromIP(char *IP,int IPBufferLen,char *URI,int URIBufferLen£¬char * username£¬char* password);
+//å‡½æ•°ä½œç”¨ï¼šè·å–æŒ‡å®šIPçš„è®¾å¤‡çš„URI
+//å‡½æ•°è¾“å…¥ï¼šchar *ip ipå­—ç¬¦ä¸²çš„å¤´æŒ‡é’ˆï¼Œchar * IPBufferLen Ipå­—ç¬¦ä¸²çš„é•¿åº¦ï¼Œchar * username ç”¨æˆ·åï¼Œchar* password å¯†ç 
+//å‡½æ•°è¾“å‡ºï¼šchar *URI URIå­—ç¬¦ä¸²çš„å¤´æŒ‡é’ˆï¼Œ int URIBUfferLen URIå­—ç¬¦ä¸²çš„é•¿åº¦
+//å‡½æ•°è¿”å›ï¼š-1è¡¨ç¤ºé”™è¯¯ï¼Œ0è¡¨ç¤ºæˆåŠŸ
+int getURIFromIP(char *IP,int IPBufferLen,char *URI,int URIBufferLenï¼Œchar * usernameï¼Œchar* password);
 
 
 //listOfURI
@@ -33,18 +33,18 @@ typedef struct{
 }devNode;
 
 
-//º¯Êı×÷ÓÃ£º»ñÈ¡ËùÓĞÉè±¸µÄURI
-//º¯ÊıÊäÈë£ºint Num ×ÜµÄdevÊıÁ¿
-//º¯ÊıÊä³ö£ºdevNode *nodeList Éè±¸½ÚµãÊıÍ·Ö¸Õë£¬¿Õ¼äÓÉµ÷ÓÃÕß·ÖÅä
-//º¯Êı·µ»Ø£ºÊµ¼Ê·µ»ØonvifÉè±¸ÊıÁ¿¡£-1±íÊ¾´íÎó
+//å‡½æ•°ä½œç”¨ï¼šè·å–æ‰€æœ‰è®¾å¤‡çš„URI
+//å‡½æ•°è¾“å…¥ï¼šint Num æ€»çš„devæ•°é‡
+//å‡½æ•°è¾“å‡ºï¼šdevNode *nodeList è®¾å¤‡èŠ‚ç‚¹æ•°å¤´æŒ‡é’ˆï¼Œç©ºé—´ç”±è°ƒç”¨è€…åˆ†é…
+//å‡½æ•°è¿”å›ï¼šå®é™…è¿”å›onvifè®¾å¤‡æ•°é‡ã€‚-1è¡¨ç¤ºé”™è¯¯
 int getAllDevURI(devNode *nodeList,int Num);
 
 
-//º¯Êı×÷ÓÃ£º»ñÈ¡Ö¸¶¨Ïà»úÂëÁ÷ÊıÁ¿
-//º¯ÊıÊäÈë£ºchar *IP Ïà»úIP£¬int IPBufferLen Ïà»úIP³¤¶È,char * username Ïà»úÓÃ»§Ãû£¬Ã»ÓĞNULL£¬char* password Ïà»úÃÜÂë£¬Ã»ÓĞNULL
-//º¯ÊıÊä³ö£ºÎŞ
-//º¯Êı·µ»Ø£º³É¹¦·µ»ØÓµÓĞÂëÁ÷ÊıÁ¿£¬-1Ê§°Ü
-int getNumOfProfilesFromIP(char *IP,int IPBufferLen,char * username£¬char* password);
+//å‡½æ•°ä½œç”¨ï¼šè·å–æŒ‡å®šç›¸æœºç æµæ•°é‡
+//å‡½æ•°è¾“å…¥ï¼šchar *IP ç›¸æœºIPï¼Œint IPBufferLen ç›¸æœºIPé•¿åº¦,char * username ç›¸æœºç”¨æˆ·åï¼Œæ²¡æœ‰NULLï¼Œchar* password ç›¸æœºå¯†ç ï¼Œæ²¡æœ‰NULL
+//å‡½æ•°è¾“å‡ºï¼šæ— 
+//å‡½æ•°è¿”å›ï¼šæˆåŠŸè¿”å›æ‹¥æœ‰ç æµæ•°é‡ï¼Œ-1å¤±è´¥
+int getNumOfProfilesFromIP(char *IP,int IPBufferLen,char * usernameï¼Œchar* password);
 
 
 //listOfVideo
@@ -57,10 +57,10 @@ typedef struct{
 }videoNode;
 
 
-//º¯Êı×÷ÓÃ£º»ñÈ¡Ö¸¶¨Ïà»úÂëÁ÷ĞÅÏ¢
-//º¯ÊıÊäÈë£ºchar *IP Ïà»úIP£¬int IPBufferLen Ïà»úIP³¤¶È,char * username Ïà»úÓÃ»§Ãû£¬Ã»ÓĞNULL£¬char* password Ïà»úÃÜÂë£¬Ã»ÓĞNULL£¬
-//º¯ÊıÊä³ö£ºvideoNode *headVideo ÂëÁ÷ÁĞ±í
-//º¯Êı·µ»Ø£º³É¹¦·µ»ØÓµÓĞÂëÁ÷ÊıÁ¿£¬-1Ê§°Ü
+//å‡½æ•°ä½œç”¨ï¼šè·å–æŒ‡å®šç›¸æœºç æµä¿¡æ¯
+//å‡½æ•°è¾“å…¥ï¼šchar *IP ç›¸æœºIPï¼Œint IPBufferLen ç›¸æœºIPé•¿åº¦,char * username ç›¸æœºç”¨æˆ·åï¼Œæ²¡æœ‰NULLï¼Œchar* password ç›¸æœºå¯†ç ï¼Œæ²¡æœ‰NULLï¼Œ
+//å‡½æ•°è¾“å‡ºï¼švideoNode *headVideo ç æµåˆ—è¡¨
+//å‡½æ•°è¿”å›ï¼šæˆåŠŸè¿”å›æ‹¥æœ‰ç æµæ•°é‡ï¼Œ-1å¤±è´¥
 int getVideosInfoFromIP(char *IP,int IPBufferLen,videoNode *headVideo);
 
 OnvifOperation.dll
