@@ -89,7 +89,7 @@ extern "C" {
     //////URI         : pointer to the head of C-style URI string
     //////URIBufferLen: bytes of the URI string
     //on return: 0 success, -1 failure
-    ONVIFOPERATION_API int getURLFromIP(char* IP, size_t IPBufferLen, char* URL, size_t URLBufferLen, char* username, char* password);
+    ONVIFOPERATION_API int getURIFromIP(char* IP, size_t IPBufferLen, char* URI, size_t URLBufferLen, char* username, char* password);
 
     //function : get all onvif device URI
     /****************************************************
@@ -98,7 +98,7 @@ extern "C" {
     //input    : Num: number of all onvif device
     //output   : nodeList: pointer to the head of deviceInfoArray
     //on return: the number of onvif device info put into deviceInfoArray, -1 failure
-    ONVIFOPERATION_API int getAllDevURL(deviceInfo* deviceInfoArray, size_t num);
+    ONVIFOPERATION_API int getAllDevURI(deviceInfo* deviceInfoArray, size_t num);
 
     //function : get the number of profiles specified by IP
     //input    :

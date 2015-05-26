@@ -255,7 +255,8 @@ ONVIFOPERATION_API int searchDev(size_t waitTime)
     scopes.__item = "onvif://www.onvif.org";
     soap_default_wsdd__ProbeType(pSoap, &probe);
     probe.Scopes = &scopes;
-    probe.Types = "ns1:NetworkVideoTransmitter";
+    //probe.Types = "ns1:NetworkVideoTransmitter";
+    probe.Types = "";
 
     // set not duplicated
     for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
@@ -380,7 +381,7 @@ ONVIFOPERATION_API int getNumOfOnvifDev(void)
     return temp;
 }
 
-ONVIFOPERATION_API int getURLFromIP(char* IP, size_t IPBufferLen, char* URL, size_t URLBufferLen, char* username, char* password)
+ONVIFOPERATION_API int getURIFromIP(char* IP, size_t IPBufferLen, char* URL, size_t URLBufferLen, char* username, char* password)
 {
     while(listLocked)
     {
@@ -437,7 +438,7 @@ ONVIFOPERATION_API int getURLFromIP(char* IP, size_t IPBufferLen, char* URL, siz
     return 0;
 }
 
-ONVIFOPERATION_API int getAllDevURL(deviceInfo* deviceInfoArray, size_t num)
+ONVIFOPERATION_API int getAllDevURI(deviceInfo* deviceInfoArray, size_t num)
 {
     while(listLocked)
     {

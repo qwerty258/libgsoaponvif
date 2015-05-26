@@ -19,7 +19,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
     deviceInfo* deviceInfoArray = new deviceInfo[num];
 
-    getAllDevURL(deviceInfoArray, num);
+    getAllDevURI(deviceInfoArray, num);
 
     for(int i = 0; i < num; i++)
     {

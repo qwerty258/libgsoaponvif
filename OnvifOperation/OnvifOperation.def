@@ -3,8 +3,8 @@ EXPORTS
     initDll                @1
     searchDev              @2
     getNumOfOnvifDev       @3
-    getURLFromIP           @4
-    getAllDevURL           @5
+    getURIFromIP           @4
+    getAllDevURI           @5
     getNumOfProfilesFromIP @6
     getVideoInfoFromIP     @7
     clearDevList           @8

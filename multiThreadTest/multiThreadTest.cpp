@@ -20,7 +20,7 @@ DWORD WINAPI getAllDeviceURI(LPVOID lpParameter)
 
     deviceInfo* deviceInfoArray = new deviceInfo[num];
 
-    int result = getAllDevURL(deviceInfoArray, num);
+    int result = getAllDevURI(deviceInfoArray, num);
 
     if(-1 == result)
     {
@@ -65,7 +65,7 @@ DWORD WINAPI getURIbyIP(LPVOID lpParameter)
 
     char* URI = new char[256];
 
-    int num = getURLFromIP("192.168.10.142", strlen("192.168.10.142") + 1, URI, 256, "admin", "12345");
+    int num = getURIFromIP("192.168.10.142", strlen("192.168.10.142") + 1, URI, 256, "admin", "12345");
 
     if(-1 == num)
     {
