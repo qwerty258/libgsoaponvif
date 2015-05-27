@@ -13,39 +13,39 @@ int _tmain(int argc, _TCHAR* argv[])
 {
     system("pause");
 
-    initDll();
-    searchDev(1);
-    int num = getNumOfOnvifDev();
+    init_DLL();
+    search_ONVIF_IPC(1);
+    int num = get_number_of_IPCs();
 
-    deviceInfo* deviceInfoArray = new deviceInfo[num];
+    IPC_URI* IPC_URI_array = new IPC_URI[num];
 
-    getAllDevURI(deviceInfoArray, num);
+    get_all_IPC_URIs(IPC_URI_array, num);
 
     for(int i = 0; i < num; i++)
     {
-        cout << deviceInfoArray[i].ip << ":" << deviceInfoArray[i].URI << endl;
+        cout << IPC_URI_array[i].ip << ":" << IPC_URI_array[i].URI << endl;
     }
 
 
     cout << "-------------------------------------\n";
 
-    num = getNumOfProfilesFromIP(deviceInfoArray[0].ip, strlen(deviceInfoArray[0].ip) + 1, "admin", "12345");
+    num = get_number_of_IPC_profiles_according_to_IP(IPC_URI_array[0].ip, strlen(IPC_URI_array[0].ip) + 1, "admin", "12345");
 
     if(-1 == num)
     {
         cout << "File: " << __FILE__ << " Line: " << __LINE__ << ' ' << "getNumOfProfilesFromIP error" << endl;
     }
 
-    videoInfo* videoInfoArray = new videoInfo[num];
+    IPC_profiles* IPC_profiles_array = new IPC_profiles[num];
 
-    getVideoInfoFromIP(deviceInfoArray[0].ip, strlen(deviceInfoArray[0].ip) + 1, videoInfoArray, "admin", "12345");
+    get_IPC_profiles_according_to_IP(IPC_URI_array[0].ip, strlen(IPC_URI_array[0].ip) + 1, IPC_profiles_array, "admin", "12345");
 
-    cout << deviceInfoArray[0].ip << ':' << endl;
+    cout << IPC_URI_array[0].ip << ':' << endl;
 
     for(int i = 0; i < num; i++)
     {
         cout << "-------------" << i << "---------------\n";
-        switch(videoInfoArray[i].encoding)
+        switch(IPC_profiles_array[i].encoding)
         {
             case videoEncoding__JPEG:
                 cout << "Encoding: JPEG\n";
@@ -60,18 +60,18 @@ int _tmain(int argc, _TCHAR* argv[])
                 cout << "Encoding: Unknow\n";
                 break;
         }
-        cout << "Width: " << videoInfoArray[i].width << ' ' << "Height: " << videoInfoArray[i].height << endl;
-        cout << "FrameRateLimit: " << videoInfoArray[i].frame << endl;
-        cout << "URI: " << videoInfoArray[i].URI << endl;
+        cout << "Width: " << IPC_profiles_array[i].width << ' ' << "Height: " << IPC_profiles_array[i].height << endl;
+        cout << "FrameRateLimit: " << IPC_profiles_array[i].frame << endl;
+        cout << "URI: " << IPC_profiles_array[i].URI << endl;
     }
 
-    delete[] videoInfoArray;
-    videoInfoArray = NULL;
+    delete[] IPC_URI_array;
+    IPC_URI_array = NULL;
 
-    delete[] deviceInfoArray;
-    deviceInfoArray = NULL;
+    delete[] IPC_profiles_array;
+    IPC_profiles_array = NULL;
 
-    uninitDll();
+    uninit_DLL();
 
     system("pause");
 

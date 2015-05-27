@@ -8,43 +8,43 @@
 using namespace std;
 int _tmain(int argc, _TCHAR* argv[])
 {
-    cout << "\nsearch device\n\n";
-    system("pause");
-
-    if(-1 == initDll())
+    if(-1 == init_DLL())
     {
         cout << "initDll failed\n";
         system("pause");
         return -1;
     }
 
-    if(-1 == searchDev(1))
+    cout << "\nsearch device\n\n";
+    system("pause");
+
+    if(-1 == search_ONVIF_IPC(1))
     {
         cout << "search device failed\n";
         system("pause");
         return -1;
     }
 
-    int num = getNumOfOnvifDev();
+    int num = get_number_of_IPCs();
     if(-1 == num)
     {
-        cout << "getNumOfOnvifDev failed\n";
+        cout << "get_number_of_IPCs failed\n";
         system("pause");
         return -1;
     }
 
-    deviceInfo* deviceInfoArray = new deviceInfo[num];
+    IPC_URI* IPC_URI_array = new IPC_URI[num];
 
-    if(-1 == getAllDevURI(deviceInfoArray, num))
+    if(-1 == get_all_IPC_URIs(IPC_URI_array, num))
     {
-        cout << "getAllDevURI failed\n";
+        cout << "get_all_IPC_URIs failed\n";
         system("pause");
         return -1;
     }
 
     for(int i = 0; i < num; i++)
     {
-        cout << deviceInfoArray[i].ip << ":" << deviceInfoArray[i].URI << endl;
+        cout << IPC_URI_array[i].ip << ":" << IPC_URI_array[i].URI << endl;
     }
 
     cout << "-------------------------------------\n";
@@ -54,45 +54,45 @@ int _tmain(int argc, _TCHAR* argv[])
     cout << "\nGet URI by IP\n\n";
     system("pause");
 
-    if(-1 == getURIFromIP("192.168.10.185", sizeof("192.168.10.185"), URI, 256, "admin", "12345"))
+    if(-1 == get_IPC_URI_according_to_IP("192.168.10.185", sizeof("192.168.10.185"), URI, 256, "admin", "12345"))
     {
-        cout << "192.168.10.185 getURIFromIP failed\n";
+        cout << "192.168.10.185 get_IPC_URI_according_to_IP failed\n";
     }
     else
     {
         cout << "192.168.10.185:" << URI << endl;
     }
 
-    if(-1 == getURIFromIP("192.168.10.142", sizeof("192.168.10.142"), URI, 256, "admin", "12345"))
+    if(-1 == get_IPC_URI_according_to_IP("192.168.10.142", sizeof("192.168.10.142"), URI, 256, "admin", "12345"))
     {
-        cout << "192.168.10.142 getURIFromIP failed\n";
+        cout << "192.168.10.142 get_IPC_URI_according_to_IP failed\n";
     }
     else
     {
         cout << "192.168.10.142:" << URI << endl;
     }
 
-    if(-1 == getURIFromIP("192.168.10.147", sizeof("192.168.10.147"), URI, 256, "admin", "12345"))
+    if(-1 == get_IPC_URI_according_to_IP("192.168.10.147", sizeof("192.168.10.147"), URI, 256, "admin", "12345"))
     {
-        cout << "192.168.10.147 getURIFromIP failed\n";
+        cout << "192.168.10.147 get_IPC_URI_according_to_IP failed\n";
     }
     else
     {
         cout << "192.168.10.147:" << URI << endl;
     }
 
-    if(-1 == getURIFromIP("192.168.10.195", sizeof("192.168.10.195"), URI, 256, "admin", "12345"))
+    if(-1 == get_IPC_URI_according_to_IP("192.168.10.195", sizeof("192.168.10.195"), URI, 256, "admin", "12345"))
     {
-        cout << "192.168.10.195 getURIFromIP failed\n";
+        cout << "192.168.10.195 get_IPC_URI_according_to_IP failed\n";
     }
     else
     {
         cout << "192.168.10.195:" << URI << endl;
     }
 
-    if(-1 == getURIFromIP("192.168.10.141", sizeof("192.168.10.141"), URI, 256, "admin", "12345"))
+    if(-1 == get_IPC_URI_according_to_IP("192.168.10.141", sizeof("192.168.10.141"), URI, 256, "admin", "12345"))
     {
-        cout << "192.168.10.141 getURIFromIP failed\n";
+        cout << "192.168.10.141 get_IPC_URI_according_to_IP failed\n";
     }
     else
     {
@@ -101,77 +101,77 @@ int _tmain(int argc, _TCHAR* argv[])
 
     cout << "-------------------------------------\n";
 
-    if(-1 == getAllDevURI(deviceInfoArray, num))
+    if(-1 == get_all_IPC_URIs(IPC_URI_array, num))
     {
-        cout << "getAllDevURI failed\n";
+        cout << "get_all_IPC_URIs failed\n";
         system("pause");
         return -1;
     }
 
     for(int i = 0; i < num; i++)
     {
-        cout << deviceInfoArray[i].ip << ":" << deviceInfoArray[i].URI << endl;
+        cout << IPC_URI_array[i].ip << ":" << IPC_URI_array[i].URI << endl;
     }
 
     cout << "-------------------------------------\n";
 
-    delete[] deviceInfoArray;
+    delete[] IPC_URI_array;
 
     cout << "\nSearch again\n\n";
     system("pause");
 
-    if(-1 == searchDev(5))
+    if(-1 == search_ONVIF_IPC(1))
     {
         cout << "search device failed\n";
         system("pause");
         return -1;
     }
 
-    num = getNumOfOnvifDev();
-
-    deviceInfoArray = new deviceInfo[num];
+    num = get_number_of_IPCs();
 
     if(-1 == num)
     {
-        cout << "getNumOfOnvifDev failed\n";
+        cout << "get_number_of_IPCs failed\n";
         system("pause");
         return -1;
     }
 
+    IPC_URI_array = new IPC_URI[num];
+
     cout << "getNumOfOnvifDev: " << num << endl;
 
-    if(-1 == getAllDevURI(deviceInfoArray, num))
+    if(-1 == get_all_IPC_URIs(IPC_URI_array, num))
     {
-        cout << "getAllDevURI failed\n";
+        cout << "get_all_IPC_URIs failed\n";
         system("pause");
         return -1;
     }
 
     for(int i = 0; i < num; i++)
     {
-        cout << deviceInfoArray[i].ip << ":" << deviceInfoArray[i].URI << endl;
+        cout << IPC_URI_array[i].ip << ":" << IPC_URI_array[i].URI << endl;
     }
 
     cout << "-------------------------------------\n";
     cout << "\nresetDll\n\n";
     system("pause");
 
-    if(-1 == resetDll())
+    if(-1 == reset_DLL())
     {
-        cout << "resetDll failed\n";
+        cout << "reset_DLL failed\n";
         system("pause");
         return -1;
     }
 
-    cout << "getNumOfOnvifDev: " << getNumOfOnvifDev() << endl;
+    cout << "getNumOfOnvifDev: " << get_number_of_IPCs() << endl;
 
-    delete[] deviceInfoArray;
+    delete[] IPC_URI_array;
 
     delete URI;
 
-    if(-1 == uninitDll())
+    if(-1 == uninit_DLL())
     {
-        cout << "uninitDll failed\n";
+        cout << "uninit_DLL failed\n";
         system("pause");
         return -1;
     }

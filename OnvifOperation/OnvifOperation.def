@@ -1,13 +1,13 @@
 LIBRARY OnvifOperation
 EXPORTS
-    initDll                @1
-    searchDev              @2
-    getNumOfOnvifDev       @3
-    getURIFromIP           @4
-    getAllDevURI           @5
-    getNumOfProfilesFromIP @6
-    getVideoInfoFromIP     @7
-    clearDevList           @8
-    uninitDll              @9
-    resetDll               @10
-    test                   @11
+	init_DLL									@1
+	uninit_DLL									@2
+	reset_DLL									@3
+	search_ONVIF_IPC							@4
+	clear_device_list							@5
+	get_number_of_IPCs							@6
+	get_number_of_NVRs							@7
+	get_all_IPC_URIs							@8
+	get_IPC_URI_according_to_IP					@9
+	get_number_of_IPC_profiles_according_to_IP	@10
+	get_IPC_profiles_according_to_IP			@11

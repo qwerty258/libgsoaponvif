@@ -9,35 +9,35 @@ DWORD WINAPI getAllDeviceURI(LPVOID lpParameter)
 {
     std::cout << "Thread getAllDeviceURI begin\n";
 
-    int num = getNumOfOnvifDev();
+    int num = get_number_of_IPCs();
 
     if(-1 == num)
     {
-        std::cout << "Thread getAllDeviceURI getNumOfOnvifDev failed\n";
+        std::cout << "Thread getAllDeviceURI get_number_of_IPCs failed\n";
         std::cout << "Thread getAllDeviceURI end\n";
         return num;
     }
 
-    deviceInfo* deviceInfoArray = new deviceInfo[num];
+    IPC_URI* IPC_URI_array = new IPC_URI[num];
 
-    int result = getAllDevURI(deviceInfoArray, num);
+    int result = get_all_IPC_URIs(IPC_URI_array, num);
 
     if(-1 == result)
     {
-        std::cout << "getAllDevURI failed\n";
+        std::cout << "Thread getAllDeviceURI get_all_IPC_URIs failed\n";
         std::cout << "Thread getAllDeviceURI end\n";
-        delete[] deviceInfoArray;
+        delete[] IPC_URI_array;
         return num;
     }
 
     for(int i = 0; i < num; i++)
     {
-        std::cout << deviceInfoArray[i].ip << ':' << deviceInfoArray[i].URI << std::endl;
+        std::cout << IPC_URI_array[i].ip << ':' << IPC_URI_array[i].URI << std::endl;
     }
 
     std::cout << "Thread getAllDeviceURI end\n";
 
-    delete[] deviceInfoArray;
+    delete[] IPC_URI_array;
 
     return num;
 }
@@ -46,10 +46,10 @@ DWORD WINAPI searchDevice(LPVOID lpParameter)
 {
     std::cout << "Thread searchDevice begin\n";
 
-    int  num = searchDev(1);
+    int  num = search_ONVIF_IPC(1);
     if(-1 == num)
     {
-        std::cout << "searchDev failed\n";
+        std::cout << "Thread searchDevice searchDev failed\n";
         std::cout << "Thread searchDevice end\n";
         return num;
     }
@@ -65,11 +65,11 @@ DWORD WINAPI getURIbyIP(LPVOID lpParameter)
 
     char* URI = new char[256];
 
-    int num = getURIFromIP("192.168.10.142", strlen("192.168.10.142") + 1, URI, 256, "admin", "12345");
+    int num = get_IPC_URI_according_to_IP("192.168.10.142", strlen("192.168.10.142") + 1, URI, 256, "admin", "12345");
 
     if(-1 == num)
     {
-        std::cout << "getURIFromIP failed\n";
+        std::cout << "Thread getURIbyIP get_IPC_URI_according_to_IP failed\n";
         std::cout << "Thread getURIbyIP end\n";
         delete[] URI;
         return num;
@@ -88,24 +88,24 @@ DWORD WINAPI getVideoInfoByIP(LPVOID lpParameter)
 {
     std::cout << "Thread getNumOfProfilesByIP begin\n";
 
-    int num = getNumOfProfilesFromIP("192.168.10.142", strlen("192.168.10.142") + 1, "admin", "12345");
+    int num = get_number_of_IPC_profiles_according_to_IP("192.168.10.142", strlen("192.168.10.142") + 1, "admin", "12345");
 
     if(-1 == num)
     {
-        std::cout << "getNumOfProfilesFromIP failed\n";
+        std::cout << "Thread getNumOfProfilesByIP get_number_of_IPC_profiles_according_to_IP failed\n";
         std::cout << "Thread getNumOfProfilesByIP end\n";
         return num;
     }
 
-    videoInfo* videoInfoArray = new videoInfo[num];
+    IPC_profiles* IPC_profiles_array = new IPC_profiles[num];
 
-    int result = getVideoInfoFromIP("192.168.10.142", strlen("192.168.10.142") + 1, videoInfoArray, "admin", "12345");
+    int result = get_IPC_profiles_according_to_IP("192.168.10.142", strlen("192.168.10.142") + 1, IPC_profiles_array, "admin", "12345");
 
     if(-1 == result)
     {
-        std::cout << "getVideoInfoFromIP failed\n";
+        std::cout << "Thread getNumOfProfilesByIP get_IPC_profiles_according_to_IP failed\n";
         std::cout << "Thread getNumOfProfilesByIP end\n";
-        delete[] videoInfoArray;
+        delete[] IPC_profiles_array;
         return num;
     }
 
@@ -114,7 +114,7 @@ DWORD WINAPI getVideoInfoByIP(LPVOID lpParameter)
     for(int i = 0; i < num; i++)
     {
         std::cout << "-------------" << i << "---------------\n";
-        switch(videoInfoArray[i].encoding)
+        switch(IPC_profiles_array[i].encoding)
         {
             case videoEncoding__JPEG:
                 std::cout << "Encoding: JPEG\n";
@@ -129,21 +129,21 @@ DWORD WINAPI getVideoInfoByIP(LPVOID lpParameter)
                 std::cout << "Encoding: Unknow\n";
                 break;
         }
-        std::cout << "Width: " << videoInfoArray[i].width << ' ' << "Height: " << videoInfoArray[i].height << std::endl;
-        std::cout << "FrameRateLimit: " << videoInfoArray[i].frame << std::endl;
-        std::cout << "URI: " << videoInfoArray[i].URI << std::endl;
+        std::cout << "Width: " << IPC_profiles_array[i].width << ' ' << "Height: " << IPC_profiles_array[i].height << std::endl;
+        std::cout << "FrameRateLimit: " << IPC_profiles_array[i].frame << std::endl;
+        std::cout << "URI: " << IPC_profiles_array[i].URI << std::endl;
     }
 
     std::cout << "Thread getNumOfProfilesByIP end\n";
 
-    delete[] videoInfoArray;
+    delete[] IPC_profiles_array;
 
     return result;
 }
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-    initDll();
+    init_DLL();
 
     HANDLE handleArray[5];
 
@@ -155,7 +155,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
     WaitForMultipleObjects(5, handleArray, TRUE, INFINITE);
 
-    uninitDll();
+    uninit_DLL();
 
     system("pause");
 

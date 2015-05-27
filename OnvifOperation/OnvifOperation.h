@@ -32,49 +32,77 @@
 extern "C" {
 #endif // __cplusplus
 
-    //device info struct
+    // device info struct
     typedef struct
     {
         char ip[17];
         char URI[256];
-    }deviceInfo;
+    }IPC_URI;
 
-    // tt:VideoEncoding
-    enum videoEncoding
+    // VideoEncoding
+    enum video_encoding
     {
         videoEncoding__JPEG = 0,
         videoEncoding__MPEG4 = 1,
         videoEncoding__H264 = 2
     };
 
-    //video info struct
+    // video info struct
     typedef struct
     {
         char URI[256];
         int frame;
         int width;
         int height;
-        enum videoEncoding encoding;
-    }videoInfo;
-
+        enum video_encoding encoding;
+    }IPC_profiles;
 
     //function : initial dll, locate some memory
     //on return: 0 success, -1 failure
-    ONVIFOPERATION_API int initDll(void);
+    //thread unsafe
+    ONVIFOPERATION_API int init_DLL(void);
 
     //function : uninitial dll
     //on return: 0 success, -1 failure
-    ONVIFOPERATION_API int uninitDll(void);
+    //thread unsafe
+    ONVIFOPERATION_API int uninit_DLL(void);
+
+    //function : reset everything in dll, think before use this function!
+    //on return: 0 success, -1 failure. if failed, reload the DLL.
+    //thread unsafe
+    ONVIFOPERATION_API int reset_DLL(void);
 
     //function : search onvif device
     //input    :
     //////waitTime    : interval for cameras to response, in seconds
     //on return: 0 success, -1 failure
-    ONVIFOPERATION_API int searchDev(size_t waitTime);
+    //thread safe
+    ONVIFOPERATION_API int search_ONVIF_IPC(size_t waitTime);
 
-    //function : get number of onvif device
-    //on return: number of onvif device, -1 something went wrong
-    ONVIFOPERATION_API int getNumOfOnvifDev(void);
+    //function : clear the onvif device list maintained by this DLL
+    //on return: 0 success, -1 failure.
+    //thread safe
+    ONVIFOPERATION_API int clear_device_list(void);
+
+    //function : get number of onvif IPC
+    //on return: number of onvif IPC, -1 something went wrong
+    //thread safe
+    ONVIFOPERATION_API int get_number_of_IPCs(void);
+
+    //function : get number of onvif NVR
+    //on return: number of onvif NVR, -1 something went wrong
+    //thread safe
+    ONVIFOPERATION_API int get_number_of_NVRs(void);
+
+    //function : get all onvif device URI
+    /****************************************************
+    you should locate all the memory this function needs
+    ****************************************************/
+    //input    : Num: number of all onvif device
+    //output   : nodeList: pointer to the head of deviceInfoArray
+    //on return: the number of onvif device info put into deviceInfoArray, -1 failure
+    //thread safe
+    ONVIFOPERATION_API int get_all_IPC_URIs(IPC_URI* IPC_URI_array, size_t num);
 
     //function : get the main URI specified by IP
     /****************************************************
@@ -89,16 +117,7 @@ extern "C" {
     //////URI         : pointer to the head of C-style URI string
     //////URIBufferLen: bytes of the URI string
     //on return: 0 success, -1 failure
-    ONVIFOPERATION_API int getURIFromIP(char* IP, size_t IPBufferLen, char* URI, size_t URLBufferLen, char* username, char* password);
-
-    //function : get all onvif device URI
-    /****************************************************
-     you should locate all the memory this function needs
-     ****************************************************/
-    //input    : Num: number of all onvif device
-    //output   : nodeList: pointer to the head of deviceInfoArray
-    //on return: the number of onvif device info put into deviceInfoArray, -1 failure
-    ONVIFOPERATION_API int getAllDevURI(deviceInfo* deviceInfoArray, size_t num);
+    ONVIFOPERATION_API int get_IPC_URI_according_to_IP(char* IP, size_t IPBufferLen, char* URL, size_t URLBufferLen, char* username="", char* password="");
 
     //function : get the number of profiles specified by IP
     //input    :
@@ -107,7 +126,7 @@ extern "C" {
     //////username    : C-style string of user name
     //////password    : C-sytle string of pass word
     //on return: the number of profiles, -1 failure
-    ONVIFOPERATION_API int getNumOfProfilesFromIP(char* IP, size_t IPBufferLen, char* username = "", char* password = "");
+    ONVIFOPERATION_API int get_number_of_IPC_profiles_according_to_IP(char* IP, size_t IPBufferLen, char* username="", char* password="");
 
     //function : get the array of profiles specified by IP
     //input    :
@@ -117,15 +136,7 @@ extern "C" {
     //////password    : C-sytle string of pass word
     //output   : nodeList: pointer to the head of videoNode
     //on return: the number of profiles, -1 failure
-    ONVIFOPERATION_API int getVideoInfoFromIP(char* IP, size_t IPBufferLen, videoInfo* videoInfoArray, char* username = "", char* password = "");
-
-    //function : clear the onvif device list maintained by this DLL
-    //on return: 0 success, -1 failure.
-    ONVIFOPERATION_API int clearDevList(void);
-
-    //function : reset everything in dll, think before use this function!
-    //on return: 0 success, -1 failure. if failed, reload the DLL.
-    ONVIFOPERATION_API int resetDll(void);
+    ONVIFOPERATION_API int get_IPC_profiles_according_to_IP(char *IP, size_t IPBufferLen, IPC_profiles* IPC_profiles_array, char* username="", char* password="");
 
     ONVIFOPERATION_API void test(void);
 
