@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "getVideoInfo", "getVideoInf
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "multiThreadTest", "multiThreadTest\multiThreadTest.vcxproj", "{161145CE-63A0-4CDF-B5E3-286E976AF3CE}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testMemoryLeak", "testMemoryLeak\testMemoryLeak.vcxproj", "{E3A84817-DAA6-49F5-9DE7-A6FA3DD48F9A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -33,6 +35,10 @@ Global
 		{161145CE-63A0-4CDF-B5E3-286E976AF3CE}.Debug|Win32.Build.0 = Debug|Win32
 		{161145CE-63A0-4CDF-B5E3-286E976AF3CE}.Release|Win32.ActiveCfg = Release|Win32
 		{161145CE-63A0-4CDF-B5E3-286E976AF3CE}.Release|Win32.Build.0 = Release|Win32
+		{E3A84817-DAA6-49F5-9DE7-A6FA3DD48F9A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E3A84817-DAA6-49F5-9DE7-A6FA3DD48F9A}.Debug|Win32.Build.0 = Debug|Win32
+		{E3A84817-DAA6-49F5-9DE7-A6FA3DD48F9A}.Release|Win32.ActiveCfg = Release|Win32
+		{E3A84817-DAA6-49F5-9DE7-A6FA3DD48F9A}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
