@@ -73,10 +73,9 @@ extern "C" {
     ONVIFOPERATION_API int reset_DLL(void);
 
     //function : search onvif device
-    //input    :
-    //////waitTime    : interval for cameras to response, in seconds
     //on return: 0 success, -1 failure
     //thread safe
+    //waitTime : interval for cameras to response, in seconds
     ONVIFOPERATION_API int search_ONVIF_IPC(size_t waitTime);
 
     //function : clear the onvif device list maintained by this DLL
@@ -95,48 +94,44 @@ extern "C" {
     ONVIFOPERATION_API int get_number_of_NVRs(void);
 
     //function : get all onvif device URI
-    /****************************************************
-    you should locate all the memory this function needs
-    ****************************************************/
-    //input    : Num: number of all onvif device
-    //output   : nodeList: pointer to the head of deviceInfoArray
     //on return: the number of onvif device info put into deviceInfoArray, -1 failure
     //thread safe
+    /* !!!! YOU SHOULD ALLOCATE THE IPC_URI_array BUFFER !!!! */
+    //Num          : number of all onvif IPC, returned by get_number_of_IPCs
+    //IPC_URI_array: pointer to the head of IPC_URI_array buffer you allocated
     ONVIFOPERATION_API int get_all_IPC_URIs(IPC_URI* IPC_URI_array, size_t num);
 
-    //function : get the main URI specified by IP
-    /****************************************************
-     you should locate all the memory this function needs
-     ****************************************************/
-    //input    :
-    //////IP          : pointer to the head of C-style IP string
-    //////IPBufferLen : bytes of the IP string
-    //////username    : C-style string of user name
-    //////password    : C-sytle string of pass word
-    //output   :
-    //////URI         : pointer to the head of C-style URI string
-    //////URIBufferLen: bytes of the URI string
+    //function : get the main URI according to IP
     //on return: 0 success, -1 failure
-    ONVIFOPERATION_API int get_IPC_URI_according_to_IP(char* IP, size_t IPBufferLen, char* URL, size_t URLBufferLen, char* username="", char* password="");
+    //thread safe
+    /* !!!! YOU SHOULD ALLOCATE THE URI BUFFER !!!! */
+    //IP          : pointer to the head of C-style IP string buffer
+    //IPBufferLen : IP string buffer size, in bytes
+    //username    : C-style string of user name
+    //password    : C-sytle string of pass word
+    //URI         : pointer to the head of C-style URI string buffer you allocated
+    //URIBufferLen: URI string buffer size, in bytes
+    ONVIFOPERATION_API int get_IPC_URI_according_to_IP(char* IP, size_t IPBufferLen, char* URI, size_t URLBufferLen, char* username = "", char* password = "");
 
-    //function : get the number of profiles specified by IP
-    //input    :
-    //////IP          : pointer to the head of C-style IP string
-    //////IPBufferLen : bytes of the IP string
-    //////username    : C-style string of user name
-    //////password    : C-sytle string of pass word
+    //function : get the number of profiles according to IP
     //on return: the number of profiles, -1 failure
-    ONVIFOPERATION_API int get_number_of_IPC_profiles_according_to_IP(char* IP, size_t IPBufferLen, char* username="", char* password="");
+    //thread safe
+    //IP          : pointer to the head of C-style IP string
+    //IPBufferLen : IP string buffer size, in bytes
+    //username    : C-style string of user name
+    //password    : C-sytle string of pass word
+    ONVIFOPERATION_API int get_number_of_IPC_profiles_according_to_IP(char* IP, size_t IPBufferLen, char* username = "", char* password = "");
 
-    //function : get the array of profiles specified by IP
-    //input    :
-    //////IP          : pointer to the head of C-style IP string
-    //////IPBufferLen : bytes of the IP string
-    //////username    : C-style string of user name
-    //////password    : C-sytle string of pass word
-    //output   : nodeList: pointer to the head of videoNode
+    //function : get the array of profiles according to IP
     //on return: the number of profiles, -1 failure
-    ONVIFOPERATION_API int get_IPC_profiles_according_to_IP(char *IP, size_t IPBufferLen, IPC_profiles* IPC_profiles_array, char* username="", char* password="");
+    //thread safe
+    /* !!!! YOU SHOULD ALLOCATE THE IPC_profiles_array BUFFER !!!! */
+    //IP          : pointer to the head of C-style IP string
+    //IPBufferLen : IP string buffer size, in bytes
+    //username    : C-style string of user name
+    //password    : C-sytle string of pass word
+    //IPC_profiles_array: pointer to the head of IPC_profiles_array buffer you allocated
+    ONVIFOPERATION_API int get_IPC_profiles_according_to_IP(char* IP, size_t IPBufferLen, IPC_profiles* IPC_profiles_array, char* username = "", char* password = "");
 
     ONVIFOPERATION_API void test(void);
 

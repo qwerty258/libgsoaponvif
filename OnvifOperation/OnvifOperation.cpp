@@ -496,7 +496,7 @@ ONVIFOPERATION_API int get_all_IPC_URIs(IPC_URI* IPC_URI_array, size_t num)
     }
 }
 
-ONVIFOPERATION_API int get_IPC_URI_according_to_IP(char* IP, size_t IPBufferLen, char* URL, size_t URLBufferLen, char* username, char* password)
+ONVIFOPERATION_API int get_IPC_URI_according_to_IP(char* IP, size_t IPBufferLen, char* URI, size_t URLBufferLen, char* username, char* password)
 {
     while(device_list_locked)
     {
@@ -504,7 +504,7 @@ ONVIFOPERATION_API int get_IPC_URI_according_to_IP(char* IP, size_t IPBufferLen,
     }
     device_list_locked = true;
 
-    if(NULL == IP || NULL == URL || NULL == username || NULL == password || strlen(IP) + 1 > IPBufferLen || !initialsuccess || !searchsuccess)
+    if(NULL == IP || NULL == URI || NULL == username || NULL == password || strlen(IP) + 1 > IPBufferLen || !initialsuccess || !searchsuccess)
     {
         device_list_locked = false;
         return -1;
@@ -547,7 +547,7 @@ ONVIFOPERATION_API int get_IPC_URI_according_to_IP(char* IP, size_t IPBufferLen,
         return -1;
     }
 
-    if(!strncpy(URL, (*deviceInfoListIterator)->getStreamUriResponse.MediaUri->Uri.c_str(), URLBufferLen))
+    if(!strncpy(URI, (*deviceInfoListIterator)->getStreamUriResponse.MediaUri->Uri.c_str(), URLBufferLen))
     {
         device_list_locked = false;
         return -1;
