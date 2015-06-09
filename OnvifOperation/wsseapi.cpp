@@ -1532,7 +1532,7 @@ used to sign the message body. The "SCT" is a wsu:Id, which is used as a
 reference to sign the token.
 
 */
-#define _CRT_SECURE_NO_WARNINGS
+
 #include "wsseapi.h"
 #include "threads.h"	/* need threads to enable mutex for MT */
 

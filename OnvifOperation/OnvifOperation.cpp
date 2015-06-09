@@ -1,6 +1,6 @@
 // OnvifOperation.cpp : Defines the exported functions for the DLL application.
 //
-#define _CRT_SECURE_NO_WARNINGS
+
 #include <SDKDDKVer.h>
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 // Windows Header Files:

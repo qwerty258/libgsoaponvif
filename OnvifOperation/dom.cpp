@@ -45,7 +45,7 @@ compiling, linking, and/or using OpenSSL is allowed.
 A commercial use license is available from Genivia, Inc., contact@genivia.com
 --------------------------------------------------------------------------------
 */
-#define _CRT_SECURE_NO_WARNINGS
+
 #include "stdsoap2.h"
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_xsd__anyType(struct soap*, struct soap_dom_element const*);

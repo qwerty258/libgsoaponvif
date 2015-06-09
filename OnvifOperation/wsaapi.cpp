@@ -507,7 +507,7 @@ Note that SOAP 1.1 or SOAP 1.2 parameters are set based on the 1.1/1.2
 messaging requirements.
 
 */
-#define _CRT_SECURE_NO_WARNINGS
+
 #include "wsaapi.h"
 
 #ifdef __cplusplus
