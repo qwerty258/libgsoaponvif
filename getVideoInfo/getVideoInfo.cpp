@@ -14,7 +14,7 @@ int _tmain(int argc, _TCHAR* argv[])
     system("pause");
 
     init_DLL();
-    search_ONVIF_IPC(1);
+    search_ONVIF_device(1);
     int num = get_number_of_IPCs();
 
     IPC_URI* IPC_URI_array = new IPC_URI[num];

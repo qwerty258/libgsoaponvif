@@ -3,7 +3,7 @@ EXPORTS
 	init_DLL									@1
 	uninit_DLL									@2
 	reset_DLL									@3
-	search_ONVIF_IPC							@4
+	search_ONVIF_device							@4
 	clear_device_list							@5
 	get_number_of_IPCs							@6
 	get_number_of_NVRs							@7

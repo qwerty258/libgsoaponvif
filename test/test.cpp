@@ -18,7 +18,7 @@ int _tmain(int argc, _TCHAR* argv[])
     cout << "\nsearch device\n\n";
     system("pause");
 
-    if(-1 == search_ONVIF_IPC(1))
+    if(-1 == search_ONVIF_device(1))
     {
         cout << "search device failed\n";
         system("pause");
@@ -120,7 +120,7 @@ int _tmain(int argc, _TCHAR* argv[])
     cout << "\nSearch again\n\n";
     system("pause");
 
-    if(-1 == search_ONVIF_IPC(1))
+    if(-1 == search_ONVIF_device(1))
     {
         cout << "search device failed\n";
         system("pause");

@@ -1,17 +1,17 @@
-//**************************************************************
+//************************************
 // DLL usage :
-// initDll first(get some memory from system), then searchDev.
-// Now you can getNumOfOnvifDev, getURIFromIP, getAllDevURI.
-// If you added new onvif device, call searchDev again and you
-// should found new device using getURIFromIP and getAllDevURI.
-// when you done, please call uninitDll to release memory.
-//**************************************************************
+// init_DLL first(get some memory from system), then search_ONVIF_device.
+// Now you can get_number_of_IPCs, get_IPC_URI_according_to_IP, get_all_IPC_URIs.
+// If you added new onvif device, call search_ONVIF_device again and you
+// should found new device using get_IPC_URI_according_to_IP and get_all_IPC_URIs.
+// when you done, please call uninit_DLL to release memory.
+//************************************
 
-/**************************************************************
- *If there is VMware adapter, please disable it; otherwise
- *multicast package will end up somewhere unknown.
- *Allow the program through fire wall.
- **************************************************************/
+//************************************
+// If there is VMware adapter, please disable it;
+// otherwise multicast package will end up somewhere unknown.
+// Allow the program through fire wall.
+//************************************
 
 // The following ifdef block is the standard way of creating macros which make exporting 
 // from a DLL simpler. All files within this DLL are compiled with the ONVIFOPERATION_EXPORTS
@@ -81,9 +81,9 @@ extern "C" {
     //************************************
     // function:  search onvif device. thread safe
     // Returns:   int: 0 success, -1 failure
-    // Parameter: size_t waitTime: interval for cameras to response, in seconds
+    // Parameter: int waitTime: interval for cameras to response, when > 0, gives socket recv timeout in seconds, < 0 in usec
     //************************************
-    ONVIFOPERATION_API int search_ONVIF_IPC(size_t waitTime);
+    ONVIFOPERATION_API int search_ONVIF_device(int waitTime);
 
     //************************************
     // function:  clear the onvif device list maintained by this DLL. thread safe

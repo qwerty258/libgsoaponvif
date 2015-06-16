@@ -46,7 +46,7 @@ DWORD WINAPI searchDevice(LPVOID lpParameter)
 {
     std::cout << "Thread searchDevice begin\n";
 
-    int  num = search_ONVIF_IPC(1);
+    int  num = search_ONVIF_device(1);
     if(-1 == num)
     {
         std::cout << "Thread searchDevice searchDev failed\n";
@@ -148,10 +148,11 @@ int _tmain(int argc, _TCHAR* argv[])
     HANDLE handleArray[5];
 
     handleArray[1] = CreateThread(NULL, 0, searchDevice, NULL, 0, NULL);
-    handleArray[4] = CreateThread(NULL, 0, searchDevice, NULL, 0, NULL);
+    Sleep(1000);
     handleArray[0] = CreateThread(NULL, 0, getAllDeviceURI, NULL, 0, NULL);
     handleArray[2] = CreateThread(NULL, 0, getURIbyIP, NULL, 0, NULL);
     handleArray[3] = CreateThread(NULL, 0, getVideoInfoByIP, NULL, 0, NULL);
+    handleArray[4] = CreateThread(NULL, 0, searchDevice, NULL, 0, NULL);
 
     WaitForMultipleObjects(5, handleArray, TRUE, INFINITE);
 

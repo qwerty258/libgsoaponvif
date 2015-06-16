@@ -29,6 +29,7 @@ typedef struct Container
 }device_info_container;
 
 static soap*                                  pSoap;
+static soap*                                  pSoapForSearch;
 static wsdd__ScopesType                       scopes;
 static SOAP_ENV__Header                       header;
 
@@ -45,7 +46,6 @@ static tt__Transport*                         pTemp2;
 static tt__Transport*                         pTemp3;
 
 static bool initialsuccess = false;
-static bool searchsuccess = false;
 static bool device_list_locked = false;
 
 int getRTSP(vector<device_info_container*>::iterator& Iterator, char* username, char* password)
@@ -120,6 +120,12 @@ ONVIFOPERATION_API int init_DLL(void)
         return -1;
     }
 
+    pSoapForSearch = soap_new1(SOAP_IO_DEFAULT | SOAP_XML_IGNORENS); // ignore namespace, avoid namespace mismatch
+    if(NULL == pSoap)
+    {
+        return -1;
+    }
+
     getCapabilities.Category.resize(1);
     getCapabilities.Category[0] = tt__CapabilityCategory__Media;
 
@@ -172,14 +178,18 @@ ONVIFOPERATION_API int uninit_DLL(void)
     pTemp2 = NULL;
     pTemp1 = NULL;
 
+    soap_destroy(pSoapForSearch);
+    soap_end(pSoapForSearch);
+    soap_done(pSoapForSearch);
+
     soap_destroy(pSoap);
     soap_end(pSoap);
     soap_done(pSoap);
 
+    pSoapForSearch = NULL;
     pSoap = NULL;
 
     initialsuccess = false;
-    searchsuccess = false;
 
     return 0;
 }
@@ -198,44 +208,38 @@ ONVIFOPERATION_API int reset_DLL(void)
     return 0;
 }
 
-ONVIFOPERATION_API int search_ONVIF_IPC(size_t waitTime)
+ONVIFOPERATION_API int search_ONVIF_device(int waitTime)
 {
-    while(device_list_locked)
-    {
-        Sleep(200);
-    }
-    device_list_locked = true;
-
-
     if(!initialsuccess)
     {
-        searchsuccess = false;
-        device_list_locked = false;
         return -1;
     }
 
-    soap_default_SOAP_ENV__Header(pSoap, &header);
-    soap_set_namespaces(pSoap, probeNamespace);
-    pSoap->recv_timeout = waitTime;
+    soap_default_SOAP_ENV__Header(pSoapForSearch, &header);
+    soap_set_namespaces(pSoapForSearch, probeNamespace);
+    pSoapForSearch->recv_timeout = waitTime;
 
-    header.wsa__MessageID = (char*)soap_wsa_rand_uuid(pSoap);
+    header.wsa__MessageID = (char*)soap_wsa_rand_uuid(pSoapForSearch);
     if(NULL == header.wsa__MessageID)
     {
-        searchsuccess = false;
-        device_list_locked = false;
         return -1;
     }
 
     header.wsa__To = "urn:schemas-xmlsoap-org:ws:2005:04:discovery";
     header.wsa__Action = "http://schemas.xmlsoap.org/ws/2005/04/discovery/Probe";
-    pSoap->header = &header;
+    pSoapForSearch->header = &header;
 
-    soap_default_wsdd__ScopesType(pSoap, &scopes);
+    soap_default_wsdd__ScopesType(pSoapForSearch, &scopes);
     scopes.__item = "onvif://www.onvif.org";
-    soap_default_wsdd__ProbeType(pSoap, &probe);
+    soap_default_wsdd__ProbeType(pSoapForSearch, &probe);
     probe.Scopes = &scopes;
     probe.Types = "ns1:NetworkVideoTransmitter";
     //probe.Types = "NetworkVideoTransmitter";
+
+    if(SOAP_OK != soap_send___wsdd__Probe(pSoapForSearch, "soap.udp://239.255.255.250:3702", NULL, &probe))
+    {
+        return -1;
+    }
 
     // set not duplicated
     for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
@@ -243,18 +247,17 @@ ONVIFOPERATION_API int search_ONVIF_IPC(size_t waitTime)
         (*deviceInfoListIterator)->duplicated = FALSE;
     }
 
-    if(SOAP_OK != soap_send___wsdd__Probe(pSoap, "soap.udp://239.255.255.250:3702", NULL, &probe))
+    while(device_list_locked)
     {
-        searchsuccess = false;
-        device_list_locked = false;
-        return -1;
+        Sleep(200);
     }
+    device_list_locked = true;
 
     // get match result and put into vector
     while(TRUE)
     {
         device_info_container* pTempDeviceInfoContainer = new device_info_container;
-        if(SOAP_OK != soap_recv___wsdd__ProbeMatches(pSoap, &pTempDeviceInfoContainer->probeMatches))
+        if(SOAP_OK != soap_recv___wsdd__ProbeMatches(pSoapForSearch, &pTempDeviceInfoContainer->probeMatches))
         {
             delete pTempDeviceInfoContainer;
             break;
@@ -335,7 +338,6 @@ ONVIFOPERATION_API int search_ONVIF_IPC(size_t waitTime)
     }
 
     device_list_locked = false;
-    searchsuccess = true;
 
     return 0;
 }
@@ -429,7 +431,7 @@ ONVIFOPERATION_API int get_all_IPC_URIs(IPC_URI* IPC_URI_array, size_t num)
     }
     device_list_locked = true;
 
-    if(NULL == IPC_URI_array || !initialsuccess || !searchsuccess)
+    if(NULL == IPC_URI_array || !initialsuccess)
     {
         device_list_locked = false;
         return -1;
@@ -504,7 +506,7 @@ ONVIFOPERATION_API int get_IPC_URI_according_to_IP(char* IP, size_t IPBufferLen,
     }
     device_list_locked = true;
 
-    if(NULL == IP || NULL == URI || NULL == username || NULL == password || strlen(IP) + 1 > IPBufferLen || !initialsuccess || !searchsuccess)
+    if(NULL == IP || NULL == URI || NULL == username || NULL == password || strlen(IP) + 1 > IPBufferLen || !initialsuccess)
     {
         device_list_locked = false;
         return -1;
@@ -566,7 +568,7 @@ ONVIFOPERATION_API int get_number_of_IPC_profiles_according_to_IP(char* IP, size
     }
     device_list_locked = true;
 
-    if(NULL == IP || strlen(IP) + 1 > IPBufferLen || !initialsuccess || !searchsuccess)
+    if(NULL == IP || strlen(IP) + 1 > IPBufferLen || !initialsuccess)
     {
         device_list_locked = false;
         return -1;
