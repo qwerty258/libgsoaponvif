@@ -51,7 +51,7 @@ extern "C" {
     typedef struct
     {
         char URI[256];
-        int frame;
+        int frame_rate_limit;
         int width;
         int height;
         enum video_encoding encoding;

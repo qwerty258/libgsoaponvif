@@ -130,7 +130,7 @@ DWORD WINAPI getVideoInfoByIP(LPVOID lpParameter)
                 break;
         }
         std::cout << "Width: " << IPC_profiles_array[i].width << ' ' << "Height: " << IPC_profiles_array[i].height << std::endl;
-        std::cout << "FrameRateLimit: " << IPC_profiles_array[i].frame << std::endl;
+        std::cout << "FrameRateLimit: " << IPC_profiles_array[i].frame_rate_limit << std::endl;
         std::cout << "URI: " << IPC_profiles_array[i].URI << std::endl;
     }
 

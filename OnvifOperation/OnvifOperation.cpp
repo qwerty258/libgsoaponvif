@@ -241,17 +241,17 @@ ONVIFOPERATION_API int search_ONVIF_device(int waitTime)
         return -1;
     }
 
-    // set not duplicated
-    for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
-    {
-        (*deviceInfoListIterator)->duplicated = FALSE;
-    }
-
     while(device_list_locked)
     {
         Sleep(200);
     }
     device_list_locked = true;
+
+    // set not duplicated
+    for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
+    {
+        (*deviceInfoListIterator)->duplicated = FALSE;
+    }
 
     // get match result and put into vector
     while(TRUE)
@@ -677,7 +677,7 @@ ONVIFOPERATION_API int get_IPC_profiles_according_to_IP(char *IP, size_t IPBuffe
     {
         memset(&IPC_profiles_array[i], 0x0, sizeof(IPC_profiles));
         IPC_profiles_array[i].encoding = (enum video_encoding)(*deviceInfoListIterator)->getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Encoding;
-        IPC_profiles_array[i].frame = (*deviceInfoListIterator)->getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->RateControl->FrameRateLimit;
+        IPC_profiles_array[i].frame_rate_limit = (*deviceInfoListIterator)->getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->RateControl->FrameRateLimit;
         IPC_profiles_array[i].width = (*deviceInfoListIterator)->getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Resolution->Width;
         IPC_profiles_array[i].height = (*deviceInfoListIterator)->getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Resolution->Height;
 
@@ -685,11 +685,23 @@ ONVIFOPERATION_API int get_IPC_profiles_according_to_IP(char *IP, size_t IPBuffe
         soap_wsse_add_UsernameTokenDigest(pSoap, "user", username, password);
         soap_call___trt__GetStreamUri(pSoap, (*deviceInfoListIterator)->getCapabilitiesResponse.Capabilities->Media->XAddr.c_str(), NULL, &getStreamUri, _getStreamUriResponse);
 
+        if(NULL == _getStreamUriResponse.MediaUri)
+        {
+            break;
+        }
         strncpy(IPC_profiles_array[i].URI, _getStreamUriResponse.MediaUri->Uri.c_str(), sizeof(IPC_profiles_array[i].URI));
     }
 
-    device_list_locked = false;
-    return i;
+    if((*deviceInfoListIterator)->getProfilesResponse.Profiles.size() != i)
+    {
+        device_list_locked = false;
+        return -1;
+    }
+    else
+    {
+        device_list_locked = false;
+        return i;
+    }
 }
 
 

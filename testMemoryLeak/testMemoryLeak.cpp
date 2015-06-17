@@ -14,8 +14,9 @@ int _tmain(int argc, _TCHAR* argv[])
 
     system("pause");
 
-    for(size_t i = 0; i < 100; ++i)
+    for(size_t i = 0; i < 10000; ++i)
     {
+        system("pause");
         reset_DLL();
     }
 

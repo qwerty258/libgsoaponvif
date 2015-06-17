@@ -61,7 +61,7 @@ int _tmain(int argc, _TCHAR* argv[])
                 break;
         }
         cout << "Width: " << IPC_profiles_array[i].width << ' ' << "Height: " << IPC_profiles_array[i].height << endl;
-        cout << "FrameRateLimit: " << IPC_profiles_array[i].frame << endl;
+        cout << "FrameRateLimit: " << IPC_profiles_array[i].frame_rate_limit << endl;
         cout << "URI: " << IPC_profiles_array[i].URI << endl;
     }
 
