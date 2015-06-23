@@ -8,7 +8,6 @@
 using namespace std;
 int _tmain(int argc, _TCHAR* argv[])
 {
-    init_DLL();
 
     cout << "begin to test\n";
 
@@ -16,15 +15,11 @@ int _tmain(int argc, _TCHAR* argv[])
 
     for(size_t i = 0; i < 10000; ++i)
     {
-        system("pause");
-        reset_DLL();
+        init_DLL();
+        uninit_DLL();
     }
 
     cout << "test end\n";
-
-    system("pause");
-
-    uninit_DLL();
 
     system("pause");
 

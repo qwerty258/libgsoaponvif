@@ -72,7 +72,7 @@ int getRTSP(vector<device_info_container*>::iterator& Iterator, char* username, 
         return -1;
     }
 
-    soap_set_namespaces(pSoap, getCapabilitiesNamespace);
+    soap_set_namespaces(pSoap, device_namespace);
 
     soap_wsse_add_UsernameTokenDigest(pSoap, "user", username, password);
 
@@ -112,8 +112,6 @@ int getRTSP(vector<device_info_container*>::iterator& Iterator, char* username, 
 
 ONVIFOPERATION_API int init_DLL(void)
 {
-    clear_device_list();
-
     pSoap = soap_new1(SOAP_IO_DEFAULT | SOAP_XML_IGNORENS); // ignore namespace, avoid namespace mismatch
     if(NULL == pSoap)
     {
@@ -168,8 +166,6 @@ ONVIFOPERATION_API int uninit_DLL(void)
         return -1;
     }
 
-    clear_device_list();
-
     delete pTemp3;
     delete pTemp2;
     delete pTemp1;
@@ -182,9 +178,9 @@ ONVIFOPERATION_API int uninit_DLL(void)
     soap_end(pSoapForSearch);
     soap_done(pSoapForSearch);
 
-    soap_destroy(pSoap);
-    soap_end(pSoap);
-    soap_done(pSoap);
+    soap_destroy(pSoap); // remove deserialized class instances (C++ only) 
+    soap_end(pSoap); // clean up and remove deserialized data 
+    soap_free(pSoap); // detach and free runtime context 
 
     pSoapForSearch = NULL;
     pSoap = NULL;
@@ -194,23 +190,56 @@ ONVIFOPERATION_API int uninit_DLL(void)
     return 0;
 }
 
-ONVIFOPERATION_API int reset_DLL(void)
+ONVIFOPERATION_API onvif_device_list* malloc_device_list(void)
 {
-    if(-1 == uninit_DLL())
+    onvif_device_list* p_onvif_device_list_temp = (onvif_device_list*)malloc(sizeof(onvif_device_list));
+
+    if(NULL != p_onvif_device_list_temp)
     {
-        return -1;
+        p_onvif_device_list_temp->number_of_onvif_device = 0;
+        p_onvif_device_list_temp->devcie_list_lock = false;
+        p_onvif_device_list_temp->p_onvif_device = (onvif_device*)malloc(1);
     }
-    if(-1 == init_DLL())
+    else if(NULL == p_onvif_device_list_temp->p_onvif_device)
     {
-        return -1;
+        free(p_onvif_device_list_temp);
+        p_onvif_device_list_temp = NULL;
     }
 
-    return 0;
+    return p_onvif_device_list_temp;
 }
 
-ONVIFOPERATION_API int search_ONVIF_device(int waitTime)
+ONVIFOPERATION_API void free_device_list(onvif_device_list** pp_onvif_device_list)
 {
-    if(!initialsuccess)
+    if(NULL == pp_onvif_device_list)
+    {
+        return;
+    }
+
+    if(NULL != (*pp_onvif_device_list)->p_onvif_device)
+    {
+        free((*pp_onvif_device_list)->p_onvif_device);
+    }
+
+    if(NULL != (*pp_onvif_device_list))
+    {
+        free((*pp_onvif_device_list));
+    }
+
+    (*pp_onvif_device_list) = NULL;
+}
+
+ONVIFOPERATION_API int search_ONVIF_device(onvif_device_list* p_onvif_device_list, int waitTime)
+{
+    vector<string>              device_service_address_list;
+    vector<string>              device_IPv4_list;
+    onvif_device*               p_onvif_device_temp;
+    size_t                      i;
+    __wsdd__ProbeMatches        probeMatches;
+    regex                       expression("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}");
+    smatch                      match;
+
+    if(!initialsuccess || NULL == p_onvif_device_list)
     {
         return -1;
     }
@@ -233,7 +262,7 @@ ONVIFOPERATION_API int search_ONVIF_device(int waitTime)
     scopes.__item = "onvif://www.onvif.org";
     soap_default_wsdd__ProbeType(pSoapForSearch, &probe);
     probe.Scopes = &scopes;
-    probe.Types = "ns1:NetworkVideoTransmitter";
+    probe.Types = ""; /*ns1:NetworkVideoTransmitter*/
     //probe.Types = "NetworkVideoTransmitter";
 
     if(SOAP_OK != soap_send___wsdd__Probe(pSoapForSearch, "soap.udp://239.255.255.250:3702", NULL, &probe))
@@ -241,125 +270,134 @@ ONVIFOPERATION_API int search_ONVIF_device(int waitTime)
         return -1;
     }
 
-    while(device_list_locked)
-    {
-        Sleep(200);
-    }
-    device_list_locked = true;
-
-    // set not duplicated
-    for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
-    {
-        (*deviceInfoListIterator)->duplicated = FALSE;
-    }
-
     // get match result and put into vector
     while(TRUE)
     {
-        device_info_container* pTempDeviceInfoContainer = new device_info_container;
-        if(SOAP_OK != soap_recv___wsdd__ProbeMatches(pSoapForSearch, &pTempDeviceInfoContainer->probeMatches))
+        if(SOAP_OK != soap_recv___wsdd__ProbeMatches(pSoapForSearch, &probeMatches))
         {
-            delete pTempDeviceInfoContainer;
             break;
         }
         else
         {
-            if(NULL == pTempDeviceInfoContainer->probeMatches.wsdd__ProbeMatches)
+            if(NULL == probeMatches.wsdd__ProbeMatches)
             {
                 continue;
             }
-            if(NULL == pTempDeviceInfoContainer->probeMatches.wsdd__ProbeMatches->ProbeMatch)
+            if(NULL == probeMatches.wsdd__ProbeMatches->ProbeMatch)
             {
                 continue;
             }
-            if(NULL == pTempDeviceInfoContainer->probeMatches.wsdd__ProbeMatches->ProbeMatch->XAddrs)
+            if(NULL == probeMatches.wsdd__ProbeMatches->ProbeMatch->XAddrs)
             {
                 continue;
             }
 
-            // check result
-            for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
-            {
-                if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches)
-                {
-                    continue;
-                }
-                if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch)
-                {
-                    continue;
-                }
-                if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch->XAddrs)
-                {
-                    continue;
-                }
-
-                if(0 == strncmp((*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch->XAddrs, pTempDeviceInfoContainer->probeMatches.wsdd__ProbeMatches->ProbeMatch->XAddrs, 22))
-                {
-                    (*deviceInfoListIterator)->duplicated = TRUE;
-                    break;
-                }
-            }
-
-            // if not in the previous result, push back
-            if(deviceInfoListIterator == deviceInfoList.end())
-            {
-                pTempDeviceInfoContainer->duplicated = TRUE;
-                deviceInfoList.push_back(pTempDeviceInfoContainer);
-            }
+            device_service_address_list.push_back(probeMatches.wsdd__ProbeMatches->ProbeMatch->XAddrs);
         }
     }
 
-    // remove removed device info
-    deviceInfoListIterator = deviceInfoList.begin();
-    while(deviceInfoListIterator != deviceInfoList.end())
+    device_IPv4_list.resize(device_service_address_list.size());
+    for(i = 0; i < device_IPv4_list.size(); ++i)
     {
-        for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
+        auto words_begin = sregex_iterator(device_service_address_list[i].begin(), device_service_address_list[i].end(), expression);
+        auto words_end = sregex_iterator();
+
+        for(sregex_iterator iterator = words_begin; iterator != words_end; ++iterator)
         {
-            if(!(*deviceInfoListIterator)->duplicated)
-            {
-                delete (*deviceInfoListIterator);
-                deviceInfoList.erase(deviceInfoListIterator);
-                break;
-            }
+            match = *iterator;
         }
+
+        device_IPv4_list[i] = match.str();
     }
 
-    // try get rtsp
-    for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
+    while(p_onvif_device_list->devcie_list_lock)
     {
-        if(NULL != (*deviceInfoListIterator)->getStreamUriResponse.MediaUri)
-        {
-            if(1 < (*deviceInfoListIterator)->getStreamUriResponse.MediaUri->Uri.size())
-            {
-                continue;
-            }
-        }
-        getRTSP(deviceInfoListIterator, "", "");
+        Sleep(10);
+    }
+    p_onvif_device_list->devcie_list_lock = true;
+
+
+    p_onvif_device_list->number_of_onvif_device = device_service_address_list.size();
+    p_onvif_device_temp = (onvif_device*)realloc(p_onvif_device_list->p_onvif_device, p_onvif_device_list->number_of_onvif_device * sizeof(onvif_device));
+    if(NULL == p_onvif_device_temp)
+    {
+        p_onvif_device_list->devcie_list_lock = false;
+        return -1;
+    }
+    else
+    {
+        p_onvif_device_list->p_onvif_device = p_onvif_device_temp;
     }
 
-    device_list_locked = false;
+    for(i = 0; i < p_onvif_device_list->number_of_onvif_device; ++i)
+    {
+        strncpy(p_onvif_device_list->p_onvif_device[i].device_service_address, device_service_address_list[i].c_str(), 256);
+        strncpy(p_onvif_device_list->p_onvif_device[i].IPv4, device_IPv4_list[i].c_str(), 17);
+    }
+
+    p_onvif_device_list->devcie_list_lock = false;
 
     return 0;
 }
 
-ONVIFOPERATION_API int clear_device_list(void)
+ONVIFOPERATION_API int get_onvif_device_information(onvif_device_list* p_onvif_device_list, char* IP, size_t index)
 {
-    while(device_list_locked)
+    while(p_onvif_device_list->devcie_list_lock)
     {
-        Sleep(200);
+        Sleep(10);
     }
-    device_list_locked = true;
+    p_onvif_device_list->devcie_list_lock = true;
 
-    if(0 != deviceInfoList.size())
+
+    if((NULL != IP && 17 < strnlen(IP, 17)) || p_onvif_device_list->number_of_onvif_device < index)
     {
-        for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
+        p_onvif_device_list->devcie_list_lock = false;
+        return -1;
+    }
+
+    if(NULL != IP)
+    {
+        for(size_t i = 0; i < p_onvif_device_list->number_of_onvif_device; i++)
         {
-            delete (*deviceInfoListIterator);
+            if(0 == strncmp(IP, p_onvif_device_list->p_onvif_device[i].IPv4, 17))
+            {
+                index = i;
+            }
         }
-        deviceInfoList.clear();
     }
 
-    device_list_locked = false;
+    _tds__GetDeviceInformation          tds__GetDeviceInformation;
+    _tds__GetDeviceInformationResponse  tds__GetDeviceInformationResponse;
+
+    soap_set_namespaces(pSoap, device_namespace);
+
+    soap_wsse_add_UsernameTokenDigest(pSoap, "user", p_onvif_device_list->p_onvif_device[index].username, p_onvif_device_list->p_onvif_device[index].password);
+
+    soap_call___tds__GetDeviceInformation(pSoap, p_onvif_device_list->p_onvif_device[index].device_service_address, NULL, &tds__GetDeviceInformation, tds__GetDeviceInformationResponse);
+
+    strncpy(
+        p_onvif_device_list->p_onvif_device[index].device_information.firmware_version,
+        tds__GetDeviceInformationResponse.FirmwareVersion.c_str(),
+        50);
+    strncpy(
+        p_onvif_device_list->p_onvif_device[index].device_information.hardware_Id,
+        tds__GetDeviceInformationResponse.HardwareId.c_str(),
+        10);
+    strncpy(
+        p_onvif_device_list->p_onvif_device[index].device_information.manufacturer,
+        tds__GetDeviceInformationResponse.Manufacturer.c_str(),
+        50);
+    strncpy(
+        p_onvif_device_list->p_onvif_device[index].device_information.model,
+        tds__GetDeviceInformationResponse.Model.c_str(),
+        50);
+    strncpy(
+        p_onvif_device_list->p_onvif_device[index].device_information.serial_number,
+        tds__GetDeviceInformationResponse.SerialNumber.c_str(),
+        50);
+
+    p_onvif_device_list->devcie_list_lock = false;
+
     return 0;
 }
 

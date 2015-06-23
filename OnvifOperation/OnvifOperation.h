@@ -28,69 +28,130 @@
 #define ONVIFOPERATION_API __declspec(dllimport)
 #endif
 
+// device info struct
+typedef struct
+{
+    char ip[17];
+    char URI[256];
+}IPC_URI;
+
+// VideoEncoding
+enum video_encoding
+{
+    videoEncoding__JPEG = 0,
+    videoEncoding__MPEG4 = 1,
+    videoEncoding__H264 = 2
+};
+
+// video info struct
+typedef struct
+{
+    char URI[256];
+    int frame_rate_limit;
+    int width;
+    int height;
+    enum video_encoding encoding;
+}IPC_profiles;
+
+typedef struct tag_onvif_device_information
+{
+    char manufacturer[50];
+    char model[50];
+    char firmware_version[50];
+    char serial_number[50];
+    char hardware_Id[10];
+}onvif_device_information;
+
+typedef struct tag_onvif_device
+{
+
+    //************************************
+    // IPv4 of the onvif device, set by search_ONVIF_device() function.
+    // User MUST NOT set this content. Read only.
+    //************************************
+    char IPv4[17];
+
+    //************************************
+    // onvif device service address, set by search_ONVIF_device() function.
+    // User MUST NOT set this content. Read only.
+    //************************************
+    char device_service_address[256];
+
+    //************************************
+    // device authorization information.
+    // User MUST set this content with C-style string after search_ONVIF_device().
+    // If there is no username and password, copy empty C-style string to it.
+    //************************************
+    char username[50];
+    char password[50];
+
+    //************************************
+    // device basic information.
+    // User MUST NOT set this content. Read only.
+    //************************************
+    onvif_device_information device_information;
+}onvif_device;
+
+typedef struct tag_onvif_device_list
+{
+    onvif_device* p_onvif_device;
+    size_t number_of_onvif_device;
+    bool devcie_list_lock;
+}onvif_device_list;
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
 
-    // device info struct
-    typedef struct
-    {
-        char ip[17];
-        char URI[256];
-    }IPC_URI;
-
-    // VideoEncoding
-    enum video_encoding
-    {
-        videoEncoding__JPEG = 0,
-        videoEncoding__MPEG4 = 1,
-        videoEncoding__H264 = 2
-    };
-
-    // video info struct
-    typedef struct
-    {
-        char URI[256];
-        int frame_rate_limit;
-        int width;
-        int height;
-        enum video_encoding encoding;
-    }IPC_profiles;
 
     //************************************
-    // function:  initial DLL, locate some memory. thread unsafe
-    // Returns:   int: 0 success, -1 failure
-    // Parameter: void
+    // function:  initial DLL, locate some memory; call once per process.
+    // Returns:   int: 0 success, -1 failure.
+    // Parameter: void.
     //************************************
     ONVIFOPERATION_API int init_DLL(void);
 
+
     //************************************
-    // function:  uninitial DLL. thread unsafe
-    // Returns:   int: 0 success, -1 failure
-    // Parameter: void
+    // function:  uninitial DLL; call once per process.
+    // Returns:   int: 0 success, -1 failure.
+    // Parameter: void.
     //************************************
     ONVIFOPERATION_API int uninit_DLL(void);
 
-    //************************************
-    // function:  reset everything in DLL, think before use this function! thread unsafe
-    // Returns:   int: 0 success, -1 failure. if failed, reload the DLL.
-    // Parameter: void
-    //************************************
-    ONVIFOPERATION_API int reset_DLL(void);
 
     //************************************
-    // function:  search onvif device. thread safe
+    // function:  get a pointer to the device list head.
+    // Returns:   a pointer to the device list head, NULL if failed.
+    // Parameter: void.
+    //************************************
+    ONVIFOPERATION_API onvif_device_list* malloc_device_list(void);
+
+
+    //************************************
+    // function:  free the device list head.
+    // Returns:   void.
+    // Parameter: pointer to the pointer which points to the device list.
+    //************************************
+    ONVIFOPERATION_API void free_device_list(onvif_device_list** pp_onvif_device_list);
+
+
+    //************************************
+    // function:  search onvif device.
     // Returns:   int: 0 success, -1 failure
-    // Parameter: int waitTime: interval for cameras to response, when > 0, gives socket recv timeout in seconds, < 0 in usec
+    // Parameter: onvif_device_list* p_onvif_device_list: pointer get from malloc_device_list(void).
+    // Parameter: int waitTime: interval for cameras to response, when > 0, gives socket recv timeout in seconds, < 0 in usec.
     //************************************
-    ONVIFOPERATION_API int search_ONVIF_device(int waitTime);
+    ONVIFOPERATION_API int search_ONVIF_device(onvif_device_list* p_onvif_device_list, int waitTime);
 
     //************************************
-    // function:  clear the onvif device list maintained by this DLL. thread safe
+    // function:  get onvif device information.
     // Returns:   int: 0 success, -1 failure.
-    // Parameter: void
+    // Parameter: onvif_device_list* p_onvif_device_list: pointer get from malloc_device_list(void).
+    // Parameter: char* IP: the IPC's IP you want to operate, or you can use index get from onvif_device_list.
+    // Parameter: size_t index: index of onvif_device array.
     //************************************
-    ONVIFOPERATION_API int clear_device_list(void);
+    ONVIFOPERATION_API int get_onvif_device_information(onvif_device_list* p_onvif_device_list, char* IP, size_t index);
 
     //************************************
     // function:  get number of onvif IPC. thread safe
