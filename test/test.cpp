@@ -50,7 +50,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
     for(size_t i = 0; i < p_onvif_device_list->number_of_onvif_device; ++i)
     {
-        cout << p_onvif_device_list->p_onvif_device[i].IPv4 << ':' << p_onvif_device_list->p_onvif_device[i].device_service_address << endl;
+        cout << p_onvif_device_list->p_onvif_device[i].IPv4 << ':' << p_onvif_device_list->p_onvif_device[i].device_service.xaddr << endl;
 
         for(size_t j = 0; j < 8; j++)
         {
@@ -79,6 +79,42 @@ int _tmain(int argc, _TCHAR* argv[])
 
         cout << endl;
     }
+
+    cout << endl;
+    cout << endl;
+    cout << endl;
+
+    cout << "search again\n";
+    system("pause");
+
+    if(-1 == search_ONVIF_device(p_onvif_device_list, 1))
+    {
+        cout << "search device failed\n";
+        system("pause");
+        return -1;
+    }
+
+    for(size_t i = 0; i < p_onvif_device_list->number_of_onvif_device; ++i)
+    {
+        cout << p_onvif_device_list->p_onvif_device[i].IPv4 << ':' << p_onvif_device_list->p_onvif_device[i].device_service.xaddr << endl;
+
+        cout << p_onvif_device_list->p_onvif_device[i].username << ':' << p_onvif_device_list->p_onvif_device[i].password << endl;
+
+        cout << "FirmwareVersion: " << p_onvif_device_list->p_onvif_device[i].device_information.firmware_version << endl;
+
+        cout << "HardwareId: " << p_onvif_device_list->p_onvif_device[i].device_information.hardware_Id << endl;
+
+        cout << "Manufacturer: " << p_onvif_device_list->p_onvif_device[i].device_information.manufacturer << endl;
+
+        cout << "Model: " << p_onvif_device_list->p_onvif_device[i].device_information.model << endl;
+
+        cout << "SerialNumber: " << p_onvif_device_list->p_onvif_device[i].device_information.serial_number << endl;
+
+        cout << "----------------------------------------------" << endl;
+
+        cout << endl;
+    }
+
 
     if(-1 == uninit_DLL())
     {
