@@ -232,6 +232,7 @@ ONVIFOPERATION_API int search_ONVIF_device(onvif_device_list* p_onvif_device_lis
     vector<string>              device_IPv4_list;
     onvif_device*               p_onvif_device_temp;
     size_t                      i;
+    size_t                      j;
     __wsdd__ProbeMatches        probeMatches;
     regex                       expression("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}");
     smatch                      match;
@@ -293,6 +294,7 @@ ONVIFOPERATION_API int search_ONVIF_device(onvif_device_list* p_onvif_device_lis
         }
     }
 
+    // get IPv4
     device_IPv4_list.resize(device_service_address_list.size());
     for(i = 0; i < device_IPv4_list.size(); ++i)
     {
@@ -307,13 +309,71 @@ ONVIFOPERATION_API int search_ONVIF_device(onvif_device_list* p_onvif_device_lis
         device_IPv4_list[i] = match.str();
     }
 
+    //check lock
     while(p_onvif_device_list->devcie_list_lock)
     {
         Sleep(10);
     }
+    // add lock
     p_onvif_device_list->devcie_list_lock = true;
 
+    // set all to not duplicated
+    for(i = 0; i < p_onvif_device_list->number_of_onvif_device; ++i)
+    {
+        p_onvif_device_list->p_onvif_device[i].duplicated = false;
+    }
 
+    // add new device into list
+    for(i = 0; i < device_service_address_list.size(); ++i)
+    {
+        // find device already in the list and set to duplicated
+        for(j = 0; j < p_onvif_device_list->number_of_onvif_device; ++j)
+        {
+            if(0 == strncmp(device_service_address_list[i].c_str(), p_onvif_device_list->p_onvif_device[j].device_service.xaddr, 256))
+            {
+                p_onvif_device_list->p_onvif_device[j].duplicated = true;
+                break;
+            }
+        }
+        // if not found, it is new device
+        if(j == p_onvif_device_list->number_of_onvif_device)
+        {
+            p_onvif_device_list->number_of_onvif_device += 1;
+            p_onvif_device_temp = (onvif_device*)realloc(p_onvif_device_list->p_onvif_device, p_onvif_device_list->number_of_onvif_device * sizeof(onvif_device));
+            if(NULL == p_onvif_device_temp)
+            {
+                p_onvif_device_list->devcie_list_lock = false;
+                return -1;
+            }
+            else
+            {
+                p_onvif_device_list->p_onvif_device = p_onvif_device_temp;
+                strncpy(
+                    p_onvif_device_list->p_onvif_device[p_onvif_device_list->number_of_onvif_device - 1].device_service.xaddr,
+                    device_service_address_list[i].c_str(),
+                    256);
+                strncpy(
+                    p_onvif_device_list->p_onvif_device[p_onvif_device_list->number_of_onvif_device - 1].IPv4,
+                    device_IPv4_list[i].c_str(),
+                    17);
+                p_onvif_device_list->p_onvif_device[p_onvif_device_list->number_of_onvif_device - 1].duplicated = true;
+            }
+        }
+    }
+
+    // remove old disappeared device
+    for(i = 0; i < p_onvif_device_list->number_of_onvif_device; ++i)
+    {
+        if(!p_onvif_device_list->p_onvif_device[i].duplicated)
+        {
+            for(j = i; j + 1 < p_onvif_device_list->number_of_onvif_device; ++j)
+            {
+                p_onvif_device_list->p_onvif_device[j] = p_onvif_device_list->p_onvif_device[j + 1];
+            }
+        }
+    }
+
+    // resize memory
     p_onvif_device_list->number_of_onvif_device = device_service_address_list.size();
     p_onvif_device_temp = (onvif_device*)realloc(p_onvif_device_list->p_onvif_device, p_onvif_device_list->number_of_onvif_device * sizeof(onvif_device));
     if(NULL == p_onvif_device_temp)
@@ -323,16 +383,10 @@ ONVIFOPERATION_API int search_ONVIF_device(onvif_device_list* p_onvif_device_lis
     }
     else
     {
-        memset(p_onvif_device_temp, 0x0, p_onvif_device_list->number_of_onvif_device * sizeof(onvif_device));
         p_onvif_device_list->p_onvif_device = p_onvif_device_temp;
     }
 
-    for(i = 0; i < p_onvif_device_list->number_of_onvif_device; ++i)
-    {
-        strncpy(p_onvif_device_list->p_onvif_device[i].device_service.xaddr, device_service_address_list[i].c_str(), 256);
-        strncpy(p_onvif_device_list->p_onvif_device[i].IPv4, device_IPv4_list[i].c_str(), 17);
-    }
-
+    // release lock
     p_onvif_device_list->devcie_list_lock = false;
 
     return 0;

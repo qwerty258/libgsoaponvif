@@ -73,6 +73,12 @@ typedef struct tag_onvif_device_information
 typedef struct tag_onvif_device
 {
     //************************************
+    // For informaiton preserve purpose.
+    // User MUST NOT set this content. Read only.
+    //************************************
+    bool duplicated;
+
+    //************************************
     // IPv4 of the onvif device, set by search_ONVIF_device().
     // User MUST NOT set this content. Read only.
     //************************************
