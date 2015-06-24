@@ -66,7 +66,7 @@ extern "C"
         {NULL, NULL, NULL, NULL}
     };
 
-    SOAP_NMAC struct Namespace getProfilesNamespace[] =
+    SOAP_NMAC struct Namespace media_namespace[] =
     {
         {"SOAP-ENV", "http://www.w3.org/2003/05/soap-envelope", "http://schemas.xmlsoap.org/soap/envelope/", NULL},
         {"SOAP-ENC", "http://www.w3.org/2003/05/soap-encoding", "http://schemas.xmlsoap.org/soap/encoding/", NULL},

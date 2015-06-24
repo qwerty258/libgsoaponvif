@@ -135,6 +135,14 @@ int _tmain(int argc, _TCHAR* argv[])
             << '.'
             << p_onvif_device_list->p_onvif_device[i].service_address_search_recording.minor_version
             << endl;
+        cout << endl;
+
+        get_onvif_device_profiles(p_onvif_device_list, NULL, i);
+
+        for(size_t j = 0; j < p_onvif_device_list->p_onvif_device[i].number_of_onvif_device_profile; ++j)
+        {
+            cout << "URI: " << p_onvif_device_list->p_onvif_device[i].p_onvif_device_profiles[j].MediaUri.URI << endl;
+        }
         cout << "----------------------------------------------" << endl;
         cout << endl;
     }

@@ -1,10 +1,15 @@
 //************************************
 // DLL usage :
-// init_DLL first(get some memory from system), then search_ONVIF_device.
-// Now you can get_number_of_IPCs, get_IPC_URI_according_to_IP, get_all_IPC_URIs.
-// If you added new onvif device, call search_ONVIF_device again and you
-// should found new device using get_IPC_URI_according_to_IP and get_all_IPC_URIs.
-// when you done, please call uninit_DLL to release memory.
+// init_DLL() first(get some memory from system).
+// Get a pointer to the onvif_device_list using malloc_device_list();
+// Then search_ONVIF_device().
+// Set username password in onvif_device_list.
+// Before you can use any other API, you MUST call get_onvif_device_service_address().
+// Now you can get_onvif_device_information(), get_onvif_device_profiles().
+// All the information you want can be found in onvif_device_list.
+// If you added new onvif device, call search_ONVIF_device() again and you should found new device in onvif_device_list.
+// Old devices' information in onvif_device_list will be preserved but as for the new devices you need to call API to get device information.
+// When you done, please call free_device_list() and uninit_DLL() to release memory.
 //************************************
 
 //************************************
@@ -12,13 +17,6 @@
 // otherwise multicast package will end up somewhere unknown.
 // Allow the program through fire wall.
 //************************************
-
-// The following ifdef block is the standard way of creating macros which make exporting 
-// from a DLL simpler. All files within this DLL are compiled with the ONVIFOPERATION_EXPORTS
-// symbol defined on the command line. This symbol should not be defined on any project
-// that uses this DLL. This way any other project whose source files include this file see 
-// ONVIFOPERATION_API functions as being imported from a DLL, whereas this DLL sees symbols
-// defined with this macro as being exported.
 
 #pragma once
 
@@ -28,30 +26,100 @@
 #define ONVIFOPERATION_API __declspec(dllimport)
 #endif
 
-// device info struct
-typedef struct
-{
-    char ip[17];
-    char URI[256];
-}IPC_URI;
 
-// VideoEncoding
 enum video_encoding
 {
-    videoEncoding__JPEG = 0,
-    videoEncoding__MPEG4 = 1,
-    videoEncoding__H264 = 2
+    JPEG = 0,
+    MPEG4 = 1,
+    H264 = 2
 };
 
-// video info struct
-typedef struct
+
+enum audio_encoding
 {
-    char URI[256];
-    int frame_rate_limit;
-    int width;
-    int height;
-    enum video_encoding encoding;
-}IPC_profiles;
+    G711 = 0,
+    G726 = 1,
+    AAC = 2
+};
+
+
+enum H264Profile
+{
+    Baseline = 0,
+    Main = 1,
+    Extended = 2,
+    High = 3
+};
+
+
+// onvif_device_profiles struct
+typedef struct tag_onvif_device_profiles
+{
+
+    char name[30];
+    char token[30];
+
+    struct tag_VideoSourceConfiguration
+    {
+        char Name[30];
+        int UseCount;
+        char SourceToken[30];
+    }VideoSourceConfiguration;
+
+    struct tag_AudioSourceConfiguration
+    {
+        char Name[30];
+        int UseCount;
+        char SourceToken[30];
+    }AudioSourceConfiguration;
+
+    struct tag_VideoEncoderConfiguration
+    {
+        char Name[30];
+        int UseCount;
+        enum video_encoding encoding;
+
+        struct tag_Resolution
+        {
+            int Width;
+            int Height;
+        }Resolution;
+
+        double Quality;
+
+        struct tag_RateControl
+        {
+            int FrameRateLimit;
+            int EncodingInterval;
+            int BitrateLimit;
+        }RateControl;
+
+        struct tag_H264
+        {
+            int GovLength;
+            enum H264Profile Profile;
+        }H264;
+    }VideoEncoderConfiguration;
+
+    struct tag_AudioEncoderConfiguration
+    {
+        char Name[30];
+        int UseCount;
+        enum audio_encoding encoding;
+
+        int Bitrate;
+        int SampleRate;
+    }AudioEncoderConfiguration;
+
+    struct tag_MediaUri
+    {
+        char URI[256];
+        bool InvalidAfterConnect;
+        bool InvalidAfterReboot;
+        __int64 Timeout;
+    }MediaUri;
+
+}onvif_device_profiles;
 
 typedef struct tag_onvif_device_service_address
 {
@@ -112,6 +180,13 @@ typedef struct tag_onvif_device
     // User MUST NOT set this content. Read only.
     //************************************
     onvif_device_information device_information;
+
+    //************************************
+    // onvif device profiles.
+    // User MUST NOT set this content. Read only.
+    //************************************
+    onvif_device_profiles* p_onvif_device_profiles;
+    size_t number_of_onvif_device_profile;
 }onvif_device;
 
 typedef struct tag_onvif_device_list
@@ -165,7 +240,7 @@ extern "C" {
 
 
     //************************************
-    // function:  search onvif device. if you search again, the information in onvif_device_list will be lost; you need get it again.
+    // function:  search onvif device. if you search again, old device's information in onvif_device_list will be preserved.
     // Returns:   int: 0 success, -1 failure
     // Parameter: onvif_device_list* p_onvif_device_list: pointer get from malloc_device_list(void).
     // Parameter: int waitTime: interval for cameras to response, when > 0, gives socket recv timeout in seconds, < 0 in usec.
@@ -177,7 +252,7 @@ extern "C" {
     // Returns:   int: 0 success, -1 failure.
     // Parameter: onvif_device_list* p_onvif_device_list: pointer get from malloc_device_list(void).
     // Parameter: char* IP: the IPC's IP you want to operate, or you can use index get from onvif_device_list.
-    // Parameter: size_t index: index of onvif_device array, if char* IP is not NULL, this parameter will be ignored.
+    // Parameter: size_t index: index of onvif_device array, if char* IP is not NULL, this parameter will be ignored, you can pass whatever into it.
     //************************************
     ONVIFOPERATION_API int get_onvif_device_information(onvif_device_list* p_onvif_device_list, char* IP, size_t index);
 
@@ -186,59 +261,18 @@ extern "C" {
     // Returns:   int: 0 success, -1 failure.
     // Parameter: onvif_device_list* p_onvif_device_list: pointer get from malloc_device_list(void).
     // Parameter: char* IP: the IPC's IP you want to operate, or you can use index get from onvif_device_list.
-    // Parameter: size_t index: index of onvif_device array, if char* IP is not NULL, this parameter will be ignored.
+    // Parameter: size_t index: index of onvif_device array, if char* IP is not NULL, this parameter will be ignored, you can pass whatever into it.
     //************************************
     ONVIFOPERATION_API int get_onvif_device_service_address(onvif_device_list* p_onvif_device_list, char* IP, size_t index);
 
     //************************************
-    // function:  get number of onvif NVR. thread safe
-    // Returns:   int: number of onvif NVR, -1 something went wrong
-    // Parameter: void
+    // function:  get onvif device profiles.
+    // Returns:   int: 0 success, -1 failure.
+    // Parameter: onvif_device_list* p_onvif_device_list: pointer get from malloc_device_list(void).
+    // Parameter: char* IP: the IPC's IP you want to operate, or you can use index get from onvif_device_list.
+    // Parameter: size_t index: index of onvif_device array, if char* IP is not NULL, this parameter will be ignored, you can pass whatever into it.
     //************************************
-    ONVIFOPERATION_API int get_number_of_NVRs(void);
-
-    //************************************
-    // function:  get all onvif device URI. thread safe
-    // Returns:   int: the number of onvif device info put into deviceInfoArray, -1 failure
-    // Parameter: IPC_URI * IPC_URI_array: pointer to the head of IPC_URI_array buffer you allocated
-    // Parameter: size_t num: number of all onvif IPC, returned by get_number_of_IPCs
-    //************************************
-    ONVIFOPERATION_API int get_all_IPC_URIs(IPC_URI* IPC_URI_array, size_t num);
-
-    //************************************
-    // function:  get the main URI according to IP. thread safe
-    // Returns:   int: 0 success, -1 failure
-    // Parameter: char * IP: pointer to the head of C-style IP string buffer
-    // Parameter: size_t IPBufferLen: IP string buffer size, in bytes
-    // Parameter: char * URI: pointer to the head of C-style URI string buffer you allocated
-    // Parameter: size_t URLBufferLen: URI string buffer size, in bytes
-    // Parameter: char * username: C-style string of username
-    // Parameter: char * password: C-sytle string of password
-    //************************************
-    ONVIFOPERATION_API int get_IPC_URI_according_to_IP(char* IP, size_t IPBufferLen, char* URI, size_t URLBufferLen, char* username = "", char* password = "");
-
-    //************************************
-    // function:  get the number of profiles according to IP. thread safe
-    // Returns:   int: the number of profiles, -1 failure
-    // Parameter: char * IP: pointer to the head of C-style IP string
-    // Parameter: size_t IPBufferLen: IP string buffer size, in bytes
-    // Parameter: char * username: C-style string of username
-    // Parameter: char * password: C-sytle string of password
-    //************************************
-    ONVIFOPERATION_API int get_number_of_IPC_profiles_according_to_IP(char* IP, size_t IPBufferLen, char* username = "", char* password = "");
-
-    //************************************
-    // function:  get the array of profiles according to IP. thread safe
-    // Returns:   int: the number of profiles, -1 failure
-    // Parameter: char * IP: pointer to the head of C-style IP string
-    // Parameter: size_t IPBufferLen: IP string buffer size, in bytes
-    // Parameter: IPC_profiles * IPC_profiles_array: pointer to the head of IPC_profiles_array buffer you allocated
-    // Parameter: char * username: C-style string of username
-    // Parameter: char * password: C-sytle string of password
-    //************************************
-    ONVIFOPERATION_API int get_IPC_profiles_according_to_IP(char* IP, size_t IPBufferLen, IPC_profiles* IPC_profiles_array, char* username = "", char* password = "");
-
-    ONVIFOPERATION_API void test(void);
+    ONVIFOPERATION_API int get_onvif_device_profiles(onvif_device_list* p_onvif_device_list, char* IP, size_t index);
 
 #ifdef __cplusplus
 }

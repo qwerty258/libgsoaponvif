@@ -19,95 +19,12 @@
 using namespace std;
 // C++ 11
 
-typedef struct Container
-{
-    __wsdd__ProbeMatches          probeMatches;
-    _tds__GetCapabilitiesResponse getCapabilitiesResponse;
-    _trt__GetProfilesResponse     getProfilesResponse;
-    _trt__GetStreamUriResponse    getStreamUriResponse;
-    BOOL                          duplicated;
-}device_info_container;
-
 static soap*                                  pSoap;
 static soap*                                  pSoapForSearch;
 static wsdd__ScopesType                       scopes;
 static SOAP_ENV__Header                       header;
 
-static vector<device_info_container*>           deviceInfoList;
-static vector<device_info_container*>::iterator deviceInfoListIterator;
-
-static _tds__GetCapabilities                  getCapabilities;
-static _trt__GetProfiles                      getProfiles;
-static _trt__GetStreamUri                     getStreamUri;
-
-static tt__StreamSetup*                       pTemp1;
-static tt__Transport*                         pTemp2;
-static tt__Transport*                         pTemp3;
-
 static bool initialsuccess = false;
-static bool device_list_locked = false;
-
-int getRTSP(vector<device_info_container*>::iterator& Iterator, char* username, char* password)
-{
-    if(NULL != (*Iterator)->getStreamUriResponse.MediaUri)
-    {
-        if(1 < (*Iterator)->getStreamUriResponse.MediaUri->Uri.size())
-        {
-            return -1;
-        }
-    }
-
-    // get capabilities 
-    if(NULL == (*Iterator)->probeMatches.wsdd__ProbeMatches)
-    {
-        return -1;
-    }
-    if(NULL == (*Iterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch)
-    {
-        return -1;
-    }
-    if(NULL == (*Iterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch->XAddrs)
-    {
-        return -1;
-    }
-
-    soap_set_namespaces(pSoap, device_namespace);
-
-    soap_wsse_add_UsernameTokenDigest(pSoap, "user", username, password);
-
-    soap_call___tds__GetCapabilities(pSoap, (*Iterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch->XAddrs, NULL, &getCapabilities, (*Iterator)->getCapabilitiesResponse);
-
-    // get profiles 
-    if(NULL == (*Iterator)->getCapabilitiesResponse.Capabilities)
-    {
-        return -1;
-    }
-    if(NULL == (*Iterator)->getCapabilitiesResponse.Capabilities->Media)
-    {
-        return -1;
-    }
-
-    soap_set_namespaces(pSoap, getProfilesNamespace);
-
-    soap_wsse_add_UsernameTokenDigest(pSoap, "user", username, password);
-
-    soap_call___trt__GetProfiles(pSoap, (*Iterator)->getCapabilitiesResponse.Capabilities->Media->XAddr.c_str(), NULL, &getProfiles, (*Iterator)->getProfilesResponse);
-
-    // get stream uri
-    if(0 == (*Iterator)->getProfilesResponse.Profiles.size())
-    {
-        return -1;
-    }
-
-    getStreamUri.ProfileToken = (*(*Iterator)->getProfilesResponse.Profiles.begin())->token;
-
-    soap_set_namespaces(pSoap, getStreamUriNamespace);
-
-    soap_wsse_add_UsernameTokenDigest(pSoap, "user", username, password);
-    soap_call___trt__GetStreamUri(pSoap, (*Iterator)->getCapabilitiesResponse.Capabilities->Media->XAddr.c_str(), NULL, &getStreamUri, (*Iterator)->getStreamUriResponse);
-
-    return 0;
-}
 
 ONVIFOPERATION_API int init_DLL(void)
 {
@@ -123,36 +40,6 @@ ONVIFOPERATION_API int init_DLL(void)
         return -1;
     }
 
-    getCapabilities.Category.resize(1);
-    getCapabilities.Category[0] = tt__CapabilityCategory__Media;
-
-    pTemp1 = new tt__StreamSetup;
-    if(NULL == pTemp1)
-    {
-        return -1;
-    }
-    getStreamUri.StreamSetup = pTemp1;
-    getStreamUri.StreamSetup->Stream = tt__StreamType__RTP_Unicast;
-
-    pTemp2 = new tt__Transport;
-    if(NULL == pTemp2)
-    {
-        return -1;
-    }
-    getStreamUri.StreamSetup->Transport = pTemp2;
-    getStreamUri.StreamSetup->Transport->Protocol = tt__TransportProtocol__UDP;
-
-    pTemp3 = new tt__Transport;
-    if(NULL == pTemp3)
-    {
-        return -1;
-    }
-    getStreamUri.StreamSetup->Transport->Tunnel = pTemp3;
-
-    getStreamUri.StreamSetup->__any.resize(1);
-    getStreamUri.StreamSetup->__any[0] = NULL;
-    getStreamUri.StreamSetup->__anyAttribute = NULL;
-
     initialsuccess = true;
 
     return 0;
@@ -165,21 +52,13 @@ ONVIFOPERATION_API int uninit_DLL(void)
         return -1;
     }
 
-    delete pTemp3;
-    delete pTemp2;
-    delete pTemp1;
-
-    pTemp3 = NULL;
-    pTemp2 = NULL;
-    pTemp1 = NULL;
-
     soap_destroy(pSoapForSearch);
     soap_end(pSoapForSearch);
     soap_done(pSoapForSearch);
 
-    soap_destroy(pSoap); // remove deserialized class instances (C++ only) 
-    soap_end(pSoap); // clean up and remove deserialized data 
-    soap_free(pSoap); // detach and free runtime context 
+    soap_destroy(pSoap);
+    soap_end(pSoap);
+    soap_free(pSoap);
 
     pSoapForSearch = NULL;
     pSoap = NULL;
@@ -216,6 +95,13 @@ ONVIFOPERATION_API void free_device_list(onvif_device_list** pp_onvif_device_lis
     }
     else
     {
+        for(size_t i = 0; i < (*pp_onvif_device_list)->number_of_onvif_device; ++i)
+        {
+            if(NULL != (*pp_onvif_device_list)->p_onvif_device[i].p_onvif_device_profiles)
+            {
+                free((*pp_onvif_device_list)->p_onvif_device[i].p_onvif_device_profiles);
+            }
+        }
         if(NULL != (*pp_onvif_device_list)->p_onvif_device)
         {
             free((*pp_onvif_device_list)->p_onvif_device);
@@ -367,10 +253,21 @@ ONVIFOPERATION_API int search_ONVIF_device(onvif_device_list* p_onvif_device_lis
     {
         if(!p_onvif_device_list->p_onvif_device[i].duplicated)
         {
+            // remove profiles array
+            if(NULL != p_onvif_device_list->p_onvif_device[i].p_onvif_device_profiles)
+            {
+                free(p_onvif_device_list->p_onvif_device[i].p_onvif_device_profiles);
+                p_onvif_device_list->p_onvif_device[i].p_onvif_device_profiles = NULL;
+            }
+
+            // move elements behind forward
             for(j = i; j + 1 < p_onvif_device_list->number_of_onvif_device; ++j)
             {
                 p_onvif_device_list->p_onvif_device[j] = p_onvif_device_list->p_onvif_device[j + 1];
             }
+
+            --i;
+            --(p_onvif_device_list->number_of_onvif_device);
         }
     }
 
@@ -673,358 +570,228 @@ ONVIFOPERATION_API int get_onvif_device_service_address(onvif_device_list* p_onv
     return 0;
 }
 
-ONVIFOPERATION_API int get_number_of_NVRs(void)
+ONVIFOPERATION_API int get_onvif_device_profiles(onvif_device_list* p_onvif_device_list, char* IP, size_t index)
 {
-    /*
+    size_t                      i;
+    _trt__GetProfiles           getProfiles;
+    _trt__GetProfilesResponse   getProfilesResponse;
+    _trt__GetStreamUri          getStreamUri;
+    _trt__GetStreamUriResponse  getStreamUriResponse;
+
     if(!initialsuccess)
     {
-    return -1;
-    }
-
-    while(device_list_locked)
-    {
-    Sleep(200);
-    }
-    device_list_locked = true;
-
-    int number_of_NVRs = 0;
-
-    for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
-    {
-    if(0 == strncmp((*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch->Types, "dn:NetworkVideoTransmitter tds:Device", strlen("dn:NetworkVideoTransmitter tds:Device")))
-    {
-    ++number_of_NVRs;
-    }
-    }
-
-    device_list_locked = false;
-    return number_of_NVRs;
-    */
-    return -1;
-}
-
-ONVIFOPERATION_API int get_all_IPC_URIs(IPC_URI* IPC_URI_array, size_t num)
-{
-    while(device_list_locked)
-    {
-        Sleep(200);
-    }
-    device_list_locked = true;
-
-    if(NULL == IPC_URI_array || !initialsuccess)
-    {
-        device_list_locked = false;
         return -1;
     }
 
-    size_t i;
-    regex expression("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}");
-    string strTemp;
-    smatch match;
-
-    for(deviceInfoListIterator = deviceInfoList.begin(), i = 0; deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator, ++i)
+    while(p_onvif_device_list->devcie_list_lock)
     {
-        memset(&IPC_URI_array[i], 0x0, sizeof(IPC_URI));
-        if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches)
+        Sleep(10);
+    }
+    p_onvif_device_list->devcie_list_lock = true;
+
+    if(NULL != IP)
+    {
+        if(17 < strnlen(IP, 17))
         {
-            continue;
+            p_onvif_device_list->devcie_list_lock = false;
+            return -1;
         }
-        if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch)
+        for(i = 0; i < p_onvif_device_list->number_of_onvif_device; i++)
         {
-            continue;
-        }
-        //if(0 != strncmp((*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch->Types, "dn:NetworkVideoTransmitter", strlen("dn:NetworkVideoTransmitter")))
-        //{
-        //    continue;
-        //}
-        if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch->XAddrs)
-        {
-            continue;
-        }
-
-        strTemp = (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch->XAddrs;
-        auto words_begin = sregex_iterator(strTemp.begin(), strTemp.end(), expression);
-        auto words_end = sregex_iterator();
-
-        for(sregex_iterator iterator = words_begin; iterator != words_end; ++iterator)
-        {
-            match = *iterator;
-        }
-
-        if(i >= num)
-        {
-            break;
-        }
-
-        strcpy(IPC_URI_array[i].ip, match.str().c_str());
-
-        if(NULL == (*deviceInfoListIterator)->getStreamUriResponse.MediaUri)
-        {
-            continue;
-        }
-
-        strcpy(IPC_URI_array[i].URI, (*deviceInfoListIterator)->getStreamUriResponse.MediaUri->Uri.c_str());
-    }
-
-    device_list_locked = false;
-
-    if(i > num)
-    {
-        return -1;
-    }
-    else
-    {
-        return num;
-    }
-}
-
-ONVIFOPERATION_API int get_IPC_URI_according_to_IP(char* IP, size_t IPBufferLen, char* URI, size_t URLBufferLen, char* username, char* password)
-{
-    while(device_list_locked)
-    {
-        Sleep(200);
-    }
-    device_list_locked = true;
-
-    if(NULL == IP || NULL == URI || NULL == username || NULL == password || strlen(IP) + 1 > IPBufferLen || !initialsuccess)
-    {
-        device_list_locked = false;
-        return -1;
-    }
-
-    for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
-    {
-        if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches)
-        {
-            continue;
-        }
-        if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch)
-        {
-            continue;
-        }
-        //if(0 != strncmp((*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch->Types, "dn:NetworkVideoTransmitter", strlen("dn:NetworkVideoTransmitter")))
-        //{
-        //    continue;
-        //}
-        if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch->XAddrs)
-        {
-            continue;
-        }
-        if(NULL != strstr((*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch->XAddrs, IP))
-        {
-            getRTSP(deviceInfoListIterator, username, password);
-            break;
-        }
-    }
-
-    if(deviceInfoListIterator == deviceInfoList.end())
-    {
-        device_list_locked = false;
-        return -1;
-    }
-
-    if(NULL == (*deviceInfoListIterator)->getStreamUriResponse.MediaUri)
-    {
-        device_list_locked = false;
-        return -1;
-    }
-
-    if(!strncpy(URI, (*deviceInfoListIterator)->getStreamUriResponse.MediaUri->Uri.c_str(), URLBufferLen))
-    {
-        device_list_locked = false;
-        return -1;
-    }
-
-    device_list_locked = false;
-    return 0;
-}
-
-
-ONVIFOPERATION_API int get_number_of_IPC_profiles_according_to_IP(char* IP, size_t IPBufferLen, char* username, char* password)
-{
-    while(device_list_locked)
-    {
-        Sleep(200);
-    }
-    device_list_locked = true;
-
-    if(NULL == IP || strlen(IP) + 1 > IPBufferLen || !initialsuccess)
-    {
-        device_list_locked = false;
-        return -1;
-    }
-
-    for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
-    {
-        if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches)
-        {
-            continue;
-        }
-        if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch)
-        {
-            continue;
-        }
-        if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch->XAddrs)
-        {
-            continue;
-        }
-        if(NULL != strstr((*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch->XAddrs, IP))
-        {
-            break;
-        }
-    }
-
-    if(deviceInfoListIterator == deviceInfoList.end())
-    {
-        device_list_locked = false;
-        return -1;
-    }
-
-    int profilesSize;
-
-    profilesSize = (*deviceInfoListIterator)->getProfilesResponse.Profiles.size();
-
-    if(0 < profilesSize)
-    {
-        device_list_locked = false;
-        return profilesSize;
-    }
-
-    if(-1 == getRTSP(deviceInfoListIterator, username, password))
-    {
-        device_list_locked = false;
-        return -1;
-    }
-
-    profilesSize = (*deviceInfoListIterator)->getProfilesResponse.Profiles.size();
-
-    if(0 < profilesSize)
-    {
-        device_list_locked = false;
-        return profilesSize;
-    }
-
-    device_list_locked = false;
-    return -1;
-}
-
-ONVIFOPERATION_API int get_IPC_profiles_according_to_IP(char *IP, size_t IPBufferLen, IPC_profiles* IPC_profiles_array, char* username, char* password)
-{
-    while(device_list_locked)
-    {
-        Sleep(200);
-    }
-    device_list_locked = true;
-
-    if(NULL == IP || NULL == IPC_profiles_array || strlen(IP) + 1 > IPBufferLen)
-    {
-        device_list_locked = false;
-        return -1;
-    }
-
-    for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
-    {
-        if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches)
-        {
-            continue;
-        }
-        if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch)
-        {
-            continue;
-        }
-        if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch->XAddrs)
-        {
-            continue;
-        }
-        if(NULL != strstr((*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch->XAddrs, IP))
-        {
-            break;
-        }
-    }
-
-    if(deviceInfoListIterator == deviceInfoList.end())
-    {
-        device_list_locked = false;
-        return -1;
-    }
-
-    size_t i;
-    _trt__GetStreamUriResponse _getStreamUriResponse;
-
-    soap_set_namespaces(pSoap, getStreamUriNamespace);
-
-    for(i = 0; i < (*deviceInfoListIterator)->getProfilesResponse.Profiles.size(); ++i)
-    {
-        memset(&IPC_profiles_array[i], 0x0, sizeof(IPC_profiles));
-        IPC_profiles_array[i].encoding = (enum video_encoding)(*deviceInfoListIterator)->getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Encoding;
-        IPC_profiles_array[i].frame_rate_limit = (*deviceInfoListIterator)->getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->RateControl->FrameRateLimit;
-        IPC_profiles_array[i].width = (*deviceInfoListIterator)->getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Resolution->Width;
-        IPC_profiles_array[i].height = (*deviceInfoListIterator)->getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Resolution->Height;
-
-        getStreamUri.ProfileToken = (*deviceInfoListIterator)->getProfilesResponse.Profiles[i]->token;
-        soap_wsse_add_UsernameTokenDigest(pSoap, "user", username, password);
-        soap_call___trt__GetStreamUri(pSoap, (*deviceInfoListIterator)->getCapabilitiesResponse.Capabilities->Media->XAddr.c_str(), NULL, &getStreamUri, _getStreamUriResponse);
-
-        if(NULL == _getStreamUriResponse.MediaUri)
-        {
-            break;
-        }
-        strncpy(IPC_profiles_array[i].URI, _getStreamUriResponse.MediaUri->Uri.c_str(), sizeof(IPC_profiles_array[i].URI));
-    }
-
-    if((*deviceInfoListIterator)->getProfilesResponse.Profiles.size() != i)
-    {
-        device_list_locked = false;
-        return -1;
-    }
-    else
-    {
-        device_list_locked = false;
-        return i;
-    }
-}
-
-
-ONVIFOPERATION_API void test(void)
-{
-    vector<tt__Profile*>::iterator it;
-    for(deviceInfoListIterator = deviceInfoList.begin(); deviceInfoListIterator != deviceInfoList.end(); ++deviceInfoListIterator)
-    {
-        if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches)
-        {
-            continue;
-        }
-        if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch)
-        {
-            continue;
-        }
-        if(NULL == (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch->XAddrs)
-        {
-            continue;
-        }
-        cout << "++++++++++++++++++++++++++++\n";
-        printf("%s:::", (*deviceInfoListIterator)->probeMatches.wsdd__ProbeMatches->ProbeMatch->XAddrs);
-        cout << (*deviceInfoListIterator)->getProfilesResponse.Profiles.size() << endl;
-        for(it = (*deviceInfoListIterator)->getProfilesResponse.Profiles.begin(); it < (*deviceInfoListIterator)->getProfilesResponse.Profiles.end(); ++it)
-        {
-            switch((*it)->VideoEncoderConfiguration->Encoding)
+            if(0 == strncmp(IP, p_onvif_device_list->p_onvif_device[i].IPv4, 17))
             {
-                case tt__VideoEncoding__JPEG:
-                    cout << "Encoding: JPEG\n";
-                    break;
-                case tt__VideoEncoding__MPEG4:
-                    cout << "Encoding: MPEG4\n";
-                    break;
-                case tt__VideoEncoding__H264:
-                    cout << "Encoding: H264\n";
-                    break;
-                default:
-                    cout << "Encoding: Unknow\n";
-                    break;
+                index = i;
             }
-            cout << "Width: " << (*it)->VideoEncoderConfiguration->Resolution->Width << ' ' << "Height: " << (*it)->VideoEncoderConfiguration->Resolution->Height << endl;
-            cout << "FrameRateLimit: " << (*it)->VideoEncoderConfiguration->RateControl->FrameRateLimit << ' ' << "BitrateLimit: " << (*it)->VideoEncoderConfiguration->RateControl->BitrateLimit << endl;
-            cout << "****************\n";
         }
     }
+
+    if(p_onvif_device_list->number_of_onvif_device <= index)
+    {
+        p_onvif_device_list->devcie_list_lock = false;
+        return -1;
+    }
+
+    getStreamUri.StreamSetup = new tt__StreamSetup;
+    if(NULL == getStreamUri.StreamSetup)
+    {
+        p_onvif_device_list->devcie_list_lock = false;
+        return -1;
+    }
+
+    getStreamUri.StreamSetup->Transport = new tt__Transport;
+    if(NULL == getStreamUri.StreamSetup->Transport)
+    {
+        delete getStreamUri.StreamSetup;
+        p_onvif_device_list->devcie_list_lock = false;
+        return -1;
+    }
+
+    getStreamUri.StreamSetup->Transport->Tunnel = new tt__Transport;
+    if(NULL == getStreamUri.StreamSetup->Transport->Tunnel)
+    {
+        delete getStreamUri.StreamSetup->Transport;
+        delete getStreamUri.StreamSetup;
+        p_onvif_device_list->devcie_list_lock = false;
+        return -1;
+    }
+
+    getStreamUri.StreamSetup->Stream = tt__StreamType__RTP_Unicast;
+    getStreamUri.StreamSetup->Transport->Protocol = tt__TransportProtocol__RTSP;
+    getStreamUri.StreamSetup->__any.resize(1);
+    getStreamUri.StreamSetup->__any[0] = NULL;
+    getStreamUri.StreamSetup->__anyAttribute = NULL;
+
+
+    soap_set_namespaces(pSoap, media_namespace);
+
+    soap_wsse_add_UsernameTokenDigest(
+        pSoap,
+        "user",
+        p_onvif_device_list->p_onvif_device[index].username,
+        p_onvif_device_list->p_onvif_device[index].password);
+
+    soap_call___trt__GetProfiles(
+        pSoap,
+        p_onvif_device_list->p_onvif_device[index].service_address_media.xaddr,
+        NULL,
+        &getProfiles,
+        getProfilesResponse);
+
+    if(NULL != p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles)
+    {
+        free(p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles);
+    }
+
+    p_onvif_device_list->p_onvif_device[index].number_of_onvif_device_profile = getProfilesResponse.Profiles.size();
+    p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles = (onvif_device_profiles*)malloc(getProfilesResponse.Profiles.size() * sizeof(onvif_device_profiles));
+
+    for(i = 0; i < p_onvif_device_list->p_onvif_device[index].number_of_onvif_device_profile; ++i)
+    {
+        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].AudioEncoderConfiguration.Bitrate =
+            getProfilesResponse.Profiles[i]->AudioEncoderConfiguration->Bitrate;
+
+        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].AudioEncoderConfiguration.encoding =
+            (audio_encoding)getProfilesResponse.Profiles[i]->AudioEncoderConfiguration->Encoding;
+
+        strncpy(
+            p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].AudioEncoderConfiguration.Name,
+            getProfilesResponse.Profiles[i]->AudioEncoderConfiguration->Name.c_str(),
+            30);
+
+        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].AudioEncoderConfiguration.SampleRate =
+            getProfilesResponse.Profiles[i]->AudioEncoderConfiguration->SampleRate;
+
+        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].AudioEncoderConfiguration.UseCount =
+            getProfilesResponse.Profiles[i]->AudioEncoderConfiguration->UseCount;
+
+        strncpy(
+            p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].AudioSourceConfiguration.Name,
+            getProfilesResponse.Profiles[i]->AudioSourceConfiguration->Name.c_str(),
+            30);
+
+        strncpy(
+            p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].AudioSourceConfiguration.SourceToken,
+            getProfilesResponse.Profiles[i]->AudioSourceConfiguration->SourceToken.c_str(),
+            30);
+
+        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].AudioSourceConfiguration.UseCount =
+            getProfilesResponse.Profiles[i]->AudioSourceConfiguration->UseCount;
+
+        getStreamUri.ProfileToken = getProfilesResponse.Profiles[i]->token;
+
+        soap_set_namespaces(pSoap, media_namespace);
+
+        soap_wsse_add_UsernameTokenDigest(
+            pSoap,
+            "user",
+            p_onvif_device_list->p_onvif_device[index].username,
+            p_onvif_device_list->p_onvif_device[index].password);
+
+        soap_call___trt__GetStreamUri(
+            pSoap,
+            p_onvif_device_list->p_onvif_device[index].service_address_media.xaddr,
+            NULL,
+            &getStreamUri,
+            getStreamUriResponse);
+
+        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].MediaUri.InvalidAfterConnect =
+            getStreamUriResponse.MediaUri->InvalidAfterConnect;
+
+        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].MediaUri.InvalidAfterReboot =
+            getStreamUriResponse.MediaUri->InvalidAfterReboot;
+
+        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].MediaUri.Timeout =
+            getStreamUriResponse.MediaUri->Timeout;
+
+        strncpy(
+            p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].MediaUri.URI,
+            getStreamUriResponse.MediaUri->Uri.c_str(),
+            256);
+
+        strncpy(
+            p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].name,
+            getProfilesResponse.Profiles[i]->Name.c_str(),
+            30);
+
+        strncpy(
+            p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].token,
+            getProfilesResponse.Profiles[i]->token.c_str(),
+            30);
+
+        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.encoding =
+            (video_encoding)getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Encoding;
+
+        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.H264.GovLength =
+            getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->H264->GovLength;
+
+        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.H264.Profile =
+            (H264Profile)getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->H264->H264Profile;
+
+        strncpy(
+            p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.Name,
+            getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Name.c_str(),
+            30);
+
+        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.Quality =
+            getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Quality;
+
+        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.RateControl.BitrateLimit =
+            getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->RateControl->BitrateLimit;
+
+        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.RateControl.EncodingInterval =
+            getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->RateControl->EncodingInterval;
+
+        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.RateControl.FrameRateLimit =
+            getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->RateControl->FrameRateLimit;
+
+        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.Resolution.Height =
+            getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Resolution->Height;
+
+        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.Resolution.Width =
+            getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Resolution->Width;
+
+        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.UseCount =
+            getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->UseCount;
+
+        strncpy(
+            p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoSourceConfiguration.Name,
+            getProfilesResponse.Profiles[i]->VideoSourceConfiguration->Name.c_str(),
+            30);
+
+        strncpy(
+            p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoSourceConfiguration.SourceToken,
+            getProfilesResponse.Profiles[i]->VideoSourceConfiguration->token.c_str(),
+            30);
+
+        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoSourceConfiguration.UseCount =
+            getProfilesResponse.Profiles[i]->VideoSourceConfiguration->UseCount;
+    }
+
+    p_onvif_device_list->devcie_list_lock = false;
+
+    delete getStreamUri.StreamSetup->Transport->Tunnel;
+    delete getStreamUri.StreamSetup->Transport;
+    delete getStreamUri.StreamSetup;
+
+    return 0;
 }
