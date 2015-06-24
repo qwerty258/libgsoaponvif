@@ -36,7 +36,6 @@ static SOAP_ENV__Header                       header;
 static vector<device_info_container*>           deviceInfoList;
 static vector<device_info_container*>::iterator deviceInfoListIterator;
 
-static wsdd__ProbeType                        probe;
 static _tds__GetCapabilities                  getCapabilities;
 static _trt__GetProfiles                      getProfiles;
 static _trt__GetStreamUri                     getStreamUri;
@@ -233,6 +232,7 @@ ONVIFOPERATION_API int search_ONVIF_device(onvif_device_list* p_onvif_device_lis
     onvif_device*               p_onvif_device_temp;
     size_t                      i;
     size_t                      j;
+    wsdd__ProbeType             probe;
     __wsdd__ProbeMatches        probeMatches;
     regex                       expression("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}");
     smatch                      match;
