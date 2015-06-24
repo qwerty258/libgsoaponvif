@@ -168,14 +168,15 @@ int _tmain(int argc, _TCHAR* argv[])
         cout << p_onvif_device_list->p_onvif_device[i].username << ':' << p_onvif_device_list->p_onvif_device[i].password << endl;
 
         cout << "FirmwareVersion: " << p_onvif_device_list->p_onvif_device[i].device_information.firmware_version << endl;
-
         cout << "HardwareId: " << p_onvif_device_list->p_onvif_device[i].device_information.hardware_Id << endl;
-
         cout << "Manufacturer: " << p_onvif_device_list->p_onvif_device[i].device_information.manufacturer << endl;
-
         cout << "Model: " << p_onvif_device_list->p_onvif_device[i].device_information.model << endl;
-
         cout << "SerialNumber: " << p_onvif_device_list->p_onvif_device[i].device_information.serial_number << endl;
+
+        for(size_t j = 0; j < p_onvif_device_list->p_onvif_device[i].number_of_onvif_device_profile; j++)
+        {
+            cout << "URI: " << p_onvif_device_list->p_onvif_device[i].p_onvif_device_profiles[j].MediaUri.URI << endl;
+        }
 
         cout << "----------------------------------------------" << endl;
 

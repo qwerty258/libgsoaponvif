@@ -18,6 +18,13 @@
 // Allow the program through fire wall.
 //************************************
 
+//************************************
+// NOTICE:
+// I try to use data lock to protect data when multithreading,
+// but after some test it seems to be no effect, please consider all functions thread unsafe.
+//************************************
+
+
 #pragma once
 
 #ifdef ONVIFOPERATION_EXPORTS
