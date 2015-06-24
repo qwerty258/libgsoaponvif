@@ -342,22 +342,24 @@ ONVIFOPERATION_API int search_ONVIF_device(onvif_device_list* p_onvif_device_lis
 
 ONVIFOPERATION_API int get_onvif_device_information(onvif_device_list* p_onvif_device_list, char* IP, size_t index)
 {
+    _tds__GetDeviceInformation          tds__GetDeviceInformation;
+    _tds__GetDeviceInformationResponse  tds__GetDeviceInformationResponse;
+    size_t i;
+
     while(p_onvif_device_list->devcie_list_lock)
     {
         Sleep(10);
     }
     p_onvif_device_list->devcie_list_lock = true;
 
-
-    if((NULL != IP && 17 < strnlen(IP, 17)) || p_onvif_device_list->number_of_onvif_device < index)
-    {
-        p_onvif_device_list->devcie_list_lock = false;
-        return -1;
-    }
-
     if(NULL != IP)
     {
-        for(size_t i = 0; i < p_onvif_device_list->number_of_onvif_device; i++)
+        if(17 < strnlen(IP, 17))
+        {
+            p_onvif_device_list->devcie_list_lock = false;
+            return -1;
+        }
+        for(i = 0; i < p_onvif_device_list->number_of_onvif_device; i++)
         {
             if(0 == strncmp(IP, p_onvif_device_list->p_onvif_device[i].IPv4, 17))
             {
@@ -366,8 +368,12 @@ ONVIFOPERATION_API int get_onvif_device_information(onvif_device_list* p_onvif_d
         }
     }
 
-    _tds__GetDeviceInformation          tds__GetDeviceInformation;
-    _tds__GetDeviceInformationResponse  tds__GetDeviceInformationResponse;
+    if(p_onvif_device_list->number_of_onvif_device <= index)
+    {
+        p_onvif_device_list->devcie_list_lock = false;
+        return -1;
+    }
+
 
     soap_set_namespaces(pSoap, device_namespace);
 
