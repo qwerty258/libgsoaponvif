@@ -6,7 +6,7 @@ EXPORTS
     free_device_list                            @4
     search_ONVIF_device                         @5
     get_onvif_device_information                @6
-    get_onvif_device_service_addresses          @7
+    get_onvif_device_service_address            @7
     get_number_of_NVRs                          @8
     get_all_IPC_URIs                            @9
     get_IPC_URI_according_to_IP                 @10

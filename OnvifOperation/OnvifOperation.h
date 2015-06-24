@@ -88,16 +88,16 @@ typedef struct tag_onvif_device
     // onvif device service addresses, set by search_ONVIF_device() and other API.
     // User MUST NOT set this content. Read only.
     //************************************
-    onvif_device_service_address device_service;
-    onvif_device_service_address media;
-    onvif_device_service_address events;
-    onvif_device_service_address PTZ;
-    onvif_device_service_address imaging;
-    onvif_device_service_address deviceIO;
-    onvif_device_service_address analytics;
-    onvif_device_service_address recording;
-    onvif_device_service_address search_recording;
-    onvif_device_service_address replay;
+    onvif_device_service_address service_address_device_service;
+    onvif_device_service_address service_address_media;
+    onvif_device_service_address service_address_events;
+    onvif_device_service_address service_address_PTZ;
+    onvif_device_service_address service_address_imaging;
+    onvif_device_service_address service_address_deviceIO;
+    onvif_device_service_address service_address_analytics;
+    onvif_device_service_address service_address_recording;
+    onvif_device_service_address service_address_search_recording;
+    onvif_device_service_address service_address_replay;
 
     //************************************
     // device authorization information.
@@ -182,7 +182,7 @@ extern "C" {
     // Parameter: char* IP: the IPC's IP you want to operate, or you can use index get from onvif_device_list.
     // Parameter: size_t index: index of onvif_device array, if char* IP is not NULL, this parameter will be ignored.
     //************************************
-    ONVIFOPERATION_API int get_onvif_device_service_addresses(onvif_device_list* p_onvif_device_list, char* IP, size_t index);
+    ONVIFOPERATION_API int get_onvif_device_service_address(onvif_device_list* p_onvif_device_list, char* IP, size_t index);
 
     //************************************
     // function:  get number of onvif NVR. thread safe
