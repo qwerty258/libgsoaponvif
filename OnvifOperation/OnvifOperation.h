@@ -137,7 +137,7 @@ extern "C" {
 
 
     //************************************
-    // function:  search onvif device.
+    // function:  search onvif device. if you search again, the information in onvif_device_list will be invalid; you need get it again.
     // Returns:   int: 0 success, -1 failure
     // Parameter: onvif_device_list* p_onvif_device_list: pointer get from malloc_device_list(void).
     // Parameter: int waitTime: interval for cameras to response, when > 0, gives socket recv timeout in seconds, < 0 in usec.
