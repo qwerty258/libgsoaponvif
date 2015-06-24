@@ -5,158 +5,106 @@
 #include <OnvifOperation.h>
 #pragma comment(lib,"OnvifOperation.lib")
 
-DWORD WINAPI getAllDeviceURI(LPVOID lpParameter)
+DWORD WINAPI getServiceAddresses(LPVOID lpParameter)
 {
-    std::cout << "Thread getAllDeviceURI begin\n";
+    std::cout << "Thread getServiceAddresses begin\n";
 
-    int num = get_number_of_IPCs();
-
-    if(-1 == num)
+    for(size_t i = 0; i < static_cast<onvif_device_list*>(lpParameter)->number_of_onvif_device; i++)
     {
-        std::cout << "Thread getAllDeviceURI get_number_of_IPCs failed\n";
-        std::cout << "Thread getAllDeviceURI end\n";
-        return num;
+        get_onvif_device_service_address(static_cast<onvif_device_list*>(lpParameter), NULL, i);
     }
 
-    IPC_URI* IPC_URI_array = new IPC_URI[num];
-
-    int result = get_all_IPC_URIs(IPC_URI_array, num);
-
-    if(-1 == result)
-    {
-        std::cout << "Thread getAllDeviceURI get_all_IPC_URIs failed\n";
-        std::cout << "Thread getAllDeviceURI end\n";
-        delete[] IPC_URI_array;
-        return num;
-    }
-
-    for(int i = 0; i < num; i++)
-    {
-        std::cout << IPC_URI_array[i].ip << ':' << IPC_URI_array[i].URI << std::endl;
-    }
-
-    std::cout << "Thread getAllDeviceURI end\n";
-
-    delete[] IPC_URI_array;
-
-    return num;
+    std::cout << "Thread getServiceAddresses end\n";
+    return 0;
 }
 
 DWORD WINAPI searchDevice(LPVOID lpParameter)
 {
     std::cout << "Thread searchDevice begin\n";
 
-    int  num = search_ONVIF_device(1);
-    if(-1 == num)
-    {
-        std::cout << "Thread searchDevice searchDev failed\n";
-        std::cout << "Thread searchDevice end\n";
-        return num;
-    }
+    search_ONVIF_device(static_cast<onvif_device_list*>(lpParameter), 1);
 
     std::cout << "Thread searchDevice end\n";
 
-    return num;
+    return 0;
 }
 
-DWORD WINAPI getURIbyIP(LPVOID lpParameter)
+DWORD WINAPI getDeviceInformation(LPVOID lpParameter)
 {
     std::cout << "Thread getURIbyIP begin\n";
 
-    char* URI = new char[256];
-
-    int num = get_IPC_URI_according_to_IP("192.168.10.142", strlen("192.168.10.142") + 1, URI, 256, "admin", "12345");
-
-    if(-1 == num)
+    for(size_t i = 0; i < static_cast<onvif_device_list*>(lpParameter)->number_of_onvif_device; i++)
     {
-        std::cout << "Thread getURIbyIP get_IPC_URI_according_to_IP failed\n";
-        std::cout << "Thread getURIbyIP end\n";
-        delete[] URI;
-        return num;
+        get_onvif_device_information(static_cast<onvif_device_list*>(lpParameter), NULL, i);
     }
 
-    std::cout << URI << std::endl;
-
     std::cout << "Thread getURIbyIP end\n";
-
-    delete URI;
-
-    return num;
+    return 0;
 }
 
-DWORD WINAPI getVideoInfoByIP(LPVOID lpParameter)
+DWORD WINAPI getDeviceProfiles(LPVOID lpParameter)
 {
     std::cout << "Thread getNumOfProfilesByIP begin\n";
 
-    int num = get_number_of_IPC_profiles_according_to_IP("192.168.10.142", strlen("192.168.10.142") + 1, "admin", "12345");
-
-    if(-1 == num)
+    for(size_t i = 0; i < static_cast<onvif_device_list*>(lpParameter)->number_of_onvif_device; i++)
     {
-        std::cout << "Thread getNumOfProfilesByIP get_number_of_IPC_profiles_according_to_IP failed\n";
-        std::cout << "Thread getNumOfProfilesByIP end\n";
-        return num;
-    }
-
-    IPC_profiles* IPC_profiles_array = new IPC_profiles[num];
-
-    int result = get_IPC_profiles_according_to_IP("192.168.10.142", strlen("192.168.10.142") + 1, IPC_profiles_array, "admin", "12345");
-
-    if(-1 == result)
-    {
-        std::cout << "Thread getNumOfProfilesByIP get_IPC_profiles_according_to_IP failed\n";
-        std::cout << "Thread getNumOfProfilesByIP end\n";
-        delete[] IPC_profiles_array;
-        return num;
-    }
-
-    std::cout << "192.168.10.142: " << num << std::endl;
-
-    for(int i = 0; i < num; i++)
-    {
-        std::cout << "-------------" << i << "---------------\n";
-        switch(IPC_profiles_array[i].encoding)
-        {
-            case videoEncoding__JPEG:
-                std::cout << "Encoding: JPEG\n";
-                break;
-            case videoEncoding__MPEG4:
-                std::cout << "Encoding: MPEG4\n";
-                break;
-            case videoEncoding__H264:
-                std::cout << "Encoding: H264\n";
-                break;
-            default:
-                std::cout << "Encoding: Unknow\n";
-                break;
-        }
-        std::cout << "Width: " << IPC_profiles_array[i].width << ' ' << "Height: " << IPC_profiles_array[i].height << std::endl;
-        std::cout << "FrameRateLimit: " << IPC_profiles_array[i].frame_rate_limit << std::endl;
-        std::cout << "URI: " << IPC_profiles_array[i].URI << std::endl;
+        get_onvif_device_profiles(static_cast<onvif_device_list*>(lpParameter), NULL, i);
     }
 
     std::cout << "Thread getNumOfProfilesByIP end\n";
-
-    delete[] IPC_profiles_array;
-
-    return result;
+    return 0;
 }
+
+typedef struct
+{
+    char IP[17];
+    char username[50];
+    char password[50];
+}struct_IP_username_password;
 
 int _tmain(int argc, _TCHAR* argv[])
 {
+    HANDLE handleArray[5];
+    onvif_device_list* p_onvif_device_list = malloc_device_list();
+    struct_IP_username_password IP_username_password[8] =
+    {
+        "192.168.10.185", "admin", "12345",
+        "192.168.10.141", "admin", "12345",
+        "192.168.10.146", "admin", "Tolendata",
+        "192.168.10.182", "admin", "Tolendata",
+        "192.168.10.149", "admin", "Tolendata",
+        "192.168.10.181", "admin", "Tolendata",
+        "192.168.10.195", "admin", "12345",
+        "192.168.10.142", "admin", "12345"
+    };
+
     init_DLL();
 
-    HANDLE handleArray[5];
+    search_ONVIF_device(p_onvif_device_list, 1);
 
-    handleArray[1] = CreateThread(NULL, 0, searchDevice, NULL, 0, NULL);
-    Sleep(1000);
-    handleArray[0] = CreateThread(NULL, 0, getAllDeviceURI, NULL, 0, NULL);
-    handleArray[2] = CreateThread(NULL, 0, getURIbyIP, NULL, 0, NULL);
-    handleArray[3] = CreateThread(NULL, 0, getVideoInfoByIP, NULL, 0, NULL);
-    handleArray[4] = CreateThread(NULL, 0, searchDevice, NULL, 0, NULL);
+    for(size_t i = 0; i < p_onvif_device_list->number_of_onvif_device; ++i)
+    {
+        for(size_t j = 0; j < 8; j++)
+        {
+            if(0 == strncmp(p_onvif_device_list->p_onvif_device[i].IPv4, IP_username_password[j].IP, 17))
+            {
+                strncpy(p_onvif_device_list->p_onvif_device[i].username, IP_username_password[j].username, 50);
+                strncpy(p_onvif_device_list->p_onvif_device[i].password, IP_username_password[j].password, 50);
+            }
+        }
+    }
+
+    handleArray[1] = CreateThread(NULL, 0, searchDevice, p_onvif_device_list, 0, NULL);
+    handleArray[0] = CreateThread(NULL, 0, getServiceAddresses, p_onvif_device_list, 0, NULL);
+    handleArray[2] = CreateThread(NULL, 0, getDeviceInformation, p_onvif_device_list, 0, NULL);
+    handleArray[3] = CreateThread(NULL, 0, getDeviceProfiles, p_onvif_device_list, 0, NULL);
+    handleArray[4] = CreateThread(NULL, 0, searchDevice, p_onvif_device_list, 0, NULL);
 
     WaitForMultipleObjects(5, handleArray, TRUE, INFINITE);
 
     uninit_DLL();
+
+    free_device_list(&p_onvif_device_list);
 
     system("pause");
 

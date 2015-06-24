@@ -338,12 +338,11 @@ ONVIFOPERATION_API int get_onvif_device_information(onvif_device_list* p_onvif_d
         p_onvif_device_list->p_onvif_device[index].username,
         p_onvif_device_list->p_onvif_device[index].password);
 
-    soap_call___tds__GetDeviceInformation(
-        pSoap,
-        p_onvif_device_list->p_onvif_device[index].service_address_device_service.xaddr,
-        NULL,
-        &tds__GetDeviceInformation,
-        tds__GetDeviceInformationResponse);
+    if(SOAP_OK != soap_call___tds__GetDeviceInformation(pSoap, p_onvif_device_list->p_onvif_device[index].service_address_device_service.xaddr, NULL, &tds__GetDeviceInformation, tds__GetDeviceInformationResponse))
+    {
+        p_onvif_device_list->devcie_list_lock = false;
+        return -1;
+    }
 
     strncpy(
         p_onvif_device_list->p_onvif_device[index].device_information.firmware_version,
@@ -420,12 +419,11 @@ ONVIFOPERATION_API int get_onvif_device_service_address(onvif_device_list* p_onv
         p_onvif_device_list->p_onvif_device[index].username,
         p_onvif_device_list->p_onvif_device[index].password);
 
-    soap_call___tds__GetServices(
-        pSoap,
-        p_onvif_device_list->p_onvif_device[index].service_address_device_service.xaddr,
-        NULL,
-        &tds__GetServices,
-        tds__GetServicesResponse);
+    if(SOAP_OK != soap_call___tds__GetServices(pSoap, p_onvif_device_list->p_onvif_device[index].service_address_device_service.xaddr, NULL, &tds__GetServices, tds__GetServicesResponse))
+    {
+        p_onvif_device_list->devcie_list_lock = false;
+        return -1;
+    }
 
     for(i = 0; i < tds__GetServicesResponse.Service.size(); i++)
     {
@@ -650,12 +648,14 @@ ONVIFOPERATION_API int get_onvif_device_profiles(onvif_device_list* p_onvif_devi
         p_onvif_device_list->p_onvif_device[index].username,
         p_onvif_device_list->p_onvif_device[index].password);
 
-    soap_call___trt__GetProfiles(
-        pSoap,
-        p_onvif_device_list->p_onvif_device[index].service_address_media.xaddr,
-        NULL,
-        &getProfiles,
-        getProfilesResponse);
+    if(SOAP_OK != soap_call___trt__GetProfiles(pSoap, p_onvif_device_list->p_onvif_device[index].service_address_media.xaddr, NULL, &getProfiles, getProfilesResponse))
+    {
+        p_onvif_device_list->devcie_list_lock = false;
+        delete getStreamUri.StreamSetup->Transport->Tunnel;
+        delete getStreamUri.StreamSetup->Transport;
+        delete getStreamUri.StreamSetup;
+        return -1;
+    }
 
     if(NULL != p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles)
     {
@@ -667,124 +667,151 @@ ONVIFOPERATION_API int get_onvif_device_profiles(onvif_device_list* p_onvif_devi
 
     for(i = 0; i < p_onvif_device_list->p_onvif_device[index].number_of_onvif_device_profile; ++i)
     {
-        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].AudioEncoderConfiguration.Bitrate =
-            getProfilesResponse.Profiles[i]->AudioEncoderConfiguration->Bitrate;
+        if(NULL != getProfilesResponse.Profiles[i])
+        {
+            if(NULL != getProfilesResponse.Profiles[i]->AudioEncoderConfiguration)
+            {
+                p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].AudioEncoderConfiguration.Bitrate =
+                    getProfilesResponse.Profiles[i]->AudioEncoderConfiguration->Bitrate;
 
-        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].AudioEncoderConfiguration.encoding =
-            (audio_encoding)getProfilesResponse.Profiles[i]->AudioEncoderConfiguration->Encoding;
+                p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].AudioEncoderConfiguration.encoding =
+                    (audio_encoding)getProfilesResponse.Profiles[i]->AudioEncoderConfiguration->Encoding;
 
-        strncpy(
-            p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].AudioEncoderConfiguration.Name,
-            getProfilesResponse.Profiles[i]->AudioEncoderConfiguration->Name.c_str(),
-            30);
+                strncpy(
+                    p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].AudioEncoderConfiguration.Name,
+                    getProfilesResponse.Profiles[i]->AudioEncoderConfiguration->Name.c_str(),
+                    30);
 
-        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].AudioEncoderConfiguration.SampleRate =
-            getProfilesResponse.Profiles[i]->AudioEncoderConfiguration->SampleRate;
+                p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].AudioEncoderConfiguration.SampleRate =
+                    getProfilesResponse.Profiles[i]->AudioEncoderConfiguration->SampleRate;
 
-        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].AudioEncoderConfiguration.UseCount =
-            getProfilesResponse.Profiles[i]->AudioEncoderConfiguration->UseCount;
+                p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].AudioEncoderConfiguration.UseCount =
+                    getProfilesResponse.Profiles[i]->AudioEncoderConfiguration->UseCount;
+            }
 
-        strncpy(
-            p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].AudioSourceConfiguration.Name,
-            getProfilesResponse.Profiles[i]->AudioSourceConfiguration->Name.c_str(),
-            30);
+            if(NULL != getProfilesResponse.Profiles[i]->AudioSourceConfiguration)
+            {
+                strncpy(
+                    p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].AudioSourceConfiguration.Name,
+                    getProfilesResponse.Profiles[i]->AudioSourceConfiguration->Name.c_str(),
+                    30);
 
-        strncpy(
-            p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].AudioSourceConfiguration.SourceToken,
-            getProfilesResponse.Profiles[i]->AudioSourceConfiguration->SourceToken.c_str(),
-            30);
+                strncpy(
+                    p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].AudioSourceConfiguration.SourceToken,
+                    getProfilesResponse.Profiles[i]->AudioSourceConfiguration->SourceToken.c_str(),
+                    30);
 
-        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].AudioSourceConfiguration.UseCount =
-            getProfilesResponse.Profiles[i]->AudioSourceConfiguration->UseCount;
+                p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].AudioSourceConfiguration.UseCount =
+                    getProfilesResponse.Profiles[i]->AudioSourceConfiguration->UseCount;
+            }
 
-        getStreamUri.ProfileToken = getProfilesResponse.Profiles[i]->token;
+            getStreamUri.ProfileToken = getProfilesResponse.Profiles[i]->token;
 
-        soap_set_namespaces(pSoap, media_namespace);
+            soap_set_namespaces(pSoap, media_namespace);
 
-        soap_wsse_add_UsernameTokenDigest(
-            pSoap,
-            "user",
-            p_onvif_device_list->p_onvif_device[index].username,
-            p_onvif_device_list->p_onvif_device[index].password);
+            soap_wsse_add_UsernameTokenDigest(
+                pSoap,
+                "user",
+                p_onvif_device_list->p_onvif_device[index].username,
+                p_onvif_device_list->p_onvif_device[index].password);
 
-        soap_call___trt__GetStreamUri(
-            pSoap,
-            p_onvif_device_list->p_onvif_device[index].service_address_media.xaddr,
-            NULL,
-            &getStreamUri,
-            getStreamUriResponse);
+            soap_call___trt__GetStreamUri(
+                pSoap,
+                p_onvif_device_list->p_onvif_device[index].service_address_media.xaddr,
+                NULL,
+                &getStreamUri,
+                getStreamUriResponse);
 
-        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].MediaUri.InvalidAfterConnect =
-            getStreamUriResponse.MediaUri->InvalidAfterConnect;
+            if(NULL != getStreamUriResponse.MediaUri)
+            {
+                p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].MediaUri.InvalidAfterConnect =
+                    getStreamUriResponse.MediaUri->InvalidAfterConnect;
 
-        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].MediaUri.InvalidAfterReboot =
-            getStreamUriResponse.MediaUri->InvalidAfterReboot;
+                p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].MediaUri.InvalidAfterReboot =
+                    getStreamUriResponse.MediaUri->InvalidAfterReboot;
 
-        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].MediaUri.Timeout =
-            getStreamUriResponse.MediaUri->Timeout;
+                p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].MediaUri.Timeout =
+                    getStreamUriResponse.MediaUri->Timeout;
 
-        strncpy(
-            p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].MediaUri.URI,
-            getStreamUriResponse.MediaUri->Uri.c_str(),
-            256);
+                strncpy(
+                    p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].MediaUri.URI,
+                    getStreamUriResponse.MediaUri->Uri.c_str(),
+                    256);
+            }
 
-        strncpy(
-            p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].name,
-            getProfilesResponse.Profiles[i]->Name.c_str(),
-            30);
+            strncpy(
+                p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].name,
+                getProfilesResponse.Profiles[i]->Name.c_str(),
+                30);
 
-        strncpy(
-            p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].token,
-            getProfilesResponse.Profiles[i]->token.c_str(),
-            30);
+            strncpy(
+                p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].token,
+                getProfilesResponse.Profiles[i]->token.c_str(),
+                30);
 
-        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.encoding =
-            (video_encoding)getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Encoding;
+            if(NULL != getProfilesResponse.Profiles[i]->VideoEncoderConfiguration)
+            {
+                p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.encoding =
+                    (video_encoding)getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Encoding;
 
-        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.H264.GovLength =
-            getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->H264->GovLength;
+                if(NULL != getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->H264)
+                {
+                    p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.H264.GovLength =
+                        getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->H264->GovLength;
 
-        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.H264.Profile =
-            (H264Profile)getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->H264->H264Profile;
+                    p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.H264.Profile =
+                        (H264Profile)getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->H264->H264Profile;
+                }
 
-        strncpy(
-            p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.Name,
-            getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Name.c_str(),
-            30);
+                strncpy(
+                    p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.Name,
+                    getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Name.c_str(),
+                    30);
 
-        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.Quality =
-            getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Quality;
+                p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.Quality =
+                    getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Quality;
 
-        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.RateControl.BitrateLimit =
-            getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->RateControl->BitrateLimit;
+                if(NULL != getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->RateControl)
+                {
+                    p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.RateControl.BitrateLimit =
+                        getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->RateControl->BitrateLimit;
 
-        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.RateControl.EncodingInterval =
-            getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->RateControl->EncodingInterval;
+                    p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.RateControl.EncodingInterval =
+                        getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->RateControl->EncodingInterval;
 
-        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.RateControl.FrameRateLimit =
-            getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->RateControl->FrameRateLimit;
+                    p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.RateControl.FrameRateLimit =
+                       getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->RateControl->FrameRateLimit;
+                }
 
-        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.Resolution.Height =
-            getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Resolution->Height;
+                if(NULL != getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Resolution)
+                {
+                    p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.Resolution.Height =
+                        getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Resolution->Height;
 
-        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.Resolution.Width =
-            getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Resolution->Width;
+                    p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.Resolution.Width =
+                        getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->Resolution->Width;
+                }
 
-        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.UseCount =
-            getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->UseCount;
+                p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoEncoderConfiguration.UseCount =
+                    getProfilesResponse.Profiles[i]->VideoEncoderConfiguration->UseCount;
+            }
 
-        strncpy(
-            p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoSourceConfiguration.Name,
-            getProfilesResponse.Profiles[i]->VideoSourceConfiguration->Name.c_str(),
-            30);
+            if(NULL != getProfilesResponse.Profiles[i]->VideoSourceConfiguration)
+            {
+                strncpy(
+                    p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoSourceConfiguration.Name,
+                    getProfilesResponse.Profiles[i]->VideoSourceConfiguration->Name.c_str(),
+                    30);
 
-        strncpy(
-            p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoSourceConfiguration.SourceToken,
-            getProfilesResponse.Profiles[i]->VideoSourceConfiguration->token.c_str(),
-            30);
+                strncpy(
+                    p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoSourceConfiguration.SourceToken,
+                    getProfilesResponse.Profiles[i]->VideoSourceConfiguration->token.c_str(),
+                    30);
 
-        p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoSourceConfiguration.UseCount =
-            getProfilesResponse.Profiles[i]->VideoSourceConfiguration->UseCount;
+                p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles[i].VideoSourceConfiguration.UseCount =
+                    getProfilesResponse.Profiles[i]->VideoSourceConfiguration->UseCount;
+            }
+        }
     }
 
     p_onvif_device_list->devcie_list_lock = false;

@@ -21,7 +21,7 @@ int _tmain(int argc, _TCHAR* argv[])
     {
         "192.168.10.185", "admin", "12345",
         "192.168.10.141", "admin", "12345",
-        "192.168.10.146", "admin", "12345",
+        "192.168.10.146", "admin", "Tolendata",
         "192.168.10.182", "admin", "Tolendata",
         "192.168.10.149", "admin", "Tolendata",
         "192.168.10.181", "admin", "Tolendata",
