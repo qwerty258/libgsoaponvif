@@ -215,21 +215,18 @@ ONVIFOPERATION_API void free_device_list(onvif_device_list** pp_onvif_device_lis
     {
         return;
     }
-
-    if(NULL != (*pp_onvif_device_list)->p_onvif_device)
+    else
     {
-        free((*pp_onvif_device_list)->p_onvif_device);
-    }
-
-    if(NULL != (*pp_onvif_device_list))
-    {
+        if(NULL != (*pp_onvif_device_list)->p_onvif_device)
+        {
+            free((*pp_onvif_device_list)->p_onvif_device);
+        }
         free((*pp_onvif_device_list));
+        (*pp_onvif_device_list) = NULL;
     }
-
-    (*pp_onvif_device_list) = NULL;
 }
 
-ONVIFOPERATION_API int search_ONVIF_device(onvif_device_list* p_onvif_device_list, int waitTime)
+ONVIFOPERATION_API int search_ONVIF_device(onvif_device_list* p_onvif_device_list, int wait_time)
 {
     vector<string>              device_service_address_list;
     vector<string>              device_IPv4_list;
@@ -246,7 +243,7 @@ ONVIFOPERATION_API int search_ONVIF_device(onvif_device_list* p_onvif_device_lis
 
     soap_default_SOAP_ENV__Header(pSoapForSearch, &header);
     soap_set_namespaces(pSoapForSearch, probeNamespace);
-    pSoapForSearch->recv_timeout = waitTime;
+    pSoapForSearch->recv_timeout = wait_time;
 
     header.wsa__MessageID = (char*)soap_wsa_rand_uuid(pSoapForSearch);
     if(NULL == header.wsa__MessageID)
@@ -326,12 +323,13 @@ ONVIFOPERATION_API int search_ONVIF_device(onvif_device_list* p_onvif_device_lis
     }
     else
     {
+        memset(p_onvif_device_temp, 0x0, p_onvif_device_list->number_of_onvif_device * sizeof(onvif_device));
         p_onvif_device_list->p_onvif_device = p_onvif_device_temp;
     }
 
     for(i = 0; i < p_onvif_device_list->number_of_onvif_device; ++i)
     {
-        strncpy(p_onvif_device_list->p_onvif_device[i].device_service_address, device_service_address_list[i].c_str(), 256);
+        strncpy(p_onvif_device_list->p_onvif_device[i].device_service.xaddr, device_service_address_list[i].c_str(), 256);
         strncpy(p_onvif_device_list->p_onvif_device[i].IPv4, device_IPv4_list[i].c_str(), 17);
     }
 
@@ -379,7 +377,7 @@ ONVIFOPERATION_API int get_onvif_device_information(onvif_device_list* p_onvif_d
 
     soap_wsse_add_UsernameTokenDigest(pSoap, "user", p_onvif_device_list->p_onvif_device[index].username, p_onvif_device_list->p_onvif_device[index].password);
 
-    soap_call___tds__GetDeviceInformation(pSoap, p_onvif_device_list->p_onvif_device[index].device_service_address, NULL, &tds__GetDeviceInformation, tds__GetDeviceInformationResponse);
+    soap_call___tds__GetDeviceInformation(pSoap, p_onvif_device_list->p_onvif_device[index].device_service.xaddr, NULL, &tds__GetDeviceInformation, tds__GetDeviceInformationResponse);
 
     strncpy(
         p_onvif_device_list->p_onvif_device[index].device_information.firmware_version,
@@ -407,7 +405,7 @@ ONVIFOPERATION_API int get_onvif_device_information(onvif_device_list* p_onvif_d
     return 0;
 }
 
-ONVIFOPERATION_API int get_number_of_IPCs(void)
+ONVIFOPERATION_API int get_onvif_device_service_addresses(onvif_device_list* p_onvif_device_list, char* IP, size_t index)
 {
     if(!initialsuccess)
     {

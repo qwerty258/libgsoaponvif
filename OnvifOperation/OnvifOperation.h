@@ -53,6 +53,14 @@ typedef struct
     enum video_encoding encoding;
 }IPC_profiles;
 
+typedef struct tag_onvif_device_service_address
+{
+    char namesapce[256];
+    char xaddr[256];
+    int major_version;
+    int minor_version;
+}onvif_device_service_address;
+
 typedef struct tag_onvif_device_information
 {
     char manufacturer[50];
@@ -64,18 +72,26 @@ typedef struct tag_onvif_device_information
 
 typedef struct tag_onvif_device
 {
-
     //************************************
-    // IPv4 of the onvif device, set by search_ONVIF_device() function.
+    // IPv4 of the onvif device, set by search_ONVIF_device().
     // User MUST NOT set this content. Read only.
     //************************************
     char IPv4[17];
 
     //************************************
-    // onvif device service address, set by search_ONVIF_device() function.
+    // onvif device service addresses, set by search_ONVIF_device() and other API.
     // User MUST NOT set this content. Read only.
     //************************************
-    char device_service_address[256];
+    onvif_device_service_address device_service;
+    onvif_device_service_address media;
+    onvif_device_service_address events;
+    onvif_device_service_address PTZ;
+    onvif_device_service_address imaging;
+    onvif_device_service_address deviceIO;
+    onvif_device_service_address analytics;
+    onvif_device_service_address recording;
+    onvif_device_service_address search_recording;
+    onvif_device_service_address replay;
 
     //************************************
     // device authorization information.
@@ -137,29 +153,30 @@ extern "C" {
 
 
     //************************************
-    // function:  search onvif device. if you search again, the information in onvif_device_list will be invalid; you need get it again.
+    // function:  search onvif device. if you search again, the information in onvif_device_list will be lost; you need get it again.
     // Returns:   int: 0 success, -1 failure
     // Parameter: onvif_device_list* p_onvif_device_list: pointer get from malloc_device_list(void).
     // Parameter: int waitTime: interval for cameras to response, when > 0, gives socket recv timeout in seconds, < 0 in usec.
     //************************************
-    ONVIFOPERATION_API int search_ONVIF_device(onvif_device_list* p_onvif_device_list, int waitTime);
+    ONVIFOPERATION_API int search_ONVIF_device(onvif_device_list* p_onvif_device_list, int wait_time);
 
     //************************************
     // function:  get onvif device information.
     // Returns:   int: 0 success, -1 failure.
     // Parameter: onvif_device_list* p_onvif_device_list: pointer get from malloc_device_list(void).
     // Parameter: char* IP: the IPC's IP you want to operate, or you can use index get from onvif_device_list.
-    // Parameter: size_t index: index of onvif_device array.
+    // Parameter: size_t index: index of onvif_device array, if char* IP is not NULL, this parameter will be ignored.
     //************************************
     ONVIFOPERATION_API int get_onvif_device_information(onvif_device_list* p_onvif_device_list, char* IP, size_t index);
 
     //************************************
-    // function:  get number of onvif IPC. thread safe
-    // FullName:  get_number_of_IPCs
-    // Returns:   int: number of onvif IPC, -1 something went wrong
-    // Parameter: void
+    // function:  get onvif device service addresses.
+    // Returns:   int: 0 success, -1 failure.
+    // Parameter: onvif_device_list* p_onvif_device_list: pointer get from malloc_device_list(void).
+    // Parameter: char* IP: the IPC's IP you want to operate, or you can use index get from onvif_device_list.
+    // Parameter: size_t index: index of onvif_device array, if char* IP is not NULL, this parameter will be ignored.
     //************************************
-    ONVIFOPERATION_API int get_number_of_IPCs(void);
+    ONVIFOPERATION_API int get_onvif_device_service_addresses(onvif_device_list* p_onvif_device_list, char* IP, size_t index);
 
     //************************************
     // function:  get number of onvif NVR. thread safe
