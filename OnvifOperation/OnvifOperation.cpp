@@ -324,12 +324,12 @@ ONVIFOPERATION_API int search_ONVIF_device(onvif_device_list* p_onvif_device_lis
     }
 
     // add new device into list
-    for(i = 0; i < device_service_address_list.size(); ++i)
+    for(i = 0; i < device_IPv4_list.size(); ++i)
     {
         // find device already in the list and set to duplicated
         for(j = 0; j < p_onvif_device_list->number_of_onvif_device; ++j)
         {
-            if(0 == strncmp(device_service_address_list[i].c_str(), p_onvif_device_list->p_onvif_device[j].service_address_device_service.xaddr, 256))
+            if(0 == strncmp(device_IPv4_list[i].c_str(), p_onvif_device_list->p_onvif_device[j].IPv4, 256))
             {
                 p_onvif_device_list->p_onvif_device[j].duplicated = true;
                 break;
