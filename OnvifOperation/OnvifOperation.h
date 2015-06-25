@@ -64,7 +64,7 @@ enum ReceiverMode
     AutoConnect = 0,
     AlwaysConnect = 1,
     NeverConnect = 2,
-    Unknown = 3
+    UnknownMode = 3
 };
 
 
