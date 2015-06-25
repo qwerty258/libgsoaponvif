@@ -141,7 +141,34 @@ int _tmain(int argc, _TCHAR* argv[])
 
         for(size_t j = 0; j < p_onvif_device_list->p_onvif_device[i].number_of_onvif_device_profile; ++j)
         {
-            cout << "URI: " << p_onvif_device_list->p_onvif_device[i].p_onvif_device_profiles[j].MediaUri.URI << endl;
+            cout << "Profile " << j + 1 << ": \n";
+            cout << "Profile name: " << p_onvif_device_list->p_onvif_device[i].p_onvif_device_profiles[j].name << endl;
+            cout << "Resolution: "
+                << "Width: "
+                << p_onvif_device_list->p_onvif_device[i].p_onvif_device_profiles[j].VideoEncoderConfiguration.Resolution.Width
+                << " , Height: "
+                << p_onvif_device_list->p_onvif_device[i].p_onvif_device_profiles[j].VideoEncoderConfiguration.Resolution.Height
+                << endl;
+            cout << "Frame rate limit: "
+                << p_onvif_device_list->p_onvif_device[i].p_onvif_device_profiles[j].VideoEncoderConfiguration.RateControl.FrameRateLimit
+                << endl;
+            cout << "Encoding type: ";
+            switch(p_onvif_device_list->p_onvif_device[i].p_onvif_device_profiles[j].VideoEncoderConfiguration.encoding)
+            {
+                case H264:
+                    cout << "H264" << endl;
+                    break;
+                case MPEG4:
+                    cout << "MPEG4" << endl;
+                    break;
+                case JPEG:
+                    cout << "JPEG" << endl;
+                    break;
+                default:
+                    cout << "Unknown" << endl;
+                    break;
+            }
+            cout << "URI: " << p_onvif_device_list->p_onvif_device[i].p_onvif_device_profiles[j].MediaUri.URI << endl << endl;
         }
         cout << "----------------------------------------------" << endl;
         cout << endl;
