@@ -76,13 +76,13 @@ extern "C"
         {NULL, NULL, NULL, NULL}
     };
 
-    SOAP_NMAC struct Namespace getStreamUriNamespace[] =
+    SOAP_NMAC struct Namespace receiver_namespace[] =
     {
         {"SOAP-ENV", "http://www.w3.org/2003/05/soap-envelope", "http://schemas.xmlsoap.org/soap/envelope/", NULL},
         {"SOAP-ENC", "http://www.w3.org/2003/05/soap-encoding", "http://schemas.xmlsoap.org/soap/encoding/", NULL},
         {"wsse", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd", "http://docs.oasis-open.org/wss/oasis-wss-wssecurity-secext-1.1.xsd", NULL},
         {"wsu", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd", NULL, NULL},
-        {"trt", "http://www.onvif.org/ver10/media/wsdl", NULL, NULL},
+        {"trv", "http://www.onvif.org/ver10/receiver/wsdl", NULL, NULL},
         {NULL, NULL, NULL, NULL}
     };
 }

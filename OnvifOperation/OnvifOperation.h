@@ -59,6 +59,29 @@ enum H264Profile
 };
 
 
+enum ReceiverMode
+{
+    AutoConnect = 0,
+    AlwaysConnect = 1,
+    NeverConnect = 2,
+    Unknown = 3
+};
+
+
+enum StreamType
+{
+    RTP_Unicast = 0,
+    RTP_Multicast = 1
+};
+
+enum TransportProtocol
+{
+    UDP = 0,
+    TCP = 1,
+    RTSP = 2,
+    HTTP = 3
+};
+
 // onvif_device_profiles struct
 typedef struct tag_onvif_device_profiles
 {
@@ -145,6 +168,23 @@ typedef struct tag_onvif_device_information
     char hardware_Id[10];
 }onvif_device_information;
 
+typedef struct tag_onvif_NVR_receivers
+{
+    char token[30];
+    struct
+    {
+        enum ReceiverMode mode;
+        char media_URI[256];
+
+        struct
+        {
+            enum StreamType stream;
+            enum TransportProtocol protocol;
+        }stream_setup;
+
+    }configuration;
+}onvif_NVR_receivers;
+
 typedef struct tag_onvif_device
 {
     //************************************
@@ -173,6 +213,7 @@ typedef struct tag_onvif_device
     onvif_device_service_address service_address_recording;
     onvif_device_service_address service_address_search_recording;
     onvif_device_service_address service_address_replay;
+    onvif_device_service_address service_address_receiver;
 
     //************************************
     // device authorization information.
@@ -194,6 +235,13 @@ typedef struct tag_onvif_device
     //************************************
     onvif_device_profiles* p_onvif_device_profiles;
     size_t number_of_onvif_device_profile;
+
+    //************************************
+    // onvif NVR receivers.
+    // User MUST NOT set this content. Read only.
+    //************************************
+    onvif_NVR_receivers* p_onvif_NVR_receivers;
+    size_t number_of_onvif_NVR_receivers;
 }onvif_device;
 
 typedef struct tag_onvif_device_list
@@ -280,6 +328,15 @@ extern "C" {
     // Parameter: size_t index: index of onvif_device array, if char* IP is not NULL, this parameter will be ignored, you can pass whatever into it.
     //************************************
     ONVIFOPERATION_API int get_onvif_device_profiles(onvif_device_list* p_onvif_device_list, char* IP, size_t index);
+
+    //************************************
+    // function:  get onvif NVR receivers.
+    // Returns:   int: 0 success, -1 failure.
+    // Parameter: onvif_device_list* p_onvif_device_list: pointer get from malloc_device_list(void).
+    // Parameter: char* IP: the IPC's IP you want to operate, or you can use index get from onvif_device_list.
+    // Parameter: size_t index: index of onvif_device array, if char* IP is not NULL, this parameter will be ignored, you can pass whatever into it.
+    //************************************
+    ONVIFOPERATION_API int get_onvif_NVR_receivers(onvif_device_list* p_onvif_device_list, char* IP, size_t index);
 
 #ifdef __cplusplus
 }

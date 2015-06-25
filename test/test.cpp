@@ -17,7 +17,7 @@ typedef struct
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-    struct_IP_username_password IP_username_password[8] =
+    struct_IP_username_password IP_username_password[9] =
     {
         "192.168.10.185", "admin", "12345",
         "192.168.10.141", "admin", "12345",
@@ -26,7 +26,8 @@ int _tmain(int argc, _TCHAR* argv[])
         "192.168.10.149", "admin", "Tolendata",
         "192.168.10.181", "admin", "Tolendata",
         "192.168.10.195", "admin", "12345",
-        "192.168.10.142", "admin", "12345"
+        "192.168.10.142", "admin", "12345",
+        "192.168.10.231", "admin", "Tolendata"
     };
 
     onvif_device_list* p_onvif_device_list = malloc_device_list();
@@ -52,7 +53,7 @@ int _tmain(int argc, _TCHAR* argv[])
     {
         cout << p_onvif_device_list->p_onvif_device[i].IPv4 << ':' << p_onvif_device_list->p_onvif_device[i].service_address_device_service.xaddr << endl;
 
-        for(size_t j = 0; j < 8; j++)
+        for(size_t j = 0; j < 9; j++)
         {
             if(0 == strncmp(p_onvif_device_list->p_onvif_device[i].IPv4, IP_username_password[j].IP, 17))
             {
@@ -135,6 +136,12 @@ int _tmain(int argc, _TCHAR* argv[])
             << '.'
             << p_onvif_device_list->p_onvif_device[i].service_address_search_recording.minor_version
             << endl;
+        cout << p_onvif_device_list->p_onvif_device[i].service_address_receiver.xaddr
+            << ':'
+            << p_onvif_device_list->p_onvif_device[i].service_address_receiver.major_version
+            << '.'
+            << p_onvif_device_list->p_onvif_device[i].service_address_receiver.minor_version
+            << endl;
         cout << endl;
 
         get_onvif_device_profiles(p_onvif_device_list, NULL, i);
@@ -171,6 +178,7 @@ int _tmain(int argc, _TCHAR* argv[])
             cout << "URI: " << p_onvif_device_list->p_onvif_device[i].p_onvif_device_profiles[j].MediaUri.URI << endl << endl;
         }
         cout << "----------------------------------------------" << endl;
+        system("pause");
         cout << endl;
     }
 

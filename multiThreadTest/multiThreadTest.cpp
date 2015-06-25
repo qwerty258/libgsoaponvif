@@ -65,8 +65,8 @@ typedef struct
 int _tmain(int argc, _TCHAR* argv[])
 {
     HANDLE handleArray[5];
-    onvif_device_list* p_onvif_device_list = malloc_device_list();
-    struct_IP_username_password IP_username_password[8] =
+    onvif_device_list* p_onvif_device_list = NULL;
+    struct_IP_username_password IP_username_password[9] =
     {
         "192.168.10.185", "admin", "12345",
         "192.168.10.141", "admin", "12345",
@@ -75,16 +75,19 @@ int _tmain(int argc, _TCHAR* argv[])
         "192.168.10.149", "admin", "Tolendata",
         "192.168.10.181", "admin", "Tolendata",
         "192.168.10.195", "admin", "12345",
-        "192.168.10.142", "admin", "12345"
+        "192.168.10.142", "admin", "12345",
+        "192.168.10.231", "admin", "Tolendata"
     };
 
     init_DLL();
+
+    p_onvif_device_list = malloc_device_list();
 
     search_ONVIF_device(p_onvif_device_list, 1);
 
     for(size_t i = 0; i < p_onvif_device_list->number_of_onvif_device; ++i)
     {
-        for(size_t j = 0; j < 8; j++)
+        for(size_t j = 0; j < 9; j++)
         {
             if(0 == strncmp(p_onvif_device_list->p_onvif_device[i].IPv4, IP_username_password[j].IP, 17))
             {
@@ -92,19 +95,21 @@ int _tmain(int argc, _TCHAR* argv[])
                 strncpy(p_onvif_device_list->p_onvif_device[i].password, IP_username_password[j].password, 50);
             }
         }
+        get_onvif_device_service_address(p_onvif_device_list, NULL, i);
     }
+
 
     handleArray[1] = CreateThread(NULL, 0, searchDevice, p_onvif_device_list, 0, NULL);
     handleArray[0] = CreateThread(NULL, 0, getServiceAddresses, p_onvif_device_list, 0, NULL);
     handleArray[2] = CreateThread(NULL, 0, getDeviceInformation, p_onvif_device_list, 0, NULL);
     handleArray[3] = CreateThread(NULL, 0, getDeviceProfiles, p_onvif_device_list, 0, NULL);
-    handleArray[4] = CreateThread(NULL, 0, searchDevice, p_onvif_device_list, 0, NULL);
+    //handleArray[4] = CreateThread(NULL, 0, searchDevice, p_onvif_device_list, 0, NULL);
 
-    WaitForMultipleObjects(5, handleArray, TRUE, INFINITE);
-
-    uninit_DLL();
+    WaitForMultipleObjects(4, handleArray, TRUE, INFINITE);
 
     free_device_list(&p_onvif_device_list);
+
+    uninit_DLL();
 
     system("pause");
 

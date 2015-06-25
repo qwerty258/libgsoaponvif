@@ -102,6 +102,13 @@ ONVIFOPERATION_API void free_device_list(onvif_device_list** pp_onvif_device_lis
                 free((*pp_onvif_device_list)->p_onvif_device[i].p_onvif_device_profiles);
             }
         }
+        for(size_t i = 0; i < (*pp_onvif_device_list)->number_of_onvif_device; ++i)
+        {
+            if(NULL != (*pp_onvif_device_list)->p_onvif_device[i].p_onvif_NVR_receivers)
+            {
+                free((*pp_onvif_device_list)->p_onvif_device[i].p_onvif_NVR_receivers);
+            }
+        }
         if(NULL != (*pp_onvif_device_list)->p_onvif_device)
         {
             free((*pp_onvif_device_list)->p_onvif_device);
@@ -258,6 +265,13 @@ ONVIFOPERATION_API int search_ONVIF_device(onvif_device_list* p_onvif_device_lis
             {
                 free(p_onvif_device_list->p_onvif_device[i].p_onvif_device_profiles);
                 p_onvif_device_list->p_onvif_device[i].p_onvif_device_profiles = NULL;
+            }
+
+            // remove NVR receivers array
+            if(NULL != p_onvif_device_list->p_onvif_device[i].p_onvif_NVR_receivers)
+            {
+                free(p_onvif_device_list->p_onvif_device[i].p_onvif_NVR_receivers);
+                p_onvif_device_list->p_onvif_device[i].p_onvif_NVR_receivers = NULL;
             }
 
             // move elements behind forward
@@ -561,6 +575,20 @@ ONVIFOPERATION_API int get_onvif_device_service_address(onvif_device_list* p_onv
                 tds__GetServicesResponse.Service[i]->XAddr.c_str(),
                 256);
         }
+
+        if(0 == strncmp(tds__GetServicesResponse.Service[i]->Namespace.c_str(), "http://www.onvif.org/ver10/receiver/wsdl", 256))
+        {
+            p_onvif_device_list->p_onvif_device[index].service_address_replay.major_version = tds__GetServicesResponse.Service[i]->Version->Major;
+            p_onvif_device_list->p_onvif_device[index].service_address_replay.minor_version = tds__GetServicesResponse.Service[i]->Version->Minor;
+            strncpy(
+                p_onvif_device_list->p_onvif_device[index].service_address_replay.namesapce,
+                tds__GetServicesResponse.Service[i]->Namespace.c_str(),
+                256);
+            strncpy(
+                p_onvif_device_list->p_onvif_device[index].service_address_replay.xaddr,
+                tds__GetServicesResponse.Service[i]->XAddr.c_str(),
+                256);
+        }
     }
 
     p_onvif_device_list->devcie_list_lock = false;
@@ -603,7 +631,7 @@ ONVIFOPERATION_API int get_onvif_device_profiles(onvif_device_list* p_onvif_devi
         }
     }
 
-    if(p_onvif_device_list->number_of_onvif_device <= index)
+    if(p_onvif_device_list->number_of_onvif_device <= index || 17 > strnlen(p_onvif_device_list->p_onvif_device[index].service_address_media.xaddr, 256))
     {
         p_onvif_device_list->devcie_list_lock = false;
         return -1;
@@ -819,6 +847,114 @@ ONVIFOPERATION_API int get_onvif_device_profiles(onvif_device_list* p_onvif_devi
     delete getStreamUri.StreamSetup->Transport->Tunnel;
     delete getStreamUri.StreamSetup->Transport;
     delete getStreamUri.StreamSetup;
+
+    return 0;
+}
+
+ONVIFOPERATION_API int get_onvif_NVR_receivers(onvif_device_list* p_onvif_device_list, char* IP, size_t index)
+{
+    size_t                      i;
+    _trv__GetReceivers          GetReceivers;
+    _trv__GetReceiversResponse  GetReceiversResponse;
+
+    if(!initialsuccess)
+    {
+        return -1;
+    }
+
+    while(p_onvif_device_list->devcie_list_lock)
+    {
+        Sleep(10);
+    }
+    p_onvif_device_list->devcie_list_lock = true;
+
+    if(NULL != IP)
+    {
+        if(17 < strnlen(IP, 17))
+        {
+            p_onvif_device_list->devcie_list_lock = false;
+            return -1;
+        }
+        for(i = 0; i < p_onvif_device_list->number_of_onvif_device; i++)
+        {
+            if(0 == strncmp(IP, p_onvif_device_list->p_onvif_device[i].IPv4, 17))
+            {
+                index = i;
+            }
+        }
+    }
+
+    if(p_onvif_device_list->number_of_onvif_device <= index || 17 > strnlen(p_onvif_device_list->p_onvif_device[index].service_address_receiver.xaddr, 256))
+    {
+        p_onvif_device_list->devcie_list_lock = false;
+        return -1;
+    }
+
+    soap_set_namespaces(pSoap, receiver_namespace);
+
+    soap_wsse_add_UsernameTokenDigest(
+        pSoap,
+        "user",
+        p_onvif_device_list->p_onvif_device[index].username,
+        p_onvif_device_list->p_onvif_device[index].password);
+
+
+    if(SOAP_OK != soap_call___trv__GetReceivers(pSoap, p_onvif_device_list->p_onvif_device[index].service_address_receiver.xaddr, NULL, &GetReceivers, GetReceiversResponse))
+    {
+        p_onvif_device_list->devcie_list_lock = false;
+        return -1;
+    }
+
+    // free preverious onvif NVR receivers list
+    if(NULL != p_onvif_device_list->p_onvif_device[index].p_onvif_NVR_receivers)
+    {
+        free(p_onvif_device_list->p_onvif_device[index].p_onvif_NVR_receivers);
+    }
+
+    p_onvif_device_list->p_onvif_device[index].number_of_onvif_NVR_receivers = GetReceiversResponse.Receivers.size();
+    p_onvif_device_list->p_onvif_device[index].p_onvif_NVR_receivers = (onvif_NVR_receivers*)malloc(p_onvif_device_list->p_onvif_device[index].number_of_onvif_NVR_receivers * sizeof(onvif_NVR_receivers));
+    if(NULL == p_onvif_device_list->p_onvif_device[index].p_onvif_NVR_receivers)
+    {
+        p_onvif_device_list->devcie_list_lock = false;
+        return -1;
+    }
+
+    for(i = 0; i < p_onvif_device_list->p_onvif_device[index].number_of_onvif_NVR_receivers; i++)
+    {
+        if(NULL == GetReceiversResponse.Receivers[i])
+        {
+            continue;
+        }
+
+        strncpy(
+            p_onvif_device_list->p_onvif_device[index].p_onvif_NVR_receivers[i].token,
+            GetReceiversResponse.Receivers[i]->Token.c_str(),
+            30);
+
+        if(NULL != GetReceiversResponse.Receivers[i]->Configuration)
+        {
+            strncpy(
+                p_onvif_device_list->p_onvif_device[index].p_onvif_NVR_receivers[i].configuration.media_URI,
+                GetReceiversResponse.Receivers[i]->Configuration->MediaUri.c_str(),
+                256);
+
+            p_onvif_device_list->p_onvif_device[index].p_onvif_NVR_receivers[i].configuration.mode =
+                (ReceiverMode)GetReceiversResponse.Receivers[i]->Configuration->Mode;
+
+            if(NULL != GetReceiversResponse.Receivers[i]->Configuration->StreamSetup)
+            {
+                if(NULL != GetReceiversResponse.Receivers[i]->Configuration->StreamSetup->Transport)
+                {
+                    p_onvif_device_list->p_onvif_device[index].p_onvif_NVR_receivers[i].configuration.stream_setup.protocol =
+                        (TransportProtocol)GetReceiversResponse.Receivers[i]->Configuration->StreamSetup->Transport->Protocol;
+                }
+                p_onvif_device_list->p_onvif_device[index].p_onvif_NVR_receivers[i].configuration.stream_setup.stream =
+                    (StreamType)GetReceiversResponse.Receivers[i]->Configuration->StreamSetup->Stream;
+            }
+        }
+    }
+
+    p_onvif_device_list->devcie_list_lock = false;
 
     return 0;
 }
