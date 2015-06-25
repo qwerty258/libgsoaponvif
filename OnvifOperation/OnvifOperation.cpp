@@ -685,6 +685,7 @@ ONVIFOPERATION_API int get_onvif_device_profiles(onvif_device_list* p_onvif_devi
         return -1;
     }
 
+    // free preverious onvif device profiles list
     if(NULL != p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles)
     {
         free(p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles);
@@ -692,6 +693,14 @@ ONVIFOPERATION_API int get_onvif_device_profiles(onvif_device_list* p_onvif_devi
 
     p_onvif_device_list->p_onvif_device[index].number_of_onvif_device_profile = getProfilesResponse.Profiles.size();
     p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles = (onvif_device_profiles*)malloc(getProfilesResponse.Profiles.size() * sizeof(onvif_device_profiles));
+    if(NULL == p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles)
+    {
+        p_onvif_device_list->devcie_list_lock = false;
+        delete getStreamUri.StreamSetup->Transport->Tunnel;
+        delete getStreamUri.StreamSetup->Transport;
+        delete getStreamUri.StreamSetup;
+        return -1;
+    }
 
     for(i = 0; i < p_onvif_device_list->p_onvif_device[index].number_of_onvif_device_profile; ++i)
     {
