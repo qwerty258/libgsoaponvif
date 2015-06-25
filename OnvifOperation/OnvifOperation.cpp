@@ -578,14 +578,14 @@ ONVIFOPERATION_API int get_onvif_device_service_address(onvif_device_list* p_onv
 
         if(0 == strncmp(tds__GetServicesResponse.Service[i]->Namespace.c_str(), "http://www.onvif.org/ver10/receiver/wsdl", 256))
         {
-            p_onvif_device_list->p_onvif_device[index].service_address_replay.major_version = tds__GetServicesResponse.Service[i]->Version->Major;
-            p_onvif_device_list->p_onvif_device[index].service_address_replay.minor_version = tds__GetServicesResponse.Service[i]->Version->Minor;
+            p_onvif_device_list->p_onvif_device[index].service_address_receiver.major_version = tds__GetServicesResponse.Service[i]->Version->Major;
+            p_onvif_device_list->p_onvif_device[index].service_address_receiver.minor_version = tds__GetServicesResponse.Service[i]->Version->Minor;
             strncpy(
-                p_onvif_device_list->p_onvif_device[index].service_address_replay.namesapce,
+                p_onvif_device_list->p_onvif_device[index].service_address_receiver.namesapce,
                 tds__GetServicesResponse.Service[i]->Namespace.c_str(),
                 256);
             strncpy(
-                p_onvif_device_list->p_onvif_device[index].service_address_replay.xaddr,
+                p_onvif_device_list->p_onvif_device[index].service_address_receiver.xaddr,
                 tds__GetServicesResponse.Service[i]->XAddr.c_str(),
                 256);
         }

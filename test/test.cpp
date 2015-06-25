@@ -177,6 +177,18 @@ int _tmain(int argc, _TCHAR* argv[])
             }
             cout << "URI: " << p_onvif_device_list->p_onvif_device[i].p_onvif_device_profiles[j].MediaUri.URI << endl << endl;
         }
+
+        get_onvif_NVR_receivers(p_onvif_device_list, NULL, i);
+
+        for(size_t j = 0; j < p_onvif_device_list->p_onvif_device[i].number_of_onvif_NVR_receivers; j++)
+        {
+            cout << "Receivers:\n";
+            cout << p_onvif_device_list->p_onvif_device[i].p_onvif_NVR_receivers[j].token
+                << ':'
+                << p_onvif_device_list->p_onvif_device[i].p_onvif_NVR_receivers[j].configuration.media_URI
+                << endl;
+        }
+
         cout << "----------------------------------------------" << endl;
         system("pause");
         cout << endl;
