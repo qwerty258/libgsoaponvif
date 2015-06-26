@@ -6,4 +6,4 @@ EXPORTS
     free_device_list                            @4
     search_ONVIF_device                         @5
     get_onvif_device_information                @6
-    get_onvif_device_service_address            @7
+    get_onvif_device_service_addresses          @7

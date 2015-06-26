@@ -384,7 +384,7 @@ ONVIFOPERATION_API int get_onvif_device_information(onvif_device_list* p_onvif_d
     return 0;
 }
 
-ONVIFOPERATION_API int get_onvif_device_service_address(onvif_device_list* p_onvif_device_list, char* IP, size_t index)
+ONVIFOPERATION_API int get_onvif_device_service_addresses(onvif_device_list* p_onvif_device_list, char* IP, size_t index)
 {
     size_t                      i;
     _tds__GetServices           tds__GetServices;

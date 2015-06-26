@@ -11,7 +11,7 @@ DWORD WINAPI getServiceAddresses(LPVOID lpParameter)
 
     for(size_t i = 0; i < static_cast<onvif_device_list*>(lpParameter)->number_of_onvif_devices; i++)
     {
-        get_onvif_device_service_address(static_cast<onvif_device_list*>(lpParameter), NULL, i);
+        get_onvif_device_service_addresses(static_cast<onvif_device_list*>(lpParameter), NULL, i);
     }
 
     std::cout << "Thread getServiceAddresses end\n";
@@ -95,7 +95,7 @@ int _tmain(int argc, _TCHAR* argv[])
                 strncpy(p_onvif_device_list->p_onvif_devices[i].password, IP_username_password[j].password, 50);
             }
         }
-        get_onvif_device_service_address(p_onvif_device_list, NULL, i);
+        get_onvif_device_service_addresses(p_onvif_device_list, NULL, i);
     }
 
 

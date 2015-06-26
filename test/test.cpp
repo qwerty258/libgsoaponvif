@@ -73,7 +73,7 @@ int _tmain(int argc, _TCHAR* argv[])
         cout << "SerialNumber: " << p_onvif_device_list->p_onvif_devices[i].device_information.serial_number << endl;
         cout << endl;
 
-        get_onvif_device_service_address(p_onvif_device_list, NULL, i);
+        get_onvif_device_service_addresses(p_onvif_device_list, NULL, i);
 
         cout << "service addresses:\n";
         cout << p_onvif_device_list->p_onvif_devices[i].service_address_analytics.xaddr
