@@ -66,6 +66,7 @@ int main(int argc, char* argv[])
         cout << "Manufacturer: " << p_onvif_device_list->p_onvif_devices[i].device_information.manufacturer << endl;
         cout << "Model: " << p_onvif_device_list->p_onvif_devices[i].device_information.model << endl;
         cout << "SerialNumber: " << p_onvif_device_list->p_onvif_devices[i].device_information.serial_number << endl;
+        cout << "MAC Address: " << p_onvif_device_list->p_onvif_devices[i].device_information.MAC_address << endl;
         cout << endl;
 
         get_onvif_device_service_addresses(p_onvif_device_list, NULL, i);

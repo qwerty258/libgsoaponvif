@@ -166,6 +166,7 @@ typedef struct tag_onvif_device_information
     char firmware_version[50];
     char serial_number[50];
     char hardware_Id[10];
+    char MAC_address[50];
 }onvif_device_information;
 
 typedef struct tag_onvif_NVR_receiver

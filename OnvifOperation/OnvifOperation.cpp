@@ -308,6 +308,8 @@ ONVIFOPERATION_API int get_onvif_device_information(onvif_device_list* p_onvif_d
 {
     _tds__GetDeviceInformation          tds__GetDeviceInformation;
     _tds__GetDeviceInformationResponse  tds__GetDeviceInformationResponse;
+    _tds__GetNetworkInterfaces          tds__GetNetworkInterfaces;
+    _tds__GetNetworkInterfacesResponse  tds__GetNetworkInterfacesResponse;
     size_t i;
 
     if(!initialsuccess)
@@ -377,6 +379,26 @@ ONVIFOPERATION_API int get_onvif_device_information(onvif_device_list* p_onvif_d
     strncpy(
         p_onvif_device_list->p_onvif_devices[index].device_information.serial_number,
         tds__GetDeviceInformationResponse.SerialNumber.c_str(),
+        50);
+
+
+    soap_set_namespaces(pSoap, device_namespace);
+
+    soap_wsse_add_UsernameTokenDigest(
+        pSoap,
+        "user",
+        p_onvif_device_list->p_onvif_devices[index].username,
+        p_onvif_device_list->p_onvif_devices[index].password);
+
+    if(SOAP_OK != soap_call___tds__GetNetworkInterfaces(pSoap, p_onvif_device_list->p_onvif_devices[index].service_address_device_service.xaddr, NULL, &tds__GetNetworkInterfaces, tds__GetNetworkInterfacesResponse))
+    {
+        p_onvif_device_list->devcie_list_lock = false;
+        return -1;
+    }
+
+    strncpy(
+        p_onvif_device_list->p_onvif_devices[index].device_information.MAC_address,
+        tds__GetNetworkInterfacesResponse.NetworkInterfaces[0]->Info->HwAddress.c_str(),
         50);
 
     p_onvif_device_list->devcie_list_lock = false;

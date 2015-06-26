@@ -126,9 +126,6 @@
   <ItemGroup>
     <None Include="OnvifOperation.def" />
   </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="OnvifOperation.rc" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
