@@ -691,8 +691,8 @@ ONVIFOPERATION_API int get_onvif_device_profiles(onvif_device_list* p_onvif_devi
         free(p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles);
     }
 
-    p_onvif_device_list->p_onvif_device[index].number_of_onvif_device_profile = getProfilesResponse.Profiles.size();
-    p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles = (onvif_device_profiles*)malloc(getProfilesResponse.Profiles.size() * sizeof(onvif_device_profiles));
+    p_onvif_device_list->p_onvif_device[index].number_of_onvif_device_profiles = getProfilesResponse.Profiles.size();
+    p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles = (onvif_device_profile*)malloc(getProfilesResponse.Profiles.size() * sizeof(onvif_device_profile));
     if(NULL == p_onvif_device_list->p_onvif_device[index].p_onvif_device_profiles)
     {
         p_onvif_device_list->devcie_list_lock = false;
@@ -702,7 +702,7 @@ ONVIFOPERATION_API int get_onvif_device_profiles(onvif_device_list* p_onvif_devi
         return -1;
     }
 
-    for(i = 0; i < p_onvif_device_list->p_onvif_device[index].number_of_onvif_device_profile; ++i)
+    for(i = 0; i < p_onvif_device_list->p_onvif_device[index].number_of_onvif_device_profiles; ++i)
     {
         if(NULL != getProfilesResponse.Profiles[i])
         {

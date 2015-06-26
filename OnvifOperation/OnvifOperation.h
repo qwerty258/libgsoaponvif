@@ -83,7 +83,7 @@ enum TransportProtocol
 };
 
 // onvif_device_profiles struct
-typedef struct tag_onvif_device_profiles
+typedef struct tag_onvif_device_profile
 {
 
     char name[30];
@@ -149,7 +149,7 @@ typedef struct tag_onvif_device_profiles
         __int64 Timeout;
     }MediaUri;
 
-}onvif_device_profiles;
+}onvif_device_profile;
 
 typedef struct tag_onvif_device_service_address
 {
@@ -233,8 +233,8 @@ typedef struct tag_onvif_device
     // onvif device profiles.
     // User MUST NOT set this content. Read only.
     //************************************
-    onvif_device_profiles* p_onvif_device_profiles;
-    size_t number_of_onvif_device_profile;
+    onvif_device_profile* p_onvif_device_profiles;
+    size_t number_of_onvif_device_profiles;
 
     //************************************
     // onvif NVR receivers.
