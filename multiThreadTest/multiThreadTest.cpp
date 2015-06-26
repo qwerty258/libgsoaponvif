@@ -46,7 +46,7 @@ DWORD WINAPI getDeviceProfiles(LPVOID lpParameter)
 
     for(size_t i = 0; i < static_cast<onvif_device_list*>(lpParameter)->number_of_onvif_devices; i++)
     {
-        get_ONVIF_device_profiles(static_cast<onvif_device_list*>(lpParameter), NULL, i);
+        get_ONVIF_IPC_profiles(static_cast<onvif_device_list*>(lpParameter), NULL, i);
     }
 
     cout << "Thread getNumOfProfilesByIP end\n";

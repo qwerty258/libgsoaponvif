@@ -136,7 +136,7 @@ int main(int argc, char* argv[])
             << endl;
         cout << endl;
 
-        get_ONVIF_device_profiles(p_onvif_device_list, NULL, i);
+        get_ONVIF_IPC_profiles(p_onvif_device_list, NULL, i);
 
         for(size_t j = 0; j < p_onvif_device_list->p_onvif_devices[i].number_of_onvif_device_profiles; ++j)
         {

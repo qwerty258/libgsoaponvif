@@ -8,5 +8,5 @@ EXPORTS
     set_ONVIF_device_authorization_information  @6
     get_ONVIF_device_service_addresses          @7
     get_ONVIF_device_information                @8
-    get_ONVIF_device_profiles                   @9
+    get_ONVIF_IPC_profiles                      @9
     get_ONVIF_NVR_receivers                     @10

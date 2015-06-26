@@ -670,7 +670,7 @@ ONVIFOPERATION_API int get_ONVIF_device_service_addresses(onvif_device_list* p_o
     return 0;
 }
 
-ONVIFOPERATION_API int get_ONVIF_device_profiles(onvif_device_list* p_onvif_device_list, char* IP, size_t index)
+ONVIFOPERATION_API int get_ONVIF_IPC_profiles(onvif_device_list* p_onvif_device_list, char* IP, size_t index)
 {
     size_t                      i;
     _trt__GetProfiles           getProfiles;
