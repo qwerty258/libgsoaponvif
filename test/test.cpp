@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
     cout << "\nsearch device\n\n";
     system("pause");
 
-    if(-1 == search_ONVIF_device(p_onvif_device_list, 1))
+    if(-1 == search_onvif_device(p_onvif_device_list, 1))
     {
         cout << "search device failed\n";
         system("pause");
@@ -50,12 +50,12 @@ int main(int argc, char* argv[])
 
         for(size_t j = 0; j < 9; j++)
         {
-            set_ONVIF_device_authorization_information(p_onvif_device_list, IP_username_password[j].IP, 555555, IP_username_password[j].username, IP_username_password[j].password);
+            set_onvif_device_authorization_information(p_onvif_device_list, IP_username_password[j].IP, 555555, IP_username_password[j].username, IP_username_password[j].password);
         }
 
         cout << p_onvif_device_list->p_onvif_devices[i].username << ':' << p_onvif_device_list->p_onvif_devices[i].password << endl;
 
-        get_ONVIF_device_information(p_onvif_device_list, NULL, i);
+        get_onvif_device_information(p_onvif_device_list, NULL, i);
 
         cout << "FirmwareVersion: " << p_onvif_device_list->p_onvif_devices[i].device_information.firmware_version << endl;
         cout << "HardwareId: " << p_onvif_device_list->p_onvif_devices[i].device_information.hardware_Id << endl;
@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
         cout << "MAC Address: " << p_onvif_device_list->p_onvif_devices[i].device_information.MAC_address << endl;
         cout << endl;
 
-        get_ONVIF_device_service_addresses(p_onvif_device_list, NULL, i);
+        get_onvif_device_service_addresses(p_onvif_device_list, NULL, i);
 
         cout << "service addresses:\n";
         cout << p_onvif_device_list->p_onvif_devices[i].service_address_analytics.xaddr
@@ -136,23 +136,23 @@ int main(int argc, char* argv[])
             << endl;
         cout << endl;
 
-        get_ONVIF_IPC_profiles(p_onvif_device_list, NULL, i);
+        get_onvif_ipc_profiles(p_onvif_device_list, NULL, i);
 
-        for(size_t j = 0; j < p_onvif_device_list->p_onvif_devices[i].number_of_onvif_device_profiles; ++j)
+        for(size_t j = 0; j < p_onvif_device_list->p_onvif_devices[i].number_of_onvif_ipc_profiles; ++j)
         {
             cout << "Profile " << j + 1 << ": \n";
-            cout << "Profile name: " << p_onvif_device_list->p_onvif_devices[i].p_onvif_device_profiles[j].name << endl;
+            cout << "Profile name: " << p_onvif_device_list->p_onvif_devices[i].p_onvif_ipc_profiles[j].name << endl;
             cout << "Resolution: "
                 << "Width: "
-                << p_onvif_device_list->p_onvif_devices[i].p_onvif_device_profiles[j].VideoEncoderConfiguration.Resolution.Width
+                << p_onvif_device_list->p_onvif_devices[i].p_onvif_ipc_profiles[j].VideoEncoderConfiguration.Resolution.Width
                 << " , Height: "
-                << p_onvif_device_list->p_onvif_devices[i].p_onvif_device_profiles[j].VideoEncoderConfiguration.Resolution.Height
+                << p_onvif_device_list->p_onvif_devices[i].p_onvif_ipc_profiles[j].VideoEncoderConfiguration.Resolution.Height
                 << endl;
             cout << "Frame rate limit: "
-                << p_onvif_device_list->p_onvif_devices[i].p_onvif_device_profiles[j].VideoEncoderConfiguration.RateControl.FrameRateLimit
+                << p_onvif_device_list->p_onvif_devices[i].p_onvif_ipc_profiles[j].VideoEncoderConfiguration.RateControl.FrameRateLimit
                 << endl;
             cout << "Encoding type: ";
-            switch(p_onvif_device_list->p_onvif_devices[i].p_onvif_device_profiles[j].VideoEncoderConfiguration.encoding)
+            switch(p_onvif_device_list->p_onvif_devices[i].p_onvif_ipc_profiles[j].VideoEncoderConfiguration.encoding)
             {
                 case H264:
                     cout << "H264" << endl;
@@ -167,10 +167,10 @@ int main(int argc, char* argv[])
                     cout << "Unknown" << endl;
                     break;
             }
-            cout << "URI: " << p_onvif_device_list->p_onvif_devices[i].p_onvif_device_profiles[j].MediaUri.URI << endl << endl;
+            cout << "URI: " << p_onvif_device_list->p_onvif_devices[i].p_onvif_ipc_profiles[j].MediaUri.URI << endl << endl;
         }
 
-        get_ONVIF_NVR_receivers(p_onvif_device_list, NULL, i);
+        get_onvif_nvr_receivers(p_onvif_device_list, NULL, i);
 
         for(size_t j = 0; j < p_onvif_device_list->p_onvif_devices[i].number_of_onvif_NVR_receivers; j++)
         {
@@ -193,7 +193,7 @@ int main(int argc, char* argv[])
     cout << "search again\n";
     system("pause");
 
-    if(-1 == search_ONVIF_device(p_onvif_device_list, 1))
+    if(-1 == search_onvif_device(p_onvif_device_list, 1))
     {
         cout << "search device failed\n";
         system("pause");
@@ -213,9 +213,9 @@ int main(int argc, char* argv[])
         cout << "SerialNumber: " << p_onvif_device_list->p_onvif_devices[i].device_information.serial_number << endl;
         cout << "MAC Address: " << p_onvif_device_list->p_onvif_devices[i].device_information.MAC_address << endl;
 
-        for(size_t j = 0; j < p_onvif_device_list->p_onvif_devices[i].number_of_onvif_device_profiles; j++)
+        for(size_t j = 0; j < p_onvif_device_list->p_onvif_devices[i].number_of_onvif_ipc_profiles; j++)
         {
-            cout << "URI: " << p_onvif_device_list->p_onvif_devices[i].p_onvif_device_profiles[j].MediaUri.URI << endl;
+            cout << "URI: " << p_onvif_device_list->p_onvif_devices[i].p_onvif_ipc_profiles[j].MediaUri.URI << endl;
         }
 
         cout << "----------------------------------------------" << endl;

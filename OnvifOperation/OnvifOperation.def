@@ -4,9 +4,9 @@ EXPORTS
     uninit_DLL                                  @2
     malloc_device_list                          @3
     free_device_list                            @4
-    search_ONVIF_device                         @5
-    set_ONVIF_device_authorization_information  @6
-    get_ONVIF_device_service_addresses          @7
-    get_ONVIF_device_information                @8
-    get_ONVIF_IPC_profiles                      @9
-    get_ONVIF_NVR_receivers                     @10
+    search_onvif_device                         @5
+    set_onvif_device_authorization_information  @6
+    get_onvif_device_service_addresses          @7
+    get_onvif_device_information                @8
+    get_onvif_ipc_profiles                      @9
+    get_onvif_nvr_receivers                     @10

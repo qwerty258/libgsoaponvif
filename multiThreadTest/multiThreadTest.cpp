@@ -9,7 +9,7 @@ DWORD WINAPI getServiceAddresses(LPVOID lpParameter)
 
     for(size_t i = 0; i < static_cast<onvif_device_list*>(lpParameter)->number_of_onvif_devices; i++)
     {
-        get_ONVIF_device_service_addresses(static_cast<onvif_device_list*>(lpParameter), NULL, i);
+        get_onvif_device_service_addresses(static_cast<onvif_device_list*>(lpParameter), NULL, i);
     }
 
     cout << "Thread getServiceAddresses end\n";
@@ -20,7 +20,7 @@ DWORD WINAPI searchDevice(LPVOID lpParameter)
 {
     cout << "Thread searchDevice begin\n";
 
-    search_ONVIF_device(static_cast<onvif_device_list*>(lpParameter), 1);
+    search_onvif_device(static_cast<onvif_device_list*>(lpParameter), 1);
 
     cout << "Thread searchDevice end\n";
 
@@ -33,7 +33,7 @@ DWORD WINAPI getDeviceInformation(LPVOID lpParameter)
 
     for(size_t i = 0; i < static_cast<onvif_device_list*>(lpParameter)->number_of_onvif_devices; i++)
     {
-        get_ONVIF_device_information(static_cast<onvif_device_list*>(lpParameter), NULL, i);
+        get_onvif_device_information(static_cast<onvif_device_list*>(lpParameter), NULL, i);
     }
 
     cout << "Thread getURIbyIP end\n";
@@ -46,7 +46,7 @@ DWORD WINAPI getDeviceProfiles(LPVOID lpParameter)
 
     for(size_t i = 0; i < static_cast<onvif_device_list*>(lpParameter)->number_of_onvif_devices; i++)
     {
-        get_ONVIF_IPC_profiles(static_cast<onvif_device_list*>(lpParameter), NULL, i);
+        get_onvif_ipc_profiles(static_cast<onvif_device_list*>(lpParameter), NULL, i);
     }
 
     cout << "Thread getNumOfProfilesByIP end\n";
@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
 
     p_onvif_device_list = malloc_device_list();
 
-    search_ONVIF_device(p_onvif_device_list, 1);
+    search_onvif_device(p_onvif_device_list, 1);
 
     for(size_t i = 0; i < p_onvif_device_list->number_of_onvif_devices; ++i)
     {
@@ -93,7 +93,7 @@ int main(int argc, char* argv[])
                 strncpy(p_onvif_device_list->p_onvif_devices[i].password, IP_username_password[j].password, 50);
             }
         }
-        get_ONVIF_device_service_addresses(p_onvif_device_list, NULL, i);
+        get_onvif_device_service_addresses(p_onvif_device_list, NULL, i);
     }
 
 
