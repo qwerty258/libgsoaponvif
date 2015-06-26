@@ -136,7 +136,7 @@ ONVIFOPERATION_API int search_ONVIF_device(onvif_device_list* p_onvif_device_lis
     }
 
     soap_default_SOAP_ENV__Header(pSoapForSearch, &header);
-    soap_set_namespaces(pSoapForSearch, probeNamespace);
+    soap_set_namespaces(pSoapForSearch, discovery_namespace);
     pSoapForSearch->recv_timeout = wait_time;
 
     header.wsa__MessageID = (char*)soap_wsa_rand_uuid(pSoapForSearch);
