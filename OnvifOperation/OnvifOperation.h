@@ -246,8 +246,8 @@ typedef struct tag_onvif_device
 
 typedef struct tag_onvif_device_list
 {
-    onvif_device* p_onvif_device;
-    size_t number_of_onvif_device;
+    onvif_device* p_onvif_devices;
+    size_t number_of_onvif_devices;
 
     //************************************
     // Data lock, it's better to check this before you want to get some data.

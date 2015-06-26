@@ -9,7 +9,7 @@ DWORD WINAPI getServiceAddresses(LPVOID lpParameter)
 {
     std::cout << "Thread getServiceAddresses begin\n";
 
-    for(size_t i = 0; i < static_cast<onvif_device_list*>(lpParameter)->number_of_onvif_device; i++)
+    for(size_t i = 0; i < static_cast<onvif_device_list*>(lpParameter)->number_of_onvif_devices; i++)
     {
         get_onvif_device_service_address(static_cast<onvif_device_list*>(lpParameter), NULL, i);
     }
@@ -33,7 +33,7 @@ DWORD WINAPI getDeviceInformation(LPVOID lpParameter)
 {
     std::cout << "Thread getURIbyIP begin\n";
 
-    for(size_t i = 0; i < static_cast<onvif_device_list*>(lpParameter)->number_of_onvif_device; i++)
+    for(size_t i = 0; i < static_cast<onvif_device_list*>(lpParameter)->number_of_onvif_devices; i++)
     {
         get_onvif_device_information(static_cast<onvif_device_list*>(lpParameter), NULL, i);
     }
@@ -46,7 +46,7 @@ DWORD WINAPI getDeviceProfiles(LPVOID lpParameter)
 {
     std::cout << "Thread getNumOfProfilesByIP begin\n";
 
-    for(size_t i = 0; i < static_cast<onvif_device_list*>(lpParameter)->number_of_onvif_device; i++)
+    for(size_t i = 0; i < static_cast<onvif_device_list*>(lpParameter)->number_of_onvif_devices; i++)
     {
         get_onvif_device_profiles(static_cast<onvif_device_list*>(lpParameter), NULL, i);
     }
@@ -85,14 +85,14 @@ int _tmain(int argc, _TCHAR* argv[])
 
     search_ONVIF_device(p_onvif_device_list, 1);
 
-    for(size_t i = 0; i < p_onvif_device_list->number_of_onvif_device; ++i)
+    for(size_t i = 0; i < p_onvif_device_list->number_of_onvif_devices; ++i)
     {
         for(size_t j = 0; j < 9; j++)
         {
-            if(0 == strncmp(p_onvif_device_list->p_onvif_device[i].IPv4, IP_username_password[j].IP, 17))
+            if(0 == strncmp(p_onvif_device_list->p_onvif_devices[i].IPv4, IP_username_password[j].IP, 17))
             {
-                strncpy(p_onvif_device_list->p_onvif_device[i].username, IP_username_password[j].username, 50);
-                strncpy(p_onvif_device_list->p_onvif_device[i].password, IP_username_password[j].password, 50);
+                strncpy(p_onvif_device_list->p_onvif_devices[i].username, IP_username_password[j].username, 50);
+                strncpy(p_onvif_device_list->p_onvif_devices[i].password, IP_username_password[j].password, 50);
             }
         }
         get_onvif_device_service_address(p_onvif_device_list, NULL, i);

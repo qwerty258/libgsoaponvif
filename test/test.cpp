@@ -49,118 +49,118 @@ int _tmain(int argc, _TCHAR* argv[])
         return -1;
     }
 
-    for(size_t i = 0; i < p_onvif_device_list->number_of_onvif_device; ++i)
+    for(size_t i = 0; i < p_onvif_device_list->number_of_onvif_devices; ++i)
     {
-        cout << p_onvif_device_list->p_onvif_device[i].IPv4 << ':' << p_onvif_device_list->p_onvif_device[i].service_address_device_service.xaddr << endl;
+        cout << p_onvif_device_list->p_onvif_devices[i].IPv4 << ':' << p_onvif_device_list->p_onvif_devices[i].service_address_device_service.xaddr << endl;
 
         for(size_t j = 0; j < 9; j++)
         {
-            if(0 == strncmp(p_onvif_device_list->p_onvif_device[i].IPv4, IP_username_password[j].IP, 17))
+            if(0 == strncmp(p_onvif_device_list->p_onvif_devices[i].IPv4, IP_username_password[j].IP, 17))
             {
-                strncpy(p_onvif_device_list->p_onvif_device[i].username, IP_username_password[j].username, 50);
-                strncpy(p_onvif_device_list->p_onvif_device[i].password, IP_username_password[j].password, 50);
+                strncpy(p_onvif_device_list->p_onvif_devices[i].username, IP_username_password[j].username, 50);
+                strncpy(p_onvif_device_list->p_onvif_devices[i].password, IP_username_password[j].password, 50);
             }
         }
 
-        cout << p_onvif_device_list->p_onvif_device[i].username << ':' << p_onvif_device_list->p_onvif_device[i].password << endl;
+        cout << p_onvif_device_list->p_onvif_devices[i].username << ':' << p_onvif_device_list->p_onvif_devices[i].password << endl;
 
         get_onvif_device_information(p_onvif_device_list, NULL, i);
 
-        cout << "FirmwareVersion: " << p_onvif_device_list->p_onvif_device[i].device_information.firmware_version << endl;
-        cout << "HardwareId: " << p_onvif_device_list->p_onvif_device[i].device_information.hardware_Id << endl;
-        cout << "Manufacturer: " << p_onvif_device_list->p_onvif_device[i].device_information.manufacturer << endl;
-        cout << "Model: " << p_onvif_device_list->p_onvif_device[i].device_information.model << endl;
-        cout << "SerialNumber: " << p_onvif_device_list->p_onvif_device[i].device_information.serial_number << endl;
+        cout << "FirmwareVersion: " << p_onvif_device_list->p_onvif_devices[i].device_information.firmware_version << endl;
+        cout << "HardwareId: " << p_onvif_device_list->p_onvif_devices[i].device_information.hardware_Id << endl;
+        cout << "Manufacturer: " << p_onvif_device_list->p_onvif_devices[i].device_information.manufacturer << endl;
+        cout << "Model: " << p_onvif_device_list->p_onvif_devices[i].device_information.model << endl;
+        cout << "SerialNumber: " << p_onvif_device_list->p_onvif_devices[i].device_information.serial_number << endl;
         cout << endl;
 
         get_onvif_device_service_address(p_onvif_device_list, NULL, i);
 
         cout << "service addresses:\n";
-        cout << p_onvif_device_list->p_onvif_device[i].service_address_analytics.xaddr
+        cout << p_onvif_device_list->p_onvif_devices[i].service_address_analytics.xaddr
             << ':'
-            << p_onvif_device_list->p_onvif_device[i].service_address_analytics.major_version
+            << p_onvif_device_list->p_onvif_devices[i].service_address_analytics.major_version
             << '.'
-            << p_onvif_device_list->p_onvif_device[i].service_address_analytics.minor_version
+            << p_onvif_device_list->p_onvif_devices[i].service_address_analytics.minor_version
             << endl;
-        cout << p_onvif_device_list->p_onvif_device[i].service_address_deviceIO.xaddr
+        cout << p_onvif_device_list->p_onvif_devices[i].service_address_deviceIO.xaddr
             << ':'
-            << p_onvif_device_list->p_onvif_device[i].service_address_deviceIO.major_version
+            << p_onvif_device_list->p_onvif_devices[i].service_address_deviceIO.major_version
             << '.'
-            << p_onvif_device_list->p_onvif_device[i].service_address_deviceIO.minor_version
+            << p_onvif_device_list->p_onvif_devices[i].service_address_deviceIO.minor_version
             << endl;
-        cout << p_onvif_device_list->p_onvif_device[i].service_address_device_service.xaddr
+        cout << p_onvif_device_list->p_onvif_devices[i].service_address_device_service.xaddr
             << ':'
-            << p_onvif_device_list->p_onvif_device[i].service_address_device_service.major_version
+            << p_onvif_device_list->p_onvif_devices[i].service_address_device_service.major_version
             << '.'
-            << p_onvif_device_list->p_onvif_device[i].service_address_device_service.minor_version
+            << p_onvif_device_list->p_onvif_devices[i].service_address_device_service.minor_version
             << endl;
-        cout << p_onvif_device_list->p_onvif_device[i].service_address_events.xaddr
+        cout << p_onvif_device_list->p_onvif_devices[i].service_address_events.xaddr
             << ':'
-            << p_onvif_device_list->p_onvif_device[i].service_address_events.major_version
+            << p_onvif_device_list->p_onvif_devices[i].service_address_events.major_version
             << '.'
-            << p_onvif_device_list->p_onvif_device[i].service_address_events.minor_version
+            << p_onvif_device_list->p_onvif_devices[i].service_address_events.minor_version
             << endl;
-        cout << p_onvif_device_list->p_onvif_device[i].service_address_imaging.xaddr
+        cout << p_onvif_device_list->p_onvif_devices[i].service_address_imaging.xaddr
             << ':'
-            << p_onvif_device_list->p_onvif_device[i].service_address_imaging.major_version
+            << p_onvif_device_list->p_onvif_devices[i].service_address_imaging.major_version
             << '.'
-            << p_onvif_device_list->p_onvif_device[i].service_address_imaging.minor_version
+            << p_onvif_device_list->p_onvif_devices[i].service_address_imaging.minor_version
             << endl;
-        cout << p_onvif_device_list->p_onvif_device[i].service_address_media.xaddr
+        cout << p_onvif_device_list->p_onvif_devices[i].service_address_media.xaddr
             << ':'
-            << p_onvif_device_list->p_onvif_device[i].service_address_media.major_version
+            << p_onvif_device_list->p_onvif_devices[i].service_address_media.major_version
             << '.'
-            << p_onvif_device_list->p_onvif_device[i].service_address_media.minor_version
+            << p_onvif_device_list->p_onvif_devices[i].service_address_media.minor_version
             << endl;
-        cout << p_onvif_device_list->p_onvif_device[i].service_address_PTZ.xaddr
+        cout << p_onvif_device_list->p_onvif_devices[i].service_address_PTZ.xaddr
             << ':'
-            << p_onvif_device_list->p_onvif_device[i].service_address_PTZ.major_version
+            << p_onvif_device_list->p_onvif_devices[i].service_address_PTZ.major_version
             << '.'
-            << p_onvif_device_list->p_onvif_device[i].service_address_PTZ.minor_version
+            << p_onvif_device_list->p_onvif_devices[i].service_address_PTZ.minor_version
             << endl;
-        cout << p_onvif_device_list->p_onvif_device[i].service_address_recording.xaddr
+        cout << p_onvif_device_list->p_onvif_devices[i].service_address_recording.xaddr
             << ':'
-            << p_onvif_device_list->p_onvif_device[i].service_address_recording.major_version
+            << p_onvif_device_list->p_onvif_devices[i].service_address_recording.major_version
             << '.'
-            << p_onvif_device_list->p_onvif_device[i].service_address_recording.minor_version
+            << p_onvif_device_list->p_onvif_devices[i].service_address_recording.minor_version
             << endl;
-        cout << p_onvif_device_list->p_onvif_device[i].service_address_replay.xaddr
+        cout << p_onvif_device_list->p_onvif_devices[i].service_address_replay.xaddr
             << ':'
-            << p_onvif_device_list->p_onvif_device[i].service_address_replay.major_version
+            << p_onvif_device_list->p_onvif_devices[i].service_address_replay.major_version
             << '.'
-            << p_onvif_device_list->p_onvif_device[i].service_address_replay.minor_version
+            << p_onvif_device_list->p_onvif_devices[i].service_address_replay.minor_version
             << endl;
-        cout << p_onvif_device_list->p_onvif_device[i].service_address_search_recording.xaddr
+        cout << p_onvif_device_list->p_onvif_devices[i].service_address_search_recording.xaddr
             << ':'
-            << p_onvif_device_list->p_onvif_device[i].service_address_search_recording.major_version
+            << p_onvif_device_list->p_onvif_devices[i].service_address_search_recording.major_version
             << '.'
-            << p_onvif_device_list->p_onvif_device[i].service_address_search_recording.minor_version
+            << p_onvif_device_list->p_onvif_devices[i].service_address_search_recording.minor_version
             << endl;
-        cout << p_onvif_device_list->p_onvif_device[i].service_address_receiver.xaddr
+        cout << p_onvif_device_list->p_onvif_devices[i].service_address_receiver.xaddr
             << ':'
-            << p_onvif_device_list->p_onvif_device[i].service_address_receiver.major_version
+            << p_onvif_device_list->p_onvif_devices[i].service_address_receiver.major_version
             << '.'
-            << p_onvif_device_list->p_onvif_device[i].service_address_receiver.minor_version
+            << p_onvif_device_list->p_onvif_devices[i].service_address_receiver.minor_version
             << endl;
         cout << endl;
 
         get_onvif_device_profiles(p_onvif_device_list, NULL, i);
 
-        for(size_t j = 0; j < p_onvif_device_list->p_onvif_device[i].number_of_onvif_device_profile; ++j)
+        for(size_t j = 0; j < p_onvif_device_list->p_onvif_devices[i].number_of_onvif_device_profiles; ++j)
         {
             cout << "Profile " << j + 1 << ": \n";
-            cout << "Profile name: " << p_onvif_device_list->p_onvif_device[i].p_onvif_device_profiles[j].name << endl;
+            cout << "Profile name: " << p_onvif_device_list->p_onvif_devices[i].p_onvif_device_profiles[j].name << endl;
             cout << "Resolution: "
                 << "Width: "
-                << p_onvif_device_list->p_onvif_device[i].p_onvif_device_profiles[j].VideoEncoderConfiguration.Resolution.Width
+                << p_onvif_device_list->p_onvif_devices[i].p_onvif_device_profiles[j].VideoEncoderConfiguration.Resolution.Width
                 << " , Height: "
-                << p_onvif_device_list->p_onvif_device[i].p_onvif_device_profiles[j].VideoEncoderConfiguration.Resolution.Height
+                << p_onvif_device_list->p_onvif_devices[i].p_onvif_device_profiles[j].VideoEncoderConfiguration.Resolution.Height
                 << endl;
             cout << "Frame rate limit: "
-                << p_onvif_device_list->p_onvif_device[i].p_onvif_device_profiles[j].VideoEncoderConfiguration.RateControl.FrameRateLimit
+                << p_onvif_device_list->p_onvif_devices[i].p_onvif_device_profiles[j].VideoEncoderConfiguration.RateControl.FrameRateLimit
                 << endl;
             cout << "Encoding type: ";
-            switch(p_onvif_device_list->p_onvif_device[i].p_onvif_device_profiles[j].VideoEncoderConfiguration.encoding)
+            switch(p_onvif_device_list->p_onvif_devices[i].p_onvif_device_profiles[j].VideoEncoderConfiguration.encoding)
             {
                 case H264:
                     cout << "H264" << endl;
@@ -175,17 +175,17 @@ int _tmain(int argc, _TCHAR* argv[])
                     cout << "Unknown" << endl;
                     break;
             }
-            cout << "URI: " << p_onvif_device_list->p_onvif_device[i].p_onvif_device_profiles[j].MediaUri.URI << endl << endl;
+            cout << "URI: " << p_onvif_device_list->p_onvif_devices[i].p_onvif_device_profiles[j].MediaUri.URI << endl << endl;
         }
 
         get_onvif_NVR_receivers(p_onvif_device_list, NULL, i);
 
-        for(size_t j = 0; j < p_onvif_device_list->p_onvif_device[i].number_of_onvif_NVR_receivers; j++)
+        for(size_t j = 0; j < p_onvif_device_list->p_onvif_devices[i].number_of_onvif_NVR_receivers; j++)
         {
             cout << "Receivers:\n";
-            cout << p_onvif_device_list->p_onvif_device[i].p_onvif_NVR_receivers[j].token
+            cout << p_onvif_device_list->p_onvif_devices[i].p_onvif_NVR_receivers[j].token
                 << ':'
-                << p_onvif_device_list->p_onvif_device[i].p_onvif_NVR_receivers[j].configuration.media_URI
+                << p_onvif_device_list->p_onvif_devices[i].p_onvif_NVR_receivers[j].configuration.media_URI
                 << endl;
         }
 
@@ -208,21 +208,21 @@ int _tmain(int argc, _TCHAR* argv[])
         return -1;
     }
 
-    for(size_t i = 0; i < p_onvif_device_list->number_of_onvif_device; ++i)
+    for(size_t i = 0; i < p_onvif_device_list->number_of_onvif_devices; ++i)
     {
-        cout << p_onvif_device_list->p_onvif_device[i].IPv4 << ':' << p_onvif_device_list->p_onvif_device[i].service_address_device_service.xaddr << endl;
+        cout << p_onvif_device_list->p_onvif_devices[i].IPv4 << ':' << p_onvif_device_list->p_onvif_devices[i].service_address_device_service.xaddr << endl;
 
-        cout << p_onvif_device_list->p_onvif_device[i].username << ':' << p_onvif_device_list->p_onvif_device[i].password << endl;
+        cout << p_onvif_device_list->p_onvif_devices[i].username << ':' << p_onvif_device_list->p_onvif_devices[i].password << endl;
 
-        cout << "FirmwareVersion: " << p_onvif_device_list->p_onvif_device[i].device_information.firmware_version << endl;
-        cout << "HardwareId: " << p_onvif_device_list->p_onvif_device[i].device_information.hardware_Id << endl;
-        cout << "Manufacturer: " << p_onvif_device_list->p_onvif_device[i].device_information.manufacturer << endl;
-        cout << "Model: " << p_onvif_device_list->p_onvif_device[i].device_information.model << endl;
-        cout << "SerialNumber: " << p_onvif_device_list->p_onvif_device[i].device_information.serial_number << endl;
+        cout << "FirmwareVersion: " << p_onvif_device_list->p_onvif_devices[i].device_information.firmware_version << endl;
+        cout << "HardwareId: " << p_onvif_device_list->p_onvif_devices[i].device_information.hardware_Id << endl;
+        cout << "Manufacturer: " << p_onvif_device_list->p_onvif_devices[i].device_information.manufacturer << endl;
+        cout << "Model: " << p_onvif_device_list->p_onvif_devices[i].device_information.model << endl;
+        cout << "SerialNumber: " << p_onvif_device_list->p_onvif_devices[i].device_information.serial_number << endl;
 
-        for(size_t j = 0; j < p_onvif_device_list->p_onvif_device[i].number_of_onvif_device_profile; j++)
+        for(size_t j = 0; j < p_onvif_device_list->p_onvif_devices[i].number_of_onvif_device_profiles; j++)
         {
-            cout << "URI: " << p_onvif_device_list->p_onvif_device[i].p_onvif_device_profiles[j].MediaUri.URI << endl;
+            cout << "URI: " << p_onvif_device_list->p_onvif_devices[i].p_onvif_device_profiles[j].MediaUri.URI << endl;
         }
 
         cout << "----------------------------------------------" << endl;
