@@ -168,7 +168,7 @@ typedef struct tag_onvif_device_information
     char hardware_Id[10];
 }onvif_device_information;
 
-typedef struct tag_onvif_NVR_receivers
+typedef struct tag_onvif_NVR_receiver
 {
     char token[30];
     struct
@@ -183,7 +183,7 @@ typedef struct tag_onvif_NVR_receivers
         }stream_setup;
 
     }configuration;
-}onvif_NVR_receivers;
+}onvif_NVR_receiver;
 
 typedef struct tag_onvif_device
 {
@@ -240,7 +240,7 @@ typedef struct tag_onvif_device
     // onvif NVR receivers.
     // User MUST NOT set this content. Read only.
     //************************************
-    onvif_NVR_receivers* p_onvif_NVR_receivers;
+    onvif_NVR_receiver* p_onvif_NVR_receivers;
     size_t number_of_onvif_NVR_receivers;
 }onvif_device;
 

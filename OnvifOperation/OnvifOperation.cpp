@@ -921,7 +921,7 @@ ONVIFOPERATION_API int get_onvif_NVR_receivers(onvif_device_list* p_onvif_device
     }
 
     p_onvif_device_list->p_onvif_device[index].number_of_onvif_NVR_receivers = GetReceiversResponse.Receivers.size();
-    p_onvif_device_list->p_onvif_device[index].p_onvif_NVR_receivers = (onvif_NVR_receivers*)malloc(p_onvif_device_list->p_onvif_device[index].number_of_onvif_NVR_receivers * sizeof(onvif_NVR_receivers));
+    p_onvif_device_list->p_onvif_device[index].p_onvif_NVR_receivers = (onvif_NVR_receiver*)malloc(p_onvif_device_list->p_onvif_device[index].number_of_onvif_NVR_receivers * sizeof(onvif_NVR_receiver));
     if(NULL == p_onvif_device_list->p_onvif_device[index].p_onvif_NVR_receivers)
     {
         p_onvif_device_list->devcie_list_lock = false;
