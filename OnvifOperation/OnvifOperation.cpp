@@ -19,10 +19,10 @@
 using namespace std;
 // C++ 11
 
-static soap*                                  pSoap;
-static soap*                                  pSoapForSearch;
-static wsdd__ScopesType                       scopes;
-static SOAP_ENV__Header                       header;
+static soap*            pSoap;
+static soap*            pSoapForSearch;
+static wsdd__ScopesType scopes;
+static SOAP_ENV__Header header;
 
 static bool initialsuccess = false;
 
@@ -304,7 +304,59 @@ ONVIFOPERATION_API int search_ONVIF_device(onvif_device_list* p_onvif_device_lis
     return 0;
 }
 
-ONVIFOPERATION_API int get_onvif_device_information(onvif_device_list* p_onvif_device_list, char* IP, size_t index)
+ONVIFOPERATION_API int set_ONVIF_device_authorization_information(onvif_device_list* p_onvif_device_list, char* IP, size_t index, char* username, char* password)
+{
+    size_t i;
+
+    if(!initialsuccess || NULL == p_onvif_device_list)
+    {
+        return -1;
+    }
+
+    while(p_onvif_device_list->devcie_list_lock)
+    {
+        Sleep(10);
+    }
+    p_onvif_device_list->devcie_list_lock = true;
+
+    if(NULL != IP)
+    {
+        if(17 < strnlen(IP, 17))
+        {
+            p_onvif_device_list->devcie_list_lock = false;
+            return -1;
+        }
+        for(i = 0; i < p_onvif_device_list->number_of_onvif_devices; i++)
+        {
+            if(0 == strncmp(IP, p_onvif_device_list->p_onvif_devices[i].IPv4, 17))
+            {
+                index = i;
+            }
+        }
+    }
+
+    if(p_onvif_device_list->number_of_onvif_devices <= index)
+    {
+        p_onvif_device_list->devcie_list_lock = false;
+        return -1;
+    }
+
+    strncpy(
+        p_onvif_device_list->p_onvif_devices[index].username,
+        username,
+        50);
+
+    strncpy(
+        p_onvif_device_list->p_onvif_devices[index].password,
+        password,
+        50);
+
+    p_onvif_device_list->devcie_list_lock = false;
+
+    return 0;
+}
+
+ONVIFOPERATION_API int get_ONVIF_device_information(onvif_device_list* p_onvif_device_list, char* IP, size_t index)
 {
     _tds__GetDeviceInformation          tds__GetDeviceInformation;
     _tds__GetDeviceInformationResponse  tds__GetDeviceInformationResponse;
@@ -312,7 +364,7 @@ ONVIFOPERATION_API int get_onvif_device_information(onvif_device_list* p_onvif_d
     _tds__GetNetworkInterfacesResponse  tds__GetNetworkInterfacesResponse;
     size_t i;
 
-    if(!initialsuccess)
+    if(!initialsuccess || NULL == p_onvif_device_list)
     {
         return -1;
     }
@@ -406,13 +458,13 @@ ONVIFOPERATION_API int get_onvif_device_information(onvif_device_list* p_onvif_d
     return 0;
 }
 
-ONVIFOPERATION_API int get_onvif_device_service_addresses(onvif_device_list* p_onvif_device_list, char* IP, size_t index)
+ONVIFOPERATION_API int get_ONVIF_device_service_addresses(onvif_device_list* p_onvif_device_list, char* IP, size_t index)
 {
     size_t                      i;
     _tds__GetServices           tds__GetServices;
     _tds__GetServicesResponse   tds__GetServicesResponse;
 
-    if(!initialsuccess)
+    if(!initialsuccess || NULL == p_onvif_device_list)
     {
         return -1;
     }
@@ -618,7 +670,7 @@ ONVIFOPERATION_API int get_onvif_device_service_addresses(onvif_device_list* p_o
     return 0;
 }
 
-ONVIFOPERATION_API int get_onvif_device_profiles(onvif_device_list* p_onvif_device_list, char* IP, size_t index)
+ONVIFOPERATION_API int get_ONVIF_device_profiles(onvif_device_list* p_onvif_device_list, char* IP, size_t index)
 {
     size_t                      i;
     _trt__GetProfiles           getProfiles;
@@ -626,7 +678,7 @@ ONVIFOPERATION_API int get_onvif_device_profiles(onvif_device_list* p_onvif_devi
     _trt__GetStreamUri          getStreamUri;
     _trt__GetStreamUriResponse  getStreamUriResponse;
 
-    if(!initialsuccess)
+    if(!initialsuccess || NULL == p_onvif_device_list)
     {
         return -1;
     }
@@ -882,13 +934,13 @@ ONVIFOPERATION_API int get_onvif_device_profiles(onvif_device_list* p_onvif_devi
     return 0;
 }
 
-ONVIFOPERATION_API int get_onvif_NVR_receivers(onvif_device_list* p_onvif_device_list, char* IP, size_t index)
+ONVIFOPERATION_API int get_ONVIF_NVR_receivers(onvif_device_list* p_onvif_device_list, char* IP, size_t index)
 {
     size_t                      i;
     _trv__GetReceivers          GetReceivers;
     _trv__GetReceiversResponse  GetReceiversResponse;
 
-    if(!initialsuccess)
+    if(!initialsuccess || NULL == p_onvif_device_list)
     {
         return -1;
     }

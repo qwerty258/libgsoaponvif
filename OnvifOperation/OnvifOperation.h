@@ -4,8 +4,8 @@
 // Get a pointer to the onvif_device_list using malloc_device_list();
 // Then search_ONVIF_device().
 // Set username password in onvif_device_list.
-// Before you can use any other API, you MUST call get_onvif_device_service_addresses().
-// Now you can get_onvif_device_information(), get_onvif_device_profiles().
+// Before you can use any other API, you MUST call get_ONVIF_device_service_addresses().
+// Now you can get_ONVIF_device_information(), get_ONVIF_device_profiles().
 // All the information you want can be found in onvif_device_list.
 // If you added new onvif device, call search_ONVIF_device() again and you should found new device in onvif_device_list.
 // Old devices' information in onvif_device_list will be preserved but as for the new devices you need to call API to get device information.
@@ -190,7 +190,7 @@ typedef struct tag_onvif_device
 {
     //************************************
     // For informaiton preserve purpose.
-    // User MUST NOT set this content. Read only.
+    // User MUST NOT set this content. ignore it please.
     //************************************
     bool duplicated;
 
@@ -201,8 +201,8 @@ typedef struct tag_onvif_device
     char IPv4[17];
 
     //************************************
-    // onvif device service addresses, set by search_ONVIF_device() and other API.
-    // User MUST NOT set this content. Read only.
+    // onvif device service addresses, set by get_ONVIF_device_service_addresses().
+    // User MUST NOT set this content. ignore it please.
     //************************************
     onvif_device_service_address service_address_device_service;
     onvif_device_service_address service_address_media;
@@ -218,27 +218,26 @@ typedef struct tag_onvif_device
 
     //************************************
     // device authorization information.
-    // User MUST set this content with C-style string after search_ONVIF_device().
-    // If there is no username and password, copy empty C-style string to it.
+    // User MUST set this content by calling set_ONVIF_device_authorization_information()
     //************************************
     char username[50];
     char password[50];
 
     //************************************
-    // device basic information.
+    // device basic information, set by get_ONVIF_device_information().
     // User MUST NOT set this content. Read only.
     //************************************
     onvif_device_information device_information;
 
     //************************************
-    // onvif device profiles.
+    // onvif device profiles, set by get_ONVIF_device_profiles().
     // User MUST NOT set this content. Read only.
     //************************************
     onvif_device_profile* p_onvif_device_profiles;
     size_t number_of_onvif_device_profiles;
 
     //************************************
-    // onvif NVR receivers.
+    // onvif NVR receivers, set by get_ONVIF_NVR_receivers().
     // User MUST NOT set this content. Read only.
     //************************************
     onvif_NVR_receiver* p_onvif_NVR_receivers;
@@ -304,13 +303,15 @@ extern "C" {
     ONVIFOPERATION_API int search_ONVIF_device(onvif_device_list* p_onvif_device_list, int wait_time);
 
     //************************************
-    // function:  get onvif device information.
+    // function:  set authorization information.
     // Returns:   int: 0 success, -1 failure.
     // Parameter: onvif_device_list* p_onvif_device_list: pointer get from malloc_device_list(void).
     // Parameter: char* IP: the IPC's IP you want to operate, or you can use index get from onvif_device_list.
     // Parameter: size_t index: index of onvif_device array, if char* IP is not NULL, this parameter will be ignored, you can pass whatever into it.
+    // Parameter: char* username:C-style username string.
+    // Parameter: char* password:C-style password string.
     //************************************
-    ONVIFOPERATION_API int get_onvif_device_information(onvif_device_list* p_onvif_device_list, char* IP, size_t index);
+    ONVIFOPERATION_API int set_ONVIF_device_authorization_information(onvif_device_list* p_onvif_device_list, char* IP, size_t index, char* username, char* password);
 
     //************************************
     // function:  get onvif device service addresses.
@@ -319,7 +320,16 @@ extern "C" {
     // Parameter: char* IP: the IPC's IP you want to operate, or you can use index get from onvif_device_list.
     // Parameter: size_t index: index of onvif_device array, if char* IP is not NULL, this parameter will be ignored, you can pass whatever into it.
     //************************************
-    ONVIFOPERATION_API int get_onvif_device_service_addresses(onvif_device_list* p_onvif_device_list, char* IP, size_t index);
+    ONVIFOPERATION_API int get_ONVIF_device_service_addresses(onvif_device_list* p_onvif_device_list, char* IP, size_t index);
+
+    //************************************
+    // function:  get onvif device information.
+    // Returns:   int: 0 success, -1 failure.
+    // Parameter: onvif_device_list* p_onvif_device_list: pointer get from malloc_device_list(void).
+    // Parameter: char* IP: the IPC's IP you want to operate, or you can use index get from onvif_device_list.
+    // Parameter: size_t index: index of onvif_device array, if char* IP is not NULL, this parameter will be ignored, you can pass whatever into it.
+    //************************************
+    ONVIFOPERATION_API int get_ONVIF_device_information(onvif_device_list* p_onvif_device_list, char* IP, size_t index);
 
     //************************************
     // function:  get onvif device profiles.
@@ -328,7 +338,7 @@ extern "C" {
     // Parameter: char* IP: the IPC's IP you want to operate, or you can use index get from onvif_device_list.
     // Parameter: size_t index: index of onvif_device array, if char* IP is not NULL, this parameter will be ignored, you can pass whatever into it.
     //************************************
-    ONVIFOPERATION_API int get_onvif_device_profiles(onvif_device_list* p_onvif_device_list, char* IP, size_t index);
+    ONVIFOPERATION_API int get_ONVIF_device_profiles(onvif_device_list* p_onvif_device_list, char* IP, size_t index);
 
     //************************************
     // function:  get onvif NVR receivers.
@@ -337,7 +347,7 @@ extern "C" {
     // Parameter: char* IP: the IPC's IP you want to operate, or you can use index get from onvif_device_list.
     // Parameter: size_t index: index of onvif_device array, if char* IP is not NULL, this parameter will be ignored, you can pass whatever into it.
     //************************************
-    ONVIFOPERATION_API int get_onvif_NVR_receivers(onvif_device_list* p_onvif_device_list, char* IP, size_t index);
+    ONVIFOPERATION_API int get_ONVIF_NVR_receivers(onvif_device_list* p_onvif_device_list, char* IP, size_t index);
 
 #ifdef __cplusplus
 }

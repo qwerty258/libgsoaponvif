@@ -50,16 +50,12 @@ int main(int argc, char* argv[])
 
         for(size_t j = 0; j < 9; j++)
         {
-            if(0 == strncmp(p_onvif_device_list->p_onvif_devices[i].IPv4, IP_username_password[j].IP, 17))
-            {
-                strncpy(p_onvif_device_list->p_onvif_devices[i].username, IP_username_password[j].username, 50);
-                strncpy(p_onvif_device_list->p_onvif_devices[i].password, IP_username_password[j].password, 50);
-            }
+            set_ONVIF_device_authorization_information(p_onvif_device_list, IP_username_password[j].IP, 555555, IP_username_password[j].username, IP_username_password[j].password);
         }
 
         cout << p_onvif_device_list->p_onvif_devices[i].username << ':' << p_onvif_device_list->p_onvif_devices[i].password << endl;
 
-        get_onvif_device_information(p_onvif_device_list, NULL, i);
+        get_ONVIF_device_information(p_onvif_device_list, NULL, i);
 
         cout << "FirmwareVersion: " << p_onvif_device_list->p_onvif_devices[i].device_information.firmware_version << endl;
         cout << "HardwareId: " << p_onvif_device_list->p_onvif_devices[i].device_information.hardware_Id << endl;
@@ -69,7 +65,7 @@ int main(int argc, char* argv[])
         cout << "MAC Address: " << p_onvif_device_list->p_onvif_devices[i].device_information.MAC_address << endl;
         cout << endl;
 
-        get_onvif_device_service_addresses(p_onvif_device_list, NULL, i);
+        get_ONVIF_device_service_addresses(p_onvif_device_list, NULL, i);
 
         cout << "service addresses:\n";
         cout << p_onvif_device_list->p_onvif_devices[i].service_address_analytics.xaddr
@@ -140,7 +136,7 @@ int main(int argc, char* argv[])
             << endl;
         cout << endl;
 
-        get_onvif_device_profiles(p_onvif_device_list, NULL, i);
+        get_ONVIF_device_profiles(p_onvif_device_list, NULL, i);
 
         for(size_t j = 0; j < p_onvif_device_list->p_onvif_devices[i].number_of_onvif_device_profiles; ++j)
         {
@@ -174,7 +170,7 @@ int main(int argc, char* argv[])
             cout << "URI: " << p_onvif_device_list->p_onvif_devices[i].p_onvif_device_profiles[j].MediaUri.URI << endl << endl;
         }
 
-        get_onvif_NVR_receivers(p_onvif_device_list, NULL, i);
+        get_ONVIF_NVR_receivers(p_onvif_device_list, NULL, i);
 
         for(size_t j = 0; j < p_onvif_device_list->p_onvif_devices[i].number_of_onvif_NVR_receivers; j++)
         {
@@ -215,6 +211,7 @@ int main(int argc, char* argv[])
         cout << "Manufacturer: " << p_onvif_device_list->p_onvif_devices[i].device_information.manufacturer << endl;
         cout << "Model: " << p_onvif_device_list->p_onvif_devices[i].device_information.model << endl;
         cout << "SerialNumber: " << p_onvif_device_list->p_onvif_devices[i].device_information.serial_number << endl;
+        cout << "MAC Address: " << p_onvif_device_list->p_onvif_devices[i].device_information.MAC_address << endl;
 
         for(size_t j = 0; j < p_onvif_device_list->p_onvif_devices[i].number_of_onvif_device_profiles; j++)
         {
@@ -239,4 +236,3 @@ int main(int argc, char* argv[])
     system("pause");
     return 0;
 }
-
