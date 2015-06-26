@@ -89,7 +89,7 @@ ONVIFOPERATION_API onvif_device_list* malloc_device_list(void)
 
 ONVIFOPERATION_API void free_device_list(onvif_device_list** pp_onvif_device_list)
 {
-    if(NULL == pp_onvif_device_list)
+    if(NULL == pp_onvif_device_list || NULL == (*pp_onvif_device_list))
     {
         return;
     }
