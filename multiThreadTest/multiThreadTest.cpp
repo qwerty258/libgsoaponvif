@@ -1,57 +1,55 @@
-// multiThreadTest.cpp : Defines the entry point for the console application.
-//
-
-#include "stdafx.h"
+#include <Windows.h>
 #include <OnvifOperation.h>
-#pragma comment(lib,"OnvifOperation.lib")
+#include <iostream>
+using namespace std;
 
 DWORD WINAPI getServiceAddresses(LPVOID lpParameter)
 {
-    std::cout << "Thread getServiceAddresses begin\n";
+    cout << "Thread getServiceAddresses begin\n";
 
     for(size_t i = 0; i < static_cast<onvif_device_list*>(lpParameter)->number_of_onvif_devices; i++)
     {
         get_onvif_device_service_addresses(static_cast<onvif_device_list*>(lpParameter), NULL, i);
     }
 
-    std::cout << "Thread getServiceAddresses end\n";
+    cout << "Thread getServiceAddresses end\n";
     return 0;
 }
 
 DWORD WINAPI searchDevice(LPVOID lpParameter)
 {
-    std::cout << "Thread searchDevice begin\n";
+    cout << "Thread searchDevice begin\n";
 
     search_ONVIF_device(static_cast<onvif_device_list*>(lpParameter), 1);
 
-    std::cout << "Thread searchDevice end\n";
+    cout << "Thread searchDevice end\n";
 
     return 0;
 }
 
 DWORD WINAPI getDeviceInformation(LPVOID lpParameter)
 {
-    std::cout << "Thread getURIbyIP begin\n";
+    cout << "Thread getURIbyIP begin\n";
 
     for(size_t i = 0; i < static_cast<onvif_device_list*>(lpParameter)->number_of_onvif_devices; i++)
     {
         get_onvif_device_information(static_cast<onvif_device_list*>(lpParameter), NULL, i);
     }
 
-    std::cout << "Thread getURIbyIP end\n";
+    cout << "Thread getURIbyIP end\n";
     return 0;
 }
 
 DWORD WINAPI getDeviceProfiles(LPVOID lpParameter)
 {
-    std::cout << "Thread getNumOfProfilesByIP begin\n";
+    cout << "Thread getNumOfProfilesByIP begin\n";
 
     for(size_t i = 0; i < static_cast<onvif_device_list*>(lpParameter)->number_of_onvif_devices; i++)
     {
         get_onvif_device_profiles(static_cast<onvif_device_list*>(lpParameter), NULL, i);
     }
 
-    std::cout << "Thread getNumOfProfilesByIP end\n";
+    cout << "Thread getNumOfProfilesByIP end\n";
     return 0;
 }
 
@@ -62,7 +60,7 @@ typedef struct
     char password[50];
 }struct_IP_username_password;
 
-int _tmain(int argc, _TCHAR* argv[])
+int main(int argc, char* argv[])
 {
     HANDLE handleArray[5];
     onvif_device_list* p_onvif_device_list = NULL;
