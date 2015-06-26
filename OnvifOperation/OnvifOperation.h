@@ -82,8 +82,8 @@ enum TransportProtocol
     HTTP = 3
 };
 
-// onvif_device_profiles struct
-typedef struct tag_onvif_device_profile
+// onvif_ipc_profile struct
+typedef struct tag_onvif_ipc_profile
 {
 
     char name[30];
