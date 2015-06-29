@@ -2,13 +2,13 @@
 // DLL usage :
 // init_DLL() first(get some memory from system).
 // Get a pointer to the onvif_device_list using malloc_device_list();
-// Then search_onvif_device().
-// Set username password in onvif_device_list.
+// Then search_onvif_device() or add_onvif_device_manually().
+// Set username password in onvif_device_list by calling set_onvif_device_authorization_information().
 // Before you can use any other API, you MUST call get_onvif_device_service_addresses().
 // Now you can get_onvif_device_information(), get_onvif_ipc_profiles().
-// All the information you want can be found in onvif_device_list.
+// All the information you want can be found in onvif_device_list, read only please.
 // If you added new onvif device, call search_onvif_device() again and you should found new device in onvif_device_list.
-// Old devices' information in onvif_device_list will be preserved but as for the new devices you need to call API to get device information.
+// Old devices' information in onvif_device_list will be preserved but as for the new devices you need to call APIs to get device information.
 // When you done, please call free_device_list() and uninit_DLL() to release memory.
 //************************************
 
@@ -301,6 +301,15 @@ extern "C" {
     // Parameter: int waitTime: interval for cameras to response, when > 0, gives socket recv timeout in seconds, < 0 in usec.
     //************************************
     ONVIFOPERATION_API int search_onvif_device(onvif_device_list* p_onvif_device_list, int wait_time);
+
+    //************************************
+    // function:  for those support onvif protocol but discoverable is disabled, or search can't find the device, we have to add it to list manually.
+    //            old device's information in onvif_device_list will be preserved.
+    // Returns:   int: 0 success, -1 failure
+    // Parameter: onvif_device_list* p_onvif_device_list: pointer get from malloc_device_list(void).
+    // Parameter: char* IP: the device's IP you want to add.
+    //************************************
+    ONVIFOPERATION_API int add_onvif_device_manually(onvif_device_list* p_onvif_device_list, char* IP);
 
     //************************************
     // function:  set authorization information.

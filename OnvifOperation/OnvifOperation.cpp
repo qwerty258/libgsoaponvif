@@ -304,6 +304,56 @@ ONVIFOPERATION_API int search_onvif_device(onvif_device_list* p_onvif_device_lis
     return 0;
 }
 
+ONVIFOPERATION_API int add_onvif_device_manually(onvif_device_list* p_onvif_device_list, char* IP)
+{
+    onvif_device* p_onvif_device_temp = NULL;
+    char* buffer = new char[256];
+    if(NULL == buffer)
+    {
+        return -1;
+    }
+
+    if(!initialsuccess || NULL == p_onvif_device_list || NULL == IP)
+    {
+        delete buffer;
+        return -1;
+    }
+
+    sprintf(buffer, "http://%s/onvif/device_service", IP);
+
+    while(p_onvif_device_list->devcie_list_lock)
+    {
+        Sleep(10);
+    }
+    p_onvif_device_list->devcie_list_lock = true;
+
+    p_onvif_device_list->number_of_onvif_devices += 1;
+    p_onvif_device_temp = (onvif_device*)realloc(p_onvif_device_list->p_onvif_devices, p_onvif_device_list->number_of_onvif_devices * sizeof(onvif_device));
+    if(NULL == p_onvif_device_temp)
+    {
+        delete buffer;
+        p_onvif_device_list->devcie_list_lock = false;
+        return -1;
+    }
+    else
+    {
+        p_onvif_device_list->p_onvif_devices = p_onvif_device_temp;
+        memset(&p_onvif_device_list->p_onvif_devices[p_onvif_device_list->number_of_onvif_devices - 1], 0x0, sizeof(onvif_device));
+        strncpy(
+            p_onvif_device_list->p_onvif_devices[p_onvif_device_list->number_of_onvif_devices - 1].service_address_device_service.xaddr,
+            buffer,
+            256);
+        strncpy(
+            p_onvif_device_list->p_onvif_devices[p_onvif_device_list->number_of_onvif_devices - 1].IPv4,
+            IP,
+            17);
+    }
+
+    delete buffer;
+    p_onvif_device_list->devcie_list_lock = false;
+    return 0;
+}
+
 ONVIFOPERATION_API int set_onvif_device_authorization_information(onvif_device_list* p_onvif_device_list, char* IP, size_t index, char* username, char* password)
 {
     size_t i;
