@@ -5,8 +5,9 @@ EXPORTS
     malloc_device_list                          @3
     free_device_list                            @4
     search_onvif_device                         @5
-    set_onvif_device_authorization_information  @6
-    get_onvif_device_service_addresses          @7
-    get_onvif_device_information                @8
-    get_onvif_ipc_profiles                      @9
-    get_onvif_nvr_receivers                     @10
+    add_onvif_device_manually                   @6
+    set_onvif_device_authorization_information  @7
+    get_onvif_device_service_addresses          @8
+    get_onvif_device_information                @9
+    get_onvif_ipc_profiles                      @10
+    get_onvif_nvr_receivers                     @11
