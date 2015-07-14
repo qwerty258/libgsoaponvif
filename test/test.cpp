@@ -12,7 +12,7 @@ typedef struct
 
 int main(int argc, char* argv[])
 {
-    struct_IP_username_password IP_username_password[9] =
+    struct_IP_username_password IP_username_password[] =
     {
         "192.168.10.185", "admin", "12345",
         "192.168.10.141", "admin", "12345",
@@ -22,7 +22,9 @@ int main(int argc, char* argv[])
         "192.168.10.181", "admin", "Tolendata",
         "192.168.10.195", "admin", "12345",
         "192.168.10.142", "admin", "12345",
-        "192.168.10.231", "admin", "Tolendata"
+        "192.168.10.231", "admin", "Tolendata",
+        "192.168.10.150", "admin", "Tolendata",
+        "192.168.10.147", "admin", "12345"
     };
 
     onvif_device_list* p_onvif_device_list = malloc_device_list();
@@ -37,18 +39,21 @@ int main(int argc, char* argv[])
     cout << "\nsearch device\n\n";
     system("pause");
 
-    if(-1 == search_onvif_device(p_onvif_device_list, 1))
+    if(-1 == search_onvif_device(p_onvif_device_list, 5))
     {
         cout << "search device failed\n";
         system("pause");
         return -1;
     }
 
+    cout << "\nsearch finished\n";
+    system("pause");
+
     for(size_t i = 0; i < p_onvif_device_list->number_of_onvif_devices; ++i)
     {
         cout << p_onvif_device_list->p_onvif_devices[i].IPv4 << ':' << p_onvif_device_list->p_onvif_devices[i].service_address_device_service.xaddr << endl;
 
-        for(size_t j = 0; j < 9; j++)
+        for(size_t j = 0; j < sizeof(IP_username_password) / sizeof(struct_IP_username_password); j++)
         {
             set_onvif_device_authorization_information(p_onvif_device_list, IP_username_password[j].IP, 555555, IP_username_password[j].username, IP_username_password[j].password);
         }
@@ -193,7 +198,7 @@ int main(int argc, char* argv[])
     cout << "search again\n";
     system("pause");
 
-    if(-1 == search_onvif_device(p_onvif_device_list, 1))
+    if(-1 == search_onvif_device(p_onvif_device_list, 5))
     {
         cout << "search device failed\n";
         system("pause");
