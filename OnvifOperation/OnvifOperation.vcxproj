@@ -95,7 +95,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;ONVIFOPERATION_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_OPENSSL;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;ONVIFOPERATION_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>/bigobj /DDBUG %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>D:\OpenSSL-Win32\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -103,7 +103,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ModuleDefinitionFile>OnvifOperation.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
       <AdditionalLibraryDirectories>D:\OpenSSL-Win32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>libeay32.lib;ssleay32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
@@ -113,7 +114,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;ONVIFOPERATION_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_OPENSSL;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;ONVIFOPERATION_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>/bigobj /DDBUG %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>D:\OpenSSL-Win64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -121,7 +122,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ModuleDefinitionFile>OnvifOperation.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
       <AdditionalLibraryDirectories>D:\OpenSSL-Win64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>libeay32.lib;ssleay32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
@@ -133,7 +135,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;ONVIFOPERATION_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_OPENSSL;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;ONVIFOPERATION_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>/bigobj /DDBUG %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>D:\OpenSSL-Win32\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -143,7 +145,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <ModuleDefinitionFile>OnvifOperation.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
       <AdditionalLibraryDirectories>D:\OpenSSL-Win32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>libeay32.lib;ssleay32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
@@ -155,7 +158,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;ONVIFOPERATION_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_OPENSSL;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;ONVIFOPERATION_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>/bigobj /DDBUG %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>D:\OpenSSL-Win64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -165,7 +168,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <ModuleDefinitionFile>OnvifOperation.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
       <AdditionalLibraryDirectories>D:\OpenSSL-Win64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>libeay32.lib;ssleay32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
@@ -207,6 +211,7 @@
     <ClCompile Include="mecevp.c" />
     <ClCompile Include="OnvifOperation.cpp" />
     <ClCompile Include="smdevp.c" />
+    <ClCompile Include="soapC.c" />
     <ClCompile Include="soapClient.c" />
     <ClCompile Include="stdsoap2.c" />
     <ClCompile Include="threads.c" />
