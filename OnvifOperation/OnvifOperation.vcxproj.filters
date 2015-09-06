@@ -62,12 +62,6 @@
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="wsaapi.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="wsseapi.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="dom.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -87,6 +81,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="threads.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="wsaapi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="wsseapi.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

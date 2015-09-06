@@ -198,8 +198,8 @@
     <ClCompile Include="soapClient.c" />
     <ClCompile Include="stdsoap2.c" />
     <ClCompile Include="threads.c" />
-    <ClCompile Include="wsaapi.cpp" />
-    <ClCompile Include="wsseapi.cpp" />
+    <ClCompile Include="wsaapi.c" />
+    <ClCompile Include="wsseapi.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="OnvifOperation.def" />
