@@ -68,9 +68,6 @@
     <ClCompile Include="wsseapi.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="threads.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="dom.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -87,6 +84,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="stdsoap2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="threads.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
