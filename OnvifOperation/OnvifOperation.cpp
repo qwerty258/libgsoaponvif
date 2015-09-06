@@ -126,7 +126,7 @@ ONVIFOPERATION_API int search_onvif_device(onvif_device_list* p_onvif_device_lis
     size_t                      i;
     size_t                      j;
     wsdd__ProbeType             probe;
-    __wsdd__ProbeMatches        probeMatches;
+    struct __wsdd__ProbeMatches probeMatches;
     regex                       expression("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}");
     smatch                      match;
 
