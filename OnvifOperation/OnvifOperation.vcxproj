@@ -192,7 +192,7 @@
     </ClCompile>
     <ClCompile Include="dom.c" />
     <ClCompile Include="duration.c" />
-    <ClCompile Include="mecevp.cpp" />
+    <ClCompile Include="mecevp.c" />
     <ClCompile Include="OnvifOperation.cpp" />
     <ClCompile Include="smdevp.cpp" />
     <ClCompile Include="soapC.cpp" />
