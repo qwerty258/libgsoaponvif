@@ -54,10 +54,6 @@ A commercial use license is available from Genivia, Inc., contact@genivia.com
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
 #include <openssl/ssl.h>
-#include <openssl/err.h>
-
-#pragma comment(lib,"libeay32.lib")
-#pragma comment(lib,"ssleay32.lib")
 
 #ifdef __cplusplus
 extern "C" {

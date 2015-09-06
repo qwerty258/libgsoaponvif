@@ -10768,8 +10768,7 @@ soap_set_attr(struct soap *soap, const char *name, const char *value, int flag)
     tp->ns = NULL;
 #ifndef WITH_LEAN
     if ((soap->mode & SOAP_XML_CANONICAL))
-    {
-        struct soap_attribute** tpp = (struct soap_attribute**)&(soap->attributes);
+    { struct soap_attribute **tpp = &soap->attributes;
       const char *s = strchr(name, ':');
       DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Inserting attribute %s for c14n\n", name));
       if (!strncmp(name, "xmlns", 5))

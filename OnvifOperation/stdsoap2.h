@@ -50,9 +50,7 @@ compiling, linking, and/or using OpenSSL is allowed.
 A commercial use license is available from Genivia, Inc., contact@genivia.com
 --------------------------------------------------------------------------------
 */
-#define WITH_OPENSSL
-#define WITH_XMLNS
-//#define DEBUG
+
 #define GSOAP_VERSION 20822
 
 #ifdef WITH_SOAPDEFS_H
