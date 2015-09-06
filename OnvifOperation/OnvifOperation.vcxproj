@@ -191,7 +191,7 @@
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="dom.c" />
-    <ClCompile Include="duration.cpp" />
+    <ClCompile Include="duration.c" />
     <ClCompile Include="mecevp.cpp" />
     <ClCompile Include="OnvifOperation.cpp" />
     <ClCompile Include="smdevp.cpp" />

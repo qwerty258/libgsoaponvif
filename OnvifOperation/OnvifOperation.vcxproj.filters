@@ -68,9 +68,6 @@
     <ClCompile Include="stdsoap2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="duration.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="wsaapi.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -90,6 +87,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="dom.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="duration.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
