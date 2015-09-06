@@ -1028,7 +1028,7 @@ ONVIFOPERATION_API int get_onvif_nvr_receivers(onvif_device_list* p_onvif_device
         p_onvif_device_list->p_onvif_devices[index].password);
 
 
-    if(SOAP_OK != soap_call___trv__GetReceivers(pSoap, p_onvif_device_list->p_onvif_devices[index].service_address_receiver.xaddr, NULL, &GetReceivers, GetReceiversResponse))
+    if(SOAP_OK != soap_call___trv__GetReceivers(pSoap, p_onvif_device_list->p_onvif_devices[index].service_address_receiver.xaddr, NULL, &GetReceivers, &GetReceiversResponse))
     {
         p_onvif_device_list->devcie_list_lock = false;
         return -1;
@@ -1040,7 +1040,7 @@ ONVIFOPERATION_API int get_onvif_nvr_receivers(onvif_device_list* p_onvif_device
         free(p_onvif_device_list->p_onvif_devices[index].p_onvif_NVR_receivers);
     }
 
-    p_onvif_device_list->p_onvif_devices[index].number_of_onvif_NVR_receivers = GetReceiversResponse.Receivers.size();
+    p_onvif_device_list->p_onvif_devices[index].number_of_onvif_NVR_receivers = GetReceiversResponse.__sizeReceivers;
     p_onvif_device_list->p_onvif_devices[index].p_onvif_NVR_receivers = (onvif_NVR_receiver*)malloc(p_onvif_device_list->p_onvif_devices[index].number_of_onvif_NVR_receivers * sizeof(onvif_NVR_receiver));
     if(NULL == p_onvif_device_list->p_onvif_devices[index].p_onvif_NVR_receivers)
     {
@@ -1050,35 +1050,35 @@ ONVIFOPERATION_API int get_onvif_nvr_receivers(onvif_device_list* p_onvif_device
 
     for(i = 0; i < p_onvif_device_list->p_onvif_devices[index].number_of_onvif_NVR_receivers; i++)
     {
-        if(NULL == GetReceiversResponse.Receivers[i])
+        if(NULL == GetReceiversResponse.Receivers)
         {
             continue;
         }
 
         strncpy(
             p_onvif_device_list->p_onvif_devices[index].p_onvif_NVR_receivers[i].token,
-            GetReceiversResponse.Receivers[i]->Token.c_str(),
+            GetReceiversResponse.Receivers[i].Token,
             30);
 
-        if(NULL != GetReceiversResponse.Receivers[i]->Configuration)
+        if(NULL != GetReceiversResponse.Receivers[i].Configuration)
         {
             strncpy(
                 p_onvif_device_list->p_onvif_devices[index].p_onvif_NVR_receivers[i].configuration.media_URI,
-                GetReceiversResponse.Receivers[i]->Configuration->MediaUri.c_str(),
+                GetReceiversResponse.Receivers[i].Configuration->MediaUri,
                 256);
 
             p_onvif_device_list->p_onvif_devices[index].p_onvif_NVR_receivers[i].configuration.mode =
-                (ReceiverMode)GetReceiversResponse.Receivers[i]->Configuration->Mode;
+                (ReceiverMode)GetReceiversResponse.Receivers[i].Configuration->Mode;
 
-            if(NULL != GetReceiversResponse.Receivers[i]->Configuration->StreamSetup)
+            if(NULL != GetReceiversResponse.Receivers[i].Configuration->StreamSetup)
             {
-                if(NULL != GetReceiversResponse.Receivers[i]->Configuration->StreamSetup->Transport)
+                if(NULL != GetReceiversResponse.Receivers[i].Configuration->StreamSetup->Transport)
                 {
                     p_onvif_device_list->p_onvif_devices[index].p_onvif_NVR_receivers[i].configuration.stream_setup.protocol =
-                        (TransportProtocol)GetReceiversResponse.Receivers[i]->Configuration->StreamSetup->Transport->Protocol;
+                        (TransportProtocol)GetReceiversResponse.Receivers[i].Configuration->StreamSetup->Transport->Protocol;
                 }
                 p_onvif_device_list->p_onvif_devices[index].p_onvif_NVR_receivers[i].configuration.stream_setup.stream =
-                    (StreamType)GetReceiversResponse.Receivers[i]->Configuration->StreamSetup->Stream;
+                    (StreamType)GetReceiversResponse.Receivers[i].Configuration->StreamSetup->Stream;
             }
         }
     }
