@@ -190,7 +190,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="dom.cpp" />
+    <ClCompile Include="dom.c" />
     <ClCompile Include="duration.cpp" />
     <ClCompile Include="mecevp.cpp" />
     <ClCompile Include="OnvifOperation.cpp" />
