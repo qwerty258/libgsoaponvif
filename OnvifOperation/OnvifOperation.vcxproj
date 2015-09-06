@@ -195,7 +195,7 @@
     <ClCompile Include="mecevp.c" />
     <ClCompile Include="OnvifOperation.cpp" />
     <ClCompile Include="smdevp.c" />
-    <ClCompile Include="soapClient.cpp" />
+    <ClCompile Include="soapClient.c" />
     <ClCompile Include="stdsoap2.cpp" />
     <ClCompile Include="threads.cpp" />
     <ClCompile Include="wsaapi.cpp" />
