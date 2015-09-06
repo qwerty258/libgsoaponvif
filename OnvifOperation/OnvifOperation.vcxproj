@@ -194,7 +194,7 @@
     <ClCompile Include="duration.c" />
     <ClCompile Include="mecevp.c" />
     <ClCompile Include="OnvifOperation.cpp" />
-    <ClCompile Include="smdevp.cpp" />
+    <ClCompile Include="smdevp.c" />
     <ClCompile Include="soapC.cpp" />
     <ClCompile Include="soapClient.cpp" />
     <ClCompile Include="stdsoap2.cpp" />

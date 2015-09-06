@@ -77,9 +77,6 @@
     <ClCompile Include="soapClient.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="smdevp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="threads.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -90,6 +87,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="mecevp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="smdevp.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
