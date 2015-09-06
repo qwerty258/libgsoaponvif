@@ -89,6 +89,9 @@
     <ClCompile Include="wsseapi.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="soapC.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="OnvifOperation.def">
