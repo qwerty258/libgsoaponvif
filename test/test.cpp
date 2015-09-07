@@ -25,6 +25,8 @@ int main(int argc, char* argv[])
         "192.168.10.231", "admin", "Tolendata",
         "192.168.10.150", "admin", "Tolendata",
         "192.168.10.147", "admin", "12345"
+        "192.168.10.222", "admin", "12345"
+        "192.168.10.221", "admin", "12345"
     };
 
     onvif_device_list* p_onvif_device_list = malloc_device_list();
