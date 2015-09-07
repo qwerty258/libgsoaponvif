@@ -757,26 +757,26 @@ ONVIFOPERATION_API int get_onvif_ipc_profiles(onvif_device_list* p_onvif_device_
         return -1;
     }
 
-    getStreamUri.StreamSetup = new tt__StreamSetup;
+    getStreamUri.StreamSetup = (tt__StreamSetup*)malloc(sizeof(tt__StreamSetup));
     if(NULL == getStreamUri.StreamSetup)
     {
         p_onvif_device_list->devcie_list_lock = false;
         return -1;
     }
 
-    getStreamUri.StreamSetup->Transport = new tt__Transport;
+    getStreamUri.StreamSetup->Transport = (tt__Transport*)malloc(sizeof(tt__Transport));
     if(NULL == getStreamUri.StreamSetup->Transport)
     {
-        delete getStreamUri.StreamSetup;
+        free(getStreamUri.StreamSetup);
         p_onvif_device_list->devcie_list_lock = false;
         return -1;
     }
 
-    getStreamUri.StreamSetup->Transport->Tunnel = new tt__Transport;
+    getStreamUri.StreamSetup->Transport->Tunnel = (tt__Transport*)malloc(sizeof(tt__Transport));
     if(NULL == getStreamUri.StreamSetup->Transport->Tunnel)
     {
-        delete getStreamUri.StreamSetup->Transport;
-        delete getStreamUri.StreamSetup;
+        free(getStreamUri.StreamSetup->Transport);
+        free(getStreamUri.StreamSetup);
         p_onvif_device_list->devcie_list_lock = false;
         return -1;
     }
@@ -801,9 +801,9 @@ ONVIFOPERATION_API int get_onvif_ipc_profiles(onvif_device_list* p_onvif_device_
     if(SOAP_OK != soap_call___trt__GetProfiles(pSoap, p_onvif_device_list->p_onvif_devices[index].service_address_media.xaddr, NULL, &getProfiles, &getProfilesResponse))
     {
         p_onvif_device_list->devcie_list_lock = false;
-        delete getStreamUri.StreamSetup->Transport->Tunnel;
-        delete getStreamUri.StreamSetup->Transport;
-        delete getStreamUri.StreamSetup;
+        free(getStreamUri.StreamSetup->Transport->Tunnel);
+        free(getStreamUri.StreamSetup->Transport);
+        free(getStreamUri.StreamSetup);
         return -1;
     }
 
@@ -818,9 +818,9 @@ ONVIFOPERATION_API int get_onvif_ipc_profiles(onvif_device_list* p_onvif_device_
     if(NULL == p_onvif_device_list->p_onvif_devices[index].p_onvif_ipc_profiles)
     {
         p_onvif_device_list->devcie_list_lock = false;
-        delete getStreamUri.StreamSetup->Transport->Tunnel;
-        delete getStreamUri.StreamSetup->Transport;
-        delete getStreamUri.StreamSetup;
+        free(getStreamUri.StreamSetup->Transport->Tunnel);
+        free(getStreamUri.StreamSetup->Transport);
+        free(getStreamUri.StreamSetup);
         return -1;
     }
     memset(p_onvif_device_list->p_onvif_devices[index].p_onvif_ipc_profiles, 0x0, getProfilesResponse.__sizeProfiles * sizeof(onvif_ipc_profile));
@@ -976,9 +976,9 @@ ONVIFOPERATION_API int get_onvif_ipc_profiles(onvif_device_list* p_onvif_device_
 
     p_onvif_device_list->devcie_list_lock = false;
 
-    delete getStreamUri.StreamSetup->Transport->Tunnel;
-    delete getStreamUri.StreamSetup->Transport;
-    delete getStreamUri.StreamSetup;
+    free(getStreamUri.StreamSetup->Transport->Tunnel);
+    free(getStreamUri.StreamSetup->Transport);
+    free(getStreamUri.StreamSetup);
 
     return 0;
 }
