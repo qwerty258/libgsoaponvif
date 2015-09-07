@@ -175,9 +175,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="duration.h" />
     <ClInclude Include="mecevp.h" />
     <ClInclude Include="OnvifOperation.h" />
