@@ -49,14 +49,14 @@ int main(int argc, char* argv[])
     cout << "\nsearch finished\n";
     system("pause");
 
+    for(size_t j = 0; j < sizeof(IP_username_password) / sizeof(struct_IP_username_password); j++)
+    {
+        set_onvif_device_authorization_information(p_onvif_device_list, IP_username_password[j].IP, 555555, IP_username_password[j].username, IP_username_password[j].password);
+    }
+
     for(size_t i = 0; i < p_onvif_device_list->number_of_onvif_devices; ++i)
     {
         cout << p_onvif_device_list->p_onvif_devices[i].IPv4 << ':' << p_onvif_device_list->p_onvif_devices[i].service_address_device_service.xaddr << endl;
-
-        for(size_t j = 0; j < sizeof(IP_username_password) / sizeof(struct_IP_username_password); j++)
-        {
-            set_onvif_device_authorization_information(p_onvif_device_list, IP_username_password[j].IP, 555555, IP_username_password[j].username, IP_username_password[j].password);
-        }
 
         cout << p_onvif_device_list->p_onvif_devices[i].username << ':' << p_onvif_device_list->p_onvif_devices[i].password << endl;
 
