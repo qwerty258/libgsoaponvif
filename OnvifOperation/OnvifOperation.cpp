@@ -783,6 +783,8 @@ ONVIFOPERATION_API int get_onvif_ipc_profiles(onvif_device_list* p_onvif_device_
 
     getStreamUri.StreamSetup->Stream = tt__StreamType__RTP_Unicast;
     getStreamUri.StreamSetup->Transport->Protocol = tt__TransportProtocol__RTSP;
+    getStreamUri.StreamSetup->Transport->Tunnel->Protocol = tt__TransportProtocol__RTSP;
+    getStreamUri.StreamSetup->Transport->Tunnel->Tunnel = NULL;
     getStreamUri.StreamSetup->__size = 1;
     getStreamUri.StreamSetup->__any = NULL;
     getStreamUri.StreamSetup->__anyAttribute = NULL;
@@ -821,6 +823,7 @@ ONVIFOPERATION_API int get_onvif_ipc_profiles(onvif_device_list* p_onvif_device_
         delete getStreamUri.StreamSetup;
         return -1;
     }
+    memset(p_onvif_device_list->p_onvif_devices[index].p_onvif_ipc_profiles, 0x0, getProfilesResponse.__sizeProfiles * sizeof(onvif_ipc_profile));
 
     for(i = 0; i < p_onvif_device_list->p_onvif_devices[index].number_of_onvif_ipc_profiles; ++i)
     {
