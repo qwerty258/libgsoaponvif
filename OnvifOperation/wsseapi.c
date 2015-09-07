@@ -3945,7 +3945,7 @@ calc_nonce(char nonce[SOAP_WSSE_NONCELEN])
   soap_memcpy((void*)nonce, SOAP_WSSE_NONCELEN, (const void*)&r, 4);
   for (i = 4; i < SOAP_WSSE_NONCELEN; i += 4)
   { r = soap_random;
-    soap_memcpy((void*)nonce + i, 4, (const void*)&r, 4);
+    soap_memcpy((void*)(nonce + i), 4, (const void*)&r, 4);
   }
 }
 
