@@ -19,51 +19,51 @@
 using namespace std;
 // C++ 11
 
-static soap*            pSoap;
-static soap*            pSoapForSearch;
+//static soap*            pSoap;
+//static soap*            SoapForSearch;
 static wsdd__ScopesType scopes;
 static SOAP_ENV__Header header;
 
-static bool initialsuccess = false;
+static bool initialsuccess = true;
 
 ONVIFOPERATION_API int init_DLL(void)
 {
-    pSoap = soap_new1(SOAP_IO_DEFAULT | SOAP_XML_IGNORENS); // ignore namespace, avoid namespace mismatch
-    if(NULL == pSoap)
-    {
-        return -1;
-    }
+    //pSoap = soap_new1(SOAP_IO_DEFAULT | SOAP_XML_IGNORENS); // ignore namespace, avoid namespace mismatch
+    //if(NULL == pSoap)
+    //{
+    //    return -1;
+    //}
 
-    pSoapForSearch = soap_new1(SOAP_IO_DEFAULT | SOAP_XML_IGNORENS); // ignore namespace, avoid namespace mismatch
-    if(NULL == pSoap)
-    {
-        return -1;
-    }
+    //SoapForSearch = soap_new1(SOAP_IO_DEFAULT | SOAP_XML_IGNORENS); // ignore namespace, avoid namespace mismatch
+    //if(NULL == pSoap)
+    //{
+    //    return -1;
+    //}
 
-    initialsuccess = true;
+    //initialsuccess = true;
 
     return 0;
 }
 
 ONVIFOPERATION_API int uninit_DLL(void)
 {
-    if(!initialsuccess)
-    {
-        return -1;
-    }
+    //if(!initialsuccess)
+    //{
+    //    return -1;
+    //}
 
-    soap_destroy(pSoapForSearch);
-    soap_end(pSoapForSearch);
-    soap_done(pSoapForSearch);
+    //soap_destroy(SoapForSearch);
+    //soap_end(SoapForSearch);
+    //soap_done(SoapForSearch);
 
-    soap_destroy(pSoap);
-    soap_end(pSoap);
-    soap_free(pSoap);
+    //soap_destroy(pSoap);
+    //soap_end(pSoap);
+    //soap_done(SoapForSearch);
 
-    pSoapForSearch = NULL;
-    pSoap = NULL;
+    //SoapForSearch = NULL;
+    //pSoap = NULL;
 
-    initialsuccess = false;
+    //initialsuccess = false;
 
     return 0;
 }
@@ -129,42 +129,51 @@ ONVIFOPERATION_API int search_onvif_device(onvif_device_list* p_onvif_device_lis
     struct __wsdd__ProbeMatches probeMatches;
     regex                       expression("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}");
     smatch                      match;
+    soap                        SoapForSearch;
 
     if(!initialsuccess || NULL == p_onvif_device_list)
     {
         return -1;
     }
 
-    soap_default_SOAP_ENV__Header(pSoapForSearch, &header);
-    soap_set_namespaces(pSoapForSearch, discovery_namespace);
-    pSoapForSearch->recv_timeout = wait_time;
+    soap_init1(&SoapForSearch, SOAP_IO_DEFAULT | SOAP_XML_IGNORENS);
 
-    header.wsa__MessageID = (char*)soap_wsa_rand_uuid(pSoapForSearch);
+    soap_default_SOAP_ENV__Header(&SoapForSearch, &header);
+    soap_set_namespaces(&SoapForSearch, discovery_namespace);
+    SoapForSearch.recv_timeout = wait_time;
+
+    header.wsa__MessageID = (char*)soap_wsa_rand_uuid(&SoapForSearch);
     if(NULL == header.wsa__MessageID)
     {
+        soap_destroy(&SoapForSearch);
+        soap_end(&SoapForSearch);
+        soap_done(&SoapForSearch);
         return -1;
     }
 
     header.wsa__To = "urn:schemas-xmlsoap-org:ws:2005:04:discovery";
     header.wsa__Action = "http://schemas.xmlsoap.org/ws/2005/04/discovery/Probe";
-    pSoapForSearch->header = &header;
+    SoapForSearch.header = &header;
 
-    soap_default_wsdd__ScopesType(pSoapForSearch, &scopes);
-    scopes.__item = "onvif://www.onvif.org";
-    soap_default_wsdd__ProbeType(pSoapForSearch, &probe);
+    soap_default_wsdd__ScopesType(&SoapForSearch, &scopes);
+    scopes.__item = ""; //onvif://www.onvif.org
+    soap_default_wsdd__ProbeType(&SoapForSearch, &probe);
     probe.Scopes = &scopes;
-    probe.Types = ""; /*ns1:NetworkVideoTransmitter*/
-    //probe.Types = "NetworkVideoTransmitter";
+    probe.Types = "NetworkVideoTransmitter"; /*ns1:NetworkVideoTransmitter*/
+    //probe.Types = "";
 
-    if(SOAP_OK != soap_send___wsdd__Probe(pSoapForSearch, "soap.udp://239.255.255.250:3702", NULL, &probe))
+    if(SOAP_OK != soap_send___wsdd__Probe(&SoapForSearch, "soap.udp://239.255.255.250:3702", NULL, &probe))
     {
+        soap_destroy(&SoapForSearch);
+        soap_end(&SoapForSearch);
+        soap_done(&SoapForSearch);
         return -1;
     }
 
     // get match result and put into vector
     while(TRUE)
     {
-        if(SOAP_OK != soap_recv___wsdd__ProbeMatches(pSoapForSearch, &probeMatches))
+        if(SOAP_OK != soap_recv___wsdd__ProbeMatches(&SoapForSearch, &probeMatches))
         {
             break;
         }
@@ -236,6 +245,9 @@ ONVIFOPERATION_API int search_onvif_device(onvif_device_list* p_onvif_device_lis
             if(NULL == p_onvif_device_temp)
             {
                 p_onvif_device_list->devcie_list_lock = false;
+                soap_destroy(&SoapForSearch);
+                soap_end(&SoapForSearch);
+                soap_done(&SoapForSearch);
                 return -1;
             }
             else
@@ -291,6 +303,9 @@ ONVIFOPERATION_API int search_onvif_device(onvif_device_list* p_onvif_device_lis
     if(NULL == p_onvif_device_temp)
     {
         p_onvif_device_list->devcie_list_lock = false;
+        soap_destroy(&SoapForSearch);
+        soap_end(&SoapForSearch);
+        soap_done(&SoapForSearch);
         return -1;
     }
     else
@@ -300,6 +315,10 @@ ONVIFOPERATION_API int search_onvif_device(onvif_device_list* p_onvif_device_lis
 
     // release lock
     p_onvif_device_list->devcie_list_lock = false;
+
+    soap_destroy(&SoapForSearch);
+    soap_end(&SoapForSearch);
+    soap_done(&SoapForSearch);
 
     return 0;
 }
@@ -413,6 +432,7 @@ ONVIFOPERATION_API int get_onvif_device_information(onvif_device_list* p_onvif_d
     _tds__GetNetworkInterfaces          tds__GetNetworkInterfaces;
     _tds__GetNetworkInterfacesResponse  tds__GetNetworkInterfacesResponse;
     size_t i;
+    soap soapDeviceInfo;
 
     if(!initialsuccess || NULL == p_onvif_device_list)
     {
@@ -447,18 +467,22 @@ ONVIFOPERATION_API int get_onvif_device_information(onvif_device_list* p_onvif_d
         return -1;
     }
 
+    soap_init1(&soapDeviceInfo, SOAP_IO_DEFAULT | SOAP_XML_IGNORENS);
 
-    soap_set_namespaces(pSoap, device_namespace);
+    soap_set_namespaces(&soapDeviceInfo, device_namespace);
 
     soap_wsse_add_UsernameTokenDigest(
-        pSoap,
+        &soapDeviceInfo,
         "user",
         p_onvif_device_list->p_onvif_devices[index].username,
         p_onvif_device_list->p_onvif_devices[index].password);
 
-    if(SOAP_OK != soap_call___tds__GetDeviceInformation(pSoap, p_onvif_device_list->p_onvif_devices[index].service_address_device_service.xaddr, NULL, &tds__GetDeviceInformation, &tds__GetDeviceInformationResponse))
+    if(SOAP_OK != soap_call___tds__GetDeviceInformation(&soapDeviceInfo, p_onvif_device_list->p_onvif_devices[index].service_address_device_service.xaddr, NULL, &tds__GetDeviceInformation, &tds__GetDeviceInformationResponse))
     {
         p_onvif_device_list->devcie_list_lock = false;
+        soap_destroy(&soapDeviceInfo);
+        soap_end(&soapDeviceInfo);
+        soap_done(&soapDeviceInfo);
         return -1;
     }
 
@@ -484,17 +508,20 @@ ONVIFOPERATION_API int get_onvif_device_information(onvif_device_list* p_onvif_d
         50);
 
 
-    soap_set_namespaces(pSoap, device_namespace);
+    soap_set_namespaces(&soapDeviceInfo, device_namespace);
 
     soap_wsse_add_UsernameTokenDigest(
-        pSoap,
+        &soapDeviceInfo,
         "user",
         p_onvif_device_list->p_onvif_devices[index].username,
         p_onvif_device_list->p_onvif_devices[index].password);
 
-    if(SOAP_OK != soap_call___tds__GetNetworkInterfaces(pSoap, p_onvif_device_list->p_onvif_devices[index].service_address_device_service.xaddr, NULL, &tds__GetNetworkInterfaces, &tds__GetNetworkInterfacesResponse))
+    if(SOAP_OK != soap_call___tds__GetNetworkInterfaces(&soapDeviceInfo, p_onvif_device_list->p_onvif_devices[index].service_address_device_service.xaddr, NULL, &tds__GetNetworkInterfaces, &tds__GetNetworkInterfacesResponse))
     {
         p_onvif_device_list->devcie_list_lock = false;
+        soap_destroy(&soapDeviceInfo);
+        soap_end(&soapDeviceInfo);
+        soap_done(&soapDeviceInfo);
         return -1;
     }
 
@@ -505,6 +532,10 @@ ONVIFOPERATION_API int get_onvif_device_information(onvif_device_list* p_onvif_d
 
     p_onvif_device_list->devcie_list_lock = false;
 
+    soap_destroy(&soapDeviceInfo);
+    soap_end(&soapDeviceInfo);
+    soap_done(&soapDeviceInfo);
+
     return 0;
 }
 
@@ -513,6 +544,7 @@ ONVIFOPERATION_API int get_onvif_device_service_addresses(onvif_device_list* p_o
     size_t                      i;
     _tds__GetServices           tds__GetServices;
     _tds__GetServicesResponse   tds__GetServicesResponse;
+    soap                        soapServiceAddr;
 
     if(!initialsuccess || NULL == p_onvif_device_list)
     {
@@ -547,19 +579,24 @@ ONVIFOPERATION_API int get_onvif_device_service_addresses(onvif_device_list* p_o
         return -1;
     }
 
+    soap_init1(&soapServiceAddr, SOAP_IO_DEFAULT | SOAP_XML_IGNORENS);
+
     tds__GetServices.IncludeCapability = xsd__boolean__false_;
 
-    soap_set_namespaces(pSoap, device_namespace);
+    soap_set_namespaces(&soapServiceAddr, device_namespace);
 
     soap_wsse_add_UsernameTokenDigest(
-        pSoap,
+        &soapServiceAddr,
         "user",
         p_onvif_device_list->p_onvif_devices[index].username,
         p_onvif_device_list->p_onvif_devices[index].password);
 
-    if(SOAP_OK != soap_call___tds__GetServices(pSoap, p_onvif_device_list->p_onvif_devices[index].service_address_device_service.xaddr, NULL, &tds__GetServices, &tds__GetServicesResponse))
+    if(SOAP_OK != soap_call___tds__GetServices(&soapServiceAddr, p_onvif_device_list->p_onvif_devices[index].service_address_device_service.xaddr, NULL, &tds__GetServices, &tds__GetServicesResponse))
     {
         p_onvif_device_list->devcie_list_lock = false;
+        soap_destroy(&soapServiceAddr);
+        soap_end(&soapServiceAddr);
+        soap_done(&soapServiceAddr);
         return -1;
     }
 
@@ -713,6 +750,10 @@ ONVIFOPERATION_API int get_onvif_device_service_addresses(onvif_device_list* p_o
 
     p_onvif_device_list->devcie_list_lock = false;
 
+    soap_destroy(&soapServiceAddr);
+    soap_end(&soapServiceAddr);
+    soap_done(&soapServiceAddr);
+
     return 0;
 }
 
@@ -723,6 +764,7 @@ ONVIFOPERATION_API int get_onvif_ipc_profiles(onvif_device_list* p_onvif_device_
     _trt__GetProfilesResponse   getProfilesResponse;
     _trt__GetStreamUri          getStreamUri;
     _trt__GetStreamUriResponse  getStreamUriResponse;
+    soap                        soapIPCProfiles;
 
     if(!initialsuccess || NULL == p_onvif_device_list)
     {
@@ -790,20 +832,25 @@ ONVIFOPERATION_API int get_onvif_ipc_profiles(onvif_device_list* p_onvif_device_
     getStreamUri.StreamSetup->__anyAttribute = NULL;
 
 
-    soap_set_namespaces(pSoap, media_namespace);
+    soap_init1(&soapIPCProfiles, SOAP_IO_DEFAULT | SOAP_XML_IGNORENS);
+
+    soap_set_namespaces(&soapIPCProfiles, media_namespace);
 
     soap_wsse_add_UsernameTokenDigest(
-        pSoap,
+        &soapIPCProfiles,
         "user",
         p_onvif_device_list->p_onvif_devices[index].username,
         p_onvif_device_list->p_onvif_devices[index].password);
 
-    if(SOAP_OK != soap_call___trt__GetProfiles(pSoap, p_onvif_device_list->p_onvif_devices[index].service_address_media.xaddr, NULL, &getProfiles, &getProfilesResponse))
+    if(SOAP_OK != soap_call___trt__GetProfiles(&soapIPCProfiles, p_onvif_device_list->p_onvif_devices[index].service_address_media.xaddr, NULL, &getProfiles, &getProfilesResponse))
     {
         p_onvif_device_list->devcie_list_lock = false;
         free(getStreamUri.StreamSetup->Transport->Tunnel);
         free(getStreamUri.StreamSetup->Transport);
         free(getStreamUri.StreamSetup);
+        soap_destroy(&soapIPCProfiles);
+        soap_end(&soapIPCProfiles);
+        soap_done(&soapIPCProfiles);
         return -1;
     }
 
@@ -821,6 +868,9 @@ ONVIFOPERATION_API int get_onvif_ipc_profiles(onvif_device_list* p_onvif_device_
         free(getStreamUri.StreamSetup->Transport->Tunnel);
         free(getStreamUri.StreamSetup->Transport);
         free(getStreamUri.StreamSetup);
+        soap_destroy(&soapIPCProfiles);
+        soap_end(&soapIPCProfiles);
+        soap_done(&soapIPCProfiles);
         return -1;
     }
     memset(p_onvif_device_list->p_onvif_devices[index].p_onvif_ipc_profiles, 0x0, getProfilesResponse.__sizeProfiles * sizeof(onvif_ipc_profile));
@@ -867,16 +917,16 @@ ONVIFOPERATION_API int get_onvif_ipc_profiles(onvif_device_list* p_onvif_device_
 
             getStreamUri.ProfileToken = getProfilesResponse.Profiles[i].token;
 
-            soap_set_namespaces(pSoap, media_namespace);
+            soap_set_namespaces(&soapIPCProfiles, media_namespace);
 
             soap_wsse_add_UsernameTokenDigest(
-                pSoap,
+                &soapIPCProfiles,
                 "user",
                 p_onvif_device_list->p_onvif_devices[index].username,
                 p_onvif_device_list->p_onvif_devices[index].password);
 
             soap_call___trt__GetStreamUri(
-                pSoap,
+                &soapIPCProfiles,
                 p_onvif_device_list->p_onvif_devices[index].service_address_media.xaddr,
                 NULL,
                 &getStreamUri,
@@ -980,6 +1030,10 @@ ONVIFOPERATION_API int get_onvif_ipc_profiles(onvif_device_list* p_onvif_device_
     free(getStreamUri.StreamSetup->Transport);
     free(getStreamUri.StreamSetup);
 
+    soap_destroy(&soapIPCProfiles);
+    soap_end(&soapIPCProfiles);
+    soap_done(&soapIPCProfiles);
+
     return 0;
 }
 
@@ -988,6 +1042,7 @@ ONVIFOPERATION_API int get_onvif_nvr_receivers(onvif_device_list* p_onvif_device
     size_t                      i;
     _trv__GetReceivers          GetReceivers;
     _trv__GetReceiversResponse  GetReceiversResponse;
+    soap                        soapNVRReceivers;
 
     if(!initialsuccess || NULL == p_onvif_device_list)
     {
@@ -1022,18 +1077,23 @@ ONVIFOPERATION_API int get_onvif_nvr_receivers(onvif_device_list* p_onvif_device
         return -1;
     }
 
-    soap_set_namespaces(pSoap, receiver_namespace);
+    soap_init1(&soapNVRReceivers, SOAP_IO_DEFAULT | SOAP_XML_IGNORENS);
+
+    soap_set_namespaces(&soapNVRReceivers, receiver_namespace);
 
     soap_wsse_add_UsernameTokenDigest(
-        pSoap,
+        &soapNVRReceivers,
         "user",
         p_onvif_device_list->p_onvif_devices[index].username,
         p_onvif_device_list->p_onvif_devices[index].password);
 
 
-    if(SOAP_OK != soap_call___trv__GetReceivers(pSoap, p_onvif_device_list->p_onvif_devices[index].service_address_receiver.xaddr, NULL, &GetReceivers, &GetReceiversResponse))
+    if(SOAP_OK != soap_call___trv__GetReceivers(&soapNVRReceivers, p_onvif_device_list->p_onvif_devices[index].service_address_receiver.xaddr, NULL, &GetReceivers, &GetReceiversResponse))
     {
         p_onvif_device_list->devcie_list_lock = false;
+        soap_destroy(&soapNVRReceivers);
+        soap_end(&soapNVRReceivers);
+        soap_done(&soapNVRReceivers);
         return -1;
     }
 
@@ -1048,6 +1108,9 @@ ONVIFOPERATION_API int get_onvif_nvr_receivers(onvif_device_list* p_onvif_device
     if(NULL == p_onvif_device_list->p_onvif_devices[index].p_onvif_NVR_receivers)
     {
         p_onvif_device_list->devcie_list_lock = false;
+        soap_destroy(&soapNVRReceivers);
+        soap_end(&soapNVRReceivers);
+        soap_done(&soapNVRReceivers);
         return -1;
     }
 
@@ -1087,6 +1150,10 @@ ONVIFOPERATION_API int get_onvif_nvr_receivers(onvif_device_list* p_onvif_device
     }
 
     p_onvif_device_list->devcie_list_lock = false;
+
+    soap_destroy(&soapNVRReceivers);
+    soap_end(&soapNVRReceivers);
+    soap_done(&soapNVRReceivers);
 
     return 0;
 }
