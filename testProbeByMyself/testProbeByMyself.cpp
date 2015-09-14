@@ -76,10 +76,33 @@ int _tmain(int argc, _TCHAR* argv[])
     parameter.socketForProbe = &socketForProbe;
     parameter.bLoop = &loop;
 
-    result = _snprintf_s(pProbeMessage, 2048, _TRUNCATE, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:SOAP-ENC=\"http://www.w3.org/2003/05/soap-encoding\" xmlns:wsa=\"http://schemas.xmlsoap.org/ws/2004/08/addressing\" xmlns:wsdd=\"http://schemas.xmlsoap.org/ws/2005/04/discovery\"><SOAP-ENV:Header><wsa:MessageID>urn:uuid:759a9a95-610f-40a9-bf26-fe2c2836ed50</wsa:MessageID><wsa:To SOAP-ENV:mustUnderstand=\"true\">urn:schemas-xmlsoap-org:ws:2005:04:discovery</wsa:To><wsa:Action SOAP-ENV:mustUnderstand=\"true\">http://schemas.xmlsoap.org/ws/2005/04/discovery/Probe</wsa:Action></SOAP-ENV:Header><SOAP-ENV:Body><wsdd:Probe></wsdd:Probe></SOAP-ENV:Body></SOAP-ENV:Envelope>");
+    UUID uuid;
+    RPC_STATUS rpcStatus = UuidCreate(&uuid);
+    if(RPC_S_OK != rpcStatus)
+    {
+        _tprintf(_T("UuidCreate error, code: %d"), WSAGetLastError());
+        exit(0);
+    }
+
+    RPC_CSTR RpcCstr;
+    rpcStatus = UuidToStringA(&uuid, &RpcCstr);
+    if(RPC_S_OK != rpcStatus)
+    {
+        _tprintf(_T("UuidCreate error, code: %d"), WSAGetLastError());
+        exit(0);
+    }
+
+    result = _snprintf_s(pProbeMessage, 2048, _TRUNCATE, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:SOAP-ENC=\"http://www.w3.org/2003/05/soap-encoding\" xmlns:wsa=\"http://schemas.xmlsoap.org/ws/2004/08/addressing\" xmlns:wsdd=\"http://schemas.xmlsoap.org/ws/2005/04/discovery\"><SOAP-ENV:Header><wsa:MessageID>urn:uuid:%s</wsa:MessageID><wsa:To SOAP-ENV:mustUnderstand=\"true\">urn:schemas-xmlsoap-org:ws:2005:04:discovery</wsa:To><wsa:Action SOAP-ENV:mustUnderstand=\"true\">http://schemas.xmlsoap.org/ws/2005/04/discovery/Probe</wsa:Action></SOAP-ENV:Header><SOAP-ENV:Body><wsdd:Probe></wsdd:Probe></SOAP-ENV:Body></SOAP-ENV:Envelope>", RpcCstr);
     if(-1 == result)
     {
         _tprintf(_T("_snprintf_s error"));
+        exit(0);
+    }
+
+    rpcStatus = RpcStringFreeA(&RpcCstr);
+    if(RPC_S_OK != rpcStatus)
+    {
+        _tprintf(_T("UuidCreate error, code: %d"), WSAGetLastError());
         exit(0);
     }
 
