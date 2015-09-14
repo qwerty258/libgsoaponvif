@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testMemoryLeak", "testMemor
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testProbeByMyself", "testProbeByMyself\testProbeByMyself.vcxproj", "{99DDF287-2879-4886-BCD4-281C18DE5D1F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testLibXML", "testLibXML\testLibXML.vcxproj", "{ED970D44-B795-45D7-A6CA-9716A11B26E8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -82,6 +84,16 @@ Global
 		{99DDF287-2879-4886-BCD4-281C18DE5D1F}.Release|Win32.ActiveCfg = Release|Win32
 		{99DDF287-2879-4886-BCD4-281C18DE5D1F}.Release|Win32.Build.0 = Release|Win32
 		{99DDF287-2879-4886-BCD4-281C18DE5D1F}.Release|x64.ActiveCfg = Release|Win32
+		{ED970D44-B795-45D7-A6CA-9716A11B26E8}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{ED970D44-B795-45D7-A6CA-9716A11B26E8}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{ED970D44-B795-45D7-A6CA-9716A11B26E8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{ED970D44-B795-45D7-A6CA-9716A11B26E8}.Debug|Win32.Build.0 = Debug|Win32
+		{ED970D44-B795-45D7-A6CA-9716A11B26E8}.Debug|x64.ActiveCfg = Debug|Win32
+		{ED970D44-B795-45D7-A6CA-9716A11B26E8}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{ED970D44-B795-45D7-A6CA-9716A11B26E8}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{ED970D44-B795-45D7-A6CA-9716A11B26E8}.Release|Win32.ActiveCfg = Release|Win32
+		{ED970D44-B795-45D7-A6CA-9716A11B26E8}.Release|Win32.Build.0 = Release|Win32
+		{ED970D44-B795-45D7-A6CA-9716A11B26E8}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
