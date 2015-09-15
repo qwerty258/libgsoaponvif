@@ -222,7 +222,7 @@ ONVIFOPERATION_API int search_onvif_device(onvif_device_list* p_onvif_device_lis
     sockaddr_in sockaddrMulticastAddrForOnvif;
     memset(&sockaddrMulticastAddrForOnvif, 0x0, sizeof(sockaddr_in));
     int result = InetPton(AF_INET, _T("239.255.255.250"), &sockaddrMulticastAddrForOnvif.sin_addr.s_addr);
-    if(0 != result)
+    if(1 != result)
     {
         handleError(_T("InetPton"), _T(__FILE__), __LINE__);
     }
@@ -284,7 +284,7 @@ ONVIFOPERATION_API int search_onvif_device(onvif_device_list* p_onvif_device_lis
         return -1;
     }
 
-    result = _snprintf_s(pProbeMessage, 2048, _TRUNCATE, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:SOAP-ENC=\"http://www.w3.org/2003/05/soap-encoding\" xmlns:wsa=\"http://schemas.xmlsoap.org/ws/2004/08/addressing\" xmlns:wsdd=\"http://schemas.xmlsoap.org/ws/2005/04/discovery\"><SOAP-ENV:Header><wsa:MessageID>urn:uuid:%s</wsa:MessageID><wsa:To SOAP-ENV:mustUnderstand=\"true\">urn:schemas-xmlsoap-org:ws:2005:04:discovery</wsa:To><wsa:Action SOAP-ENV:mustUnderstand=\"true\">http://schemas.xmlsoap.org/ws/2005/04/discovery/Probe</wsa:Action></SOAP-ENV:Header><SOAP-ENV:Body><wsdd:Probe></wsdd:Probe></SOAP-ENV:Body></SOAP-ENV:Envelope>", RpcCstr);
+    result = _snprintf_s(pProbeMessage, 2048, _TRUNCATE, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:SOAP-ENC=\"http://www.w3.org/2003/05/soap-encoding\" xmlns:wsa=\"http://schemas.xmlsoap.org/ws/2004/08/addressing\" xmlns:wsdd=\"http://schemas.xmlsoap.org/ws/2005/04/discovery\"><SOAP-ENV:Header><wsa:MessageID>urn:uuid:%s</wsa:MessageID><wsa:To SOAP-ENV:mustUnderstand=\"true\">urn:schemas-xmlsoap-org:ws:2005:04:discovery</wsa:To><wsa:Action SOAP-ENV:mustUnderstand=\"true\">http://schemas.xmlsoap.org/ws/2005/04/discovery/Probe</wsa:Action></SOAP-ENV:Header><SOAP-ENV:Body><wsdd:Probe><wsdd:Types></wsdd:Types><wsdd:Scopes></wsdd:Scopes></wsdd:Probe></SOAP-ENV:Body></SOAP-ENV:Envelope>", RpcCstr);
     if(-1 == result)
     {
         handleError(_T("_snprintf_s"), _T(__FILE__), __LINE__);
@@ -353,7 +353,7 @@ ONVIFOPERATION_API int search_onvif_device(onvif_device_list* p_onvif_device_lis
     {
         for(size_t j = i + 1; j < size; j++)
         {
-            if(0 == memcmp(&(receivedDataList[i]->endPointAddr), &(receivedDataList[j]->endPointAddr), sizeof(IN_ADDR)))
+            if(receivedDataList[i]->endPointAddr.S_un.S_addr == receivedDataList[j]->endPointAddr.S_un.S_addr)
             {
                 receivedDataList[j]->forDelete = TRUE;
             }
