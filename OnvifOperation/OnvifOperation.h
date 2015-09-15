@@ -250,11 +250,11 @@ typedef struct tag_onvif_device_list
     size_t number_of_onvif_devices;
 
     //************************************
-    // Data lock, it's better to check this before you want to get some data.
+    // Critical section data lock, it's better to check this before you want to get some data.
+    // Cast critical_section to LPCRITICAL_SECTION
     // You can lock this data struct, but don't forget to unlock it.
-    // true is locked, false is unlocked.
     //************************************
-    bool devcie_list_lock;
+    char critical_section[70];
 }onvif_device_list;
 
 #ifdef __cplusplus

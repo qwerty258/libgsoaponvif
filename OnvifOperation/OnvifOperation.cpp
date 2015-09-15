@@ -150,14 +150,16 @@ ONVIFOPERATION_API onvif_device_list* malloc_device_list(void)
     if(NULL != p_onvif_device_list_temp)
     {
         p_onvif_device_list_temp->number_of_onvif_devices = 0;
-        p_onvif_device_list_temp->devcie_list_lock = false;
         p_onvif_device_list_temp->p_onvif_devices = (onvif_device*)malloc(1);
     }
-    else if(NULL == p_onvif_device_list_temp->p_onvif_devices)
+
+    if(NULL == p_onvif_device_list_temp->p_onvif_devices)
     {
         free(p_onvif_device_list_temp);
         p_onvif_device_list_temp = NULL;
     }
+
+    InitializeCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list_temp->critical_section);
 
     return p_onvif_device_list_temp;
 }
@@ -170,6 +172,7 @@ ONVIFOPERATION_API void free_device_list(onvif_device_list** pp_onvif_device_lis
     }
     else
     {
+        EnterCriticalSection((LPCRITICAL_SECTION)(*pp_onvif_device_list)->critical_section);
         for(size_t i = 0; i < (*pp_onvif_device_list)->number_of_onvif_devices; ++i)
         {
             if(NULL != (*pp_onvif_device_list)->p_onvif_devices[i].p_onvif_ipc_profiles)
@@ -188,6 +191,8 @@ ONVIFOPERATION_API void free_device_list(onvif_device_list** pp_onvif_device_lis
         {
             free((*pp_onvif_device_list)->p_onvif_devices);
         }
+        LeaveCriticalSection((LPCRITICAL_SECTION)(*pp_onvif_device_list)->critical_section);
+        DeleteCriticalSection((LPCRITICAL_SECTION)(*pp_onvif_device_list)->critical_section);
         free((*pp_onvif_device_list));
         (*pp_onvif_device_list) = NULL;
     }
@@ -370,18 +375,11 @@ ONVIFOPERATION_API int search_onvif_device(onvif_device_list* p_onvif_device_lis
         }
     }
 
-    //check lock
-    //while(p_onvif_device_list->devcie_list_lock)
-    //{
-    //    Sleep(10);
-    //}
-    //// add lock
-    //p_onvif_device_list->devcie_list_lock = true;
+    EnterCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
 
     parseDiscoveredDeviceXML(p_onvif_device_list, &receivedDataList);
 
-    //// release lock
-    //p_onvif_device_list->devcie_list_lock = false;
+    LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
 
     size = receivedDataList.size();
 
@@ -416,18 +414,14 @@ ONVIFOPERATION_API int add_onvif_device_manually(onvif_device_list* p_onvif_devi
 
     sprintf(buffer, "http://%s/onvif/device_service", IP);
 
-    while(p_onvif_device_list->devcie_list_lock)
-    {
-        Sleep(10);
-    }
-    p_onvif_device_list->devcie_list_lock = true;
+    EnterCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
 
     p_onvif_device_list->number_of_onvif_devices += 1;
     p_onvif_device_temp = (onvif_device*)realloc(p_onvif_device_list->p_onvif_devices, p_onvif_device_list->number_of_onvif_devices * sizeof(onvif_device));
     if(NULL == p_onvif_device_temp)
     {
         delete buffer;
-        p_onvif_device_list->devcie_list_lock = false;
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
         return -1;
     }
     else
@@ -445,7 +439,7 @@ ONVIFOPERATION_API int add_onvif_device_manually(onvif_device_list* p_onvif_devi
     }
 
     delete buffer;
-    p_onvif_device_list->devcie_list_lock = false;
+    LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
     return 0;
 }
 
@@ -458,17 +452,13 @@ ONVIFOPERATION_API int set_onvif_device_authorization_information(onvif_device_l
         return -1;
     }
 
-    while(p_onvif_device_list->devcie_list_lock)
-    {
-        Sleep(10);
-    }
-    p_onvif_device_list->devcie_list_lock = true;
+    EnterCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
 
     if(NULL != IP)
     {
         if(17 < strnlen(IP, 17))
         {
-            p_onvif_device_list->devcie_list_lock = false;
+            LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
             return -1;
         }
         for(i = 0; i < p_onvif_device_list->number_of_onvif_devices; i++)
@@ -482,7 +472,7 @@ ONVIFOPERATION_API int set_onvif_device_authorization_information(onvif_device_l
 
     if(p_onvif_device_list->number_of_onvif_devices <= index)
     {
-        p_onvif_device_list->devcie_list_lock = false;
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
         return -1;
     }
 
@@ -496,7 +486,7 @@ ONVIFOPERATION_API int set_onvif_device_authorization_information(onvif_device_l
         password,
         50);
 
-    p_onvif_device_list->devcie_list_lock = false;
+    LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
 
     return 0;
 }
@@ -514,17 +504,13 @@ ONVIFOPERATION_API int get_onvif_device_information(onvif_device_list* p_onvif_d
         return -1;
     }
 
-    while(p_onvif_device_list->devcie_list_lock)
-    {
-        Sleep(10);
-    }
-    p_onvif_device_list->devcie_list_lock = true;
+    EnterCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
 
     if(NULL != IP)
     {
         if(17 < strnlen(IP, 17))
         {
-            p_onvif_device_list->devcie_list_lock = false;
+            LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
             return -1;
         }
         for(i = 0; i < p_onvif_device_list->number_of_onvif_devices; i++)
@@ -538,7 +524,7 @@ ONVIFOPERATION_API int get_onvif_device_information(onvif_device_list* p_onvif_d
 
     if(p_onvif_device_list->number_of_onvif_devices <= index)
     {
-        p_onvif_device_list->devcie_list_lock = false;
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
         return -1;
     }
 
@@ -552,7 +538,7 @@ ONVIFOPERATION_API int get_onvif_device_information(onvif_device_list* p_onvif_d
 
     if(SOAP_OK != soap_call___tds__GetDeviceInformation(pSoap, p_onvif_device_list->p_onvif_devices[index].service_address_device_service.xaddr, NULL, &tds__GetDeviceInformation, &tds__GetDeviceInformationResponse))
     {
-        p_onvif_device_list->devcie_list_lock = false;
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
         return -1;
     }
 
@@ -588,7 +574,7 @@ ONVIFOPERATION_API int get_onvif_device_information(onvif_device_list* p_onvif_d
 
     if(SOAP_OK != soap_call___tds__GetNetworkInterfaces(pSoap, p_onvif_device_list->p_onvif_devices[index].service_address_device_service.xaddr, NULL, &tds__GetNetworkInterfaces, &tds__GetNetworkInterfacesResponse))
     {
-        p_onvif_device_list->devcie_list_lock = false;
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
         return -1;
     }
 
@@ -597,7 +583,7 @@ ONVIFOPERATION_API int get_onvif_device_information(onvif_device_list* p_onvif_d
         tds__GetNetworkInterfacesResponse.NetworkInterfaces[0].Info->HwAddress,
         50);
 
-    p_onvif_device_list->devcie_list_lock = false;
+    LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
 
     return 0;
 }
@@ -613,17 +599,13 @@ ONVIFOPERATION_API int get_onvif_device_service_addresses(onvif_device_list* p_o
         return -1;
     }
 
-    while(p_onvif_device_list->devcie_list_lock)
-    {
-        Sleep(10);
-    }
-    p_onvif_device_list->devcie_list_lock = true;
+    EnterCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
 
     if(NULL != IP)
     {
         if(17 < strnlen(IP, 17))
         {
-            p_onvif_device_list->devcie_list_lock = false;
+            LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
             return -1;
         }
         for(i = 0; i < p_onvif_device_list->number_of_onvif_devices; i++)
@@ -637,7 +619,7 @@ ONVIFOPERATION_API int get_onvif_device_service_addresses(onvif_device_list* p_o
 
     if(p_onvif_device_list->number_of_onvif_devices <= index)
     {
-        p_onvif_device_list->devcie_list_lock = false;
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
         return -1;
     }
 
@@ -653,7 +635,7 @@ ONVIFOPERATION_API int get_onvif_device_service_addresses(onvif_device_list* p_o
 
     if(SOAP_OK != soap_call___tds__GetServices(pSoap, p_onvif_device_list->p_onvif_devices[index].service_address_device_service.xaddr, NULL, &tds__GetServices, &tds__GetServicesResponse))
     {
-        p_onvif_device_list->devcie_list_lock = false;
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
         return -1;
     }
 
@@ -805,7 +787,7 @@ ONVIFOPERATION_API int get_onvif_device_service_addresses(onvif_device_list* p_o
         }
     }
 
-    p_onvif_device_list->devcie_list_lock = false;
+    LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
 
     return 0;
 }
@@ -823,17 +805,13 @@ ONVIFOPERATION_API int get_onvif_ipc_profiles(onvif_device_list* p_onvif_device_
         return -1;
     }
 
-    while(p_onvif_device_list->devcie_list_lock)
-    {
-        Sleep(10);
-    }
-    p_onvif_device_list->devcie_list_lock = true;
+    EnterCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
 
     if(NULL != IP)
     {
         if(17 < strnlen(IP, 17))
         {
-            p_onvif_device_list->devcie_list_lock = false;
+            LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
             return -1;
         }
         for(i = 0; i < p_onvif_device_list->number_of_onvif_devices; i++)
@@ -847,14 +825,14 @@ ONVIFOPERATION_API int get_onvif_ipc_profiles(onvif_device_list* p_onvif_device_
 
     if(p_onvif_device_list->number_of_onvif_devices <= index || 17 > strnlen(p_onvif_device_list->p_onvif_devices[index].service_address_media.xaddr, 256))
     {
-        p_onvif_device_list->devcie_list_lock = false;
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
         return -1;
     }
 
     getStreamUri.StreamSetup = (tt__StreamSetup*)malloc(sizeof(tt__StreamSetup));
     if(NULL == getStreamUri.StreamSetup)
     {
-        p_onvif_device_list->devcie_list_lock = false;
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
         return -1;
     }
 
@@ -862,7 +840,7 @@ ONVIFOPERATION_API int get_onvif_ipc_profiles(onvif_device_list* p_onvif_device_
     if(NULL == getStreamUri.StreamSetup->Transport)
     {
         free(getStreamUri.StreamSetup);
-        p_onvif_device_list->devcie_list_lock = false;
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
         return -1;
     }
 
@@ -871,7 +849,7 @@ ONVIFOPERATION_API int get_onvif_ipc_profiles(onvif_device_list* p_onvif_device_
     {
         free(getStreamUri.StreamSetup->Transport);
         free(getStreamUri.StreamSetup);
-        p_onvif_device_list->devcie_list_lock = false;
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
         return -1;
     }
 
@@ -894,7 +872,7 @@ ONVIFOPERATION_API int get_onvif_ipc_profiles(onvif_device_list* p_onvif_device_
 
     if(SOAP_OK != soap_call___trt__GetProfiles(pSoap, p_onvif_device_list->p_onvif_devices[index].service_address_media.xaddr, NULL, &getProfiles, &getProfilesResponse))
     {
-        p_onvif_device_list->devcie_list_lock = false;
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
         free(getStreamUri.StreamSetup->Transport->Tunnel);
         free(getStreamUri.StreamSetup->Transport);
         free(getStreamUri.StreamSetup);
@@ -911,7 +889,7 @@ ONVIFOPERATION_API int get_onvif_ipc_profiles(onvif_device_list* p_onvif_device_
     p_onvif_device_list->p_onvif_devices[index].p_onvif_ipc_profiles = (onvif_ipc_profile*)malloc(getProfilesResponse.__sizeProfiles * sizeof(onvif_ipc_profile));
     if(NULL == p_onvif_device_list->p_onvif_devices[index].p_onvif_ipc_profiles)
     {
-        p_onvif_device_list->devcie_list_lock = false;
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
         free(getStreamUri.StreamSetup->Transport->Tunnel);
         free(getStreamUri.StreamSetup->Transport);
         free(getStreamUri.StreamSetup);
@@ -1068,7 +1046,7 @@ ONVIFOPERATION_API int get_onvif_ipc_profiles(onvif_device_list* p_onvif_device_
         }
     }
 
-    p_onvif_device_list->devcie_list_lock = false;
+    LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
 
     free(getStreamUri.StreamSetup->Transport->Tunnel);
     free(getStreamUri.StreamSetup->Transport);
@@ -1088,17 +1066,13 @@ ONVIFOPERATION_API int get_onvif_nvr_receivers(onvif_device_list* p_onvif_device
         return -1;
     }
 
-    while(p_onvif_device_list->devcie_list_lock)
-    {
-        Sleep(10);
-    }
-    p_onvif_device_list->devcie_list_lock = true;
+    EnterCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
 
     if(NULL != IP)
     {
         if(17 < strnlen(IP, 17))
         {
-            p_onvif_device_list->devcie_list_lock = false;
+            LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
             return -1;
         }
         for(i = 0; i < p_onvif_device_list->number_of_onvif_devices; i++)
@@ -1112,7 +1086,7 @@ ONVIFOPERATION_API int get_onvif_nvr_receivers(onvif_device_list* p_onvif_device
 
     if(p_onvif_device_list->number_of_onvif_devices <= index || 17 > strnlen(p_onvif_device_list->p_onvif_devices[index].service_address_receiver.xaddr, 256))
     {
-        p_onvif_device_list->devcie_list_lock = false;
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
         return -1;
     }
 
@@ -1127,7 +1101,7 @@ ONVIFOPERATION_API int get_onvif_nvr_receivers(onvif_device_list* p_onvif_device
 
     if(SOAP_OK != soap_call___trv__GetReceivers(pSoap, p_onvif_device_list->p_onvif_devices[index].service_address_receiver.xaddr, NULL, &GetReceivers, &GetReceiversResponse))
     {
-        p_onvif_device_list->devcie_list_lock = false;
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
         return -1;
     }
 
@@ -1141,7 +1115,7 @@ ONVIFOPERATION_API int get_onvif_nvr_receivers(onvif_device_list* p_onvif_device
     p_onvif_device_list->p_onvif_devices[index].p_onvif_NVR_receivers = (onvif_NVR_receiver*)malloc(p_onvif_device_list->p_onvif_devices[index].number_of_onvif_NVR_receivers * sizeof(onvif_NVR_receiver));
     if(NULL == p_onvif_device_list->p_onvif_devices[index].p_onvif_NVR_receivers)
     {
-        p_onvif_device_list->devcie_list_lock = false;
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
         return -1;
     }
 
@@ -1180,7 +1154,7 @@ ONVIFOPERATION_API int get_onvif_nvr_receivers(onvif_device_list* p_onvif_device
         }
     }
 
-    p_onvif_device_list->devcie_list_lock = false;
+    LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
 
     return 0;
 }
