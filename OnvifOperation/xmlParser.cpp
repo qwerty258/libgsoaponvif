@@ -65,7 +65,7 @@ void parseDiscoveredDeviceXML(onvif_device_list* p_onvif_device_list, void* rece
         // find device already in the list and set to duplicated
         for(j = 0; j < p_onvif_device_list->number_of_onvif_devices; ++j)
         {
-            if(0 == strncmp(ipTemp, p_onvif_device_list->p_onvif_devices[j].IPv4, 256))
+            if(0 == strncmp(ipTemp, p_onvif_device_list->p_onvif_devices[j].IPv4, 16))
             {
                 p_onvif_device_list->p_onvif_devices[j].duplicated = true;
                 break;
