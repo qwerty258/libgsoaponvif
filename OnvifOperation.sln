@@ -15,6 +15,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testProbeByMyself", "testPr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testLibXML", "testLibXML\testLibXML.vcxproj", "{ED970D44-B795-45D7-A6CA-9716A11B26E8}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testTinyXML2", "testTinyXML2\testTinyXML2.vcxproj", "{BFFA8750-BD39-467E-84F3-B219B9A6BB29}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -95,6 +97,16 @@ Global
 		{ED970D44-B795-45D7-A6CA-9716A11B26E8}.Release|Win32.ActiveCfg = Release|Win32
 		{ED970D44-B795-45D7-A6CA-9716A11B26E8}.Release|Win32.Build.0 = Release|Win32
 		{ED970D44-B795-45D7-A6CA-9716A11B26E8}.Release|x64.ActiveCfg = Release|Win32
+		{BFFA8750-BD39-467E-84F3-B219B9A6BB29}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{BFFA8750-BD39-467E-84F3-B219B9A6BB29}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{BFFA8750-BD39-467E-84F3-B219B9A6BB29}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BFFA8750-BD39-467E-84F3-B219B9A6BB29}.Debug|Win32.Build.0 = Debug|Win32
+		{BFFA8750-BD39-467E-84F3-B219B9A6BB29}.Debug|x64.ActiveCfg = Debug|Win32
+		{BFFA8750-BD39-467E-84F3-B219B9A6BB29}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{BFFA8750-BD39-467E-84F3-B219B9A6BB29}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{BFFA8750-BD39-467E-84F3-B219B9A6BB29}.Release|Win32.ActiveCfg = Release|Win32
+		{BFFA8750-BD39-467E-84F3-B219B9A6BB29}.Release|Win32.Build.0 = Release|Win32
+		{BFFA8750-BD39-467E-84F3-B219B9A6BB29}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
