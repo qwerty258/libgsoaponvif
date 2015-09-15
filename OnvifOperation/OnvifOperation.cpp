@@ -221,7 +221,11 @@ ONVIFOPERATION_API int search_onvif_device(onvif_device_list* p_onvif_device_lis
 
     sockaddr_in sockaddrMulticastAddrForOnvif;
     memset(&sockaddrMulticastAddrForOnvif, 0x0, sizeof(sockaddr_in));
-    InetPton(AF_INET, _T("239.255.255.250"), &sockaddrMulticastAddrForOnvif.sin_addr.s_addr);
+    int result = InetPton(AF_INET, _T("239.255.255.250"), &sockaddrMulticastAddrForOnvif.sin_addr.s_addr);
+    if(0 != result)
+    {
+        handleError(_T("InetPton"), _T(__FILE__), __LINE__);
+    }
     sockaddrMulticastAddrForOnvif.sin_family = AF_INET;
     sockaddrMulticastAddrForOnvif.sin_port = htons(3702);
 
@@ -246,7 +250,7 @@ ONVIFOPERATION_API int search_onvif_device(onvif_device_list* p_onvif_device_lis
         return -1;
     }
 
-    int result = bind(socketForProbe, (struct sockaddr*)&sockaddrClient, sizeof(sockaddr_in));
+    result = bind(socketForProbe, (struct sockaddr*)&sockaddrClient, sizeof(sockaddr_in));
     if(0 != result)
     {
         handleError(_T("bind"), _T(__FILE__), __LINE__);
