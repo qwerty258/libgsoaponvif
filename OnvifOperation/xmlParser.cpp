@@ -22,7 +22,7 @@ void parseDiscoveredDeviceXML(onvif_device_list* p_onvif_device_list, void* rece
         p_onvif_device_list->p_onvif_devices[i].duplicated = false;
     }
 
-    char* ipTemp = (char*)malloc(20);
+    char ipTemp[50];
     if(NULL == ipTemp)
     {
         exit(-1);
@@ -38,8 +38,8 @@ void parseDiscoveredDeviceXML(onvif_device_list* p_onvif_device_list, void* rece
     // add new device into list
     for(i = 0; i < size; ++i)
     {
-        memset(ipTemp, 0x0, 20);
-        result = _snprintf_s(ipTemp, 20, _TRUNCATE, "%d.%d.%d.%d", (*pReceivedDataList)[i]->endPointAddr.S_un.S_un_b.s_b1, (*pReceivedDataList)[i]->endPointAddr.S_un.S_un_b.s_b2, (*pReceivedDataList)[i]->endPointAddr.S_un.S_un_b.s_b3, (*pReceivedDataList)[i]->endPointAddr.S_un.S_un_b.s_b4);
+        memset(ipTemp, 0x0, 50);
+        result = _snprintf_s(ipTemp, 50, _TRUNCATE, "%d.%d.%d.%d", (*pReceivedDataList)[i]->endPointAddr.S_un.S_un_b.s_b1, (*pReceivedDataList)[i]->endPointAddr.S_un.S_un_b.s_b2, (*pReceivedDataList)[i]->endPointAddr.S_un.S_un_b.s_b3, (*pReceivedDataList)[i]->endPointAddr.S_un.S_un_b.s_b4);
         if(-1 == result)
         {
             continue;
@@ -133,9 +133,5 @@ void parseDiscoveredDeviceXML(onvif_device_list* p_onvif_device_list, void* rece
                 --(p_onvif_device_list->number_of_onvif_devices);
             }
         }
-
     }
-
-    free(ipTemp);
-    ipTemp = NULL;
 }
