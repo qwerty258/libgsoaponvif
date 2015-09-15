@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
     cout << "\nsearch device\n\n";
     system("pause");
 
-    if(-1 == search_onvif_device(p_onvif_device_list, 5))
+    if(-1 == search_onvif_device(p_onvif_device_list, 1))
     {
         cout << "search device failed\n";
         system("pause");
@@ -200,7 +200,7 @@ int main(int argc, char* argv[])
     cout << "search again\n";
     system("pause");
 
-    if(-1 == search_onvif_device(p_onvif_device_list, 5))
+    if(-1 == search_onvif_device(p_onvif_device_list, 1))
     {
         cout << "search device failed\n";
         system("pause");
