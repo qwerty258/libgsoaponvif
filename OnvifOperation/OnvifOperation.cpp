@@ -1,11 +1,10 @@
 // OnvifOperation.cpp : Defines the exported functions for the DLL application.
 //
-
 #include <SDKDDKVer.h>
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 // Windows Header Files:
-#include <windows.h>
 #include "OnvifOperation.h"
+#include "xmlParser.h"
 
 #include "soapH.h"
 #include "wsdd.h"
@@ -16,6 +15,10 @@
 #include <string>
 #include <vector>
 #include <regex>
+
+#include <rpc.h>
+#include <tchar.h>
+
 using namespace std;
 // C++ 11
 
@@ -26,6 +29,81 @@ static SOAP_ENV__Header header;
 
 static bool initialsuccess = true;
 
+typedef struct _receivedData
+{
+    IN_ADDR endPointAddr;
+    BOOL forDelete;
+    char* data;
+}receivedData;
+
+typedef struct _receiveThreadParameter
+{
+    SOCKET* socketForProbe;
+    BOOL* bLoop;
+    vector<receivedData*>* receivedDataList;
+}receiveThreadParameter;
+
+void handleError(TCHAR* message, TCHAR* sourceFileName, int sourceFileLine)
+{
+    TCHAR buffer[2048];
+#ifdef UNICODE
+    _snwprintf_s(buffer, 2048, _TRUNCATE, _T("message: %s, error code: %d, file: %s, line: %d"), message, GetLastError(), sourceFileName, sourceFileLine);
+#else
+    _snprintf_s(buffer, 2048, _TRUNCATE, _T("message: %s, error code: %d, file: %s, line: %d"), message, GetLastError(), sourceFileName, sourceFileLine);
+#endif // UNICODE
+    MessageBox(NULL, buffer, _T("Error"), MB_OK);
+}
+
+DWORD WINAPI receiveThread(LPVOID lpParam)
+{
+    receiveThreadParameter* parameter = static_cast<receiveThreadParameter*>(lpParam);
+
+    sockaddr_in receivedFrom;
+    int fromlen = sizeof(sockaddr_in);
+    int bytesReceived;
+    receivedData* pReceivedData = NULL;
+
+    while((*parameter->bLoop))
+    {
+        pReceivedData = (receivedData*)malloc(sizeof(receivedData));
+        if(NULL == pReceivedData)
+        {
+            handleError(_T("malloc"), _T(__FILE__), __LINE__);
+            break;
+        }
+        memset(pReceivedData, 0x0, sizeof(receivedData));
+        pReceivedData->data = (char*)malloc(USHRT_MAX);
+        if(NULL == pReceivedData->data)
+        {
+            handleError(_T("malloc"), _T(__FILE__), __LINE__);
+            break;
+        }
+        memset(pReceivedData->data, 0x0, USHRT_MAX);
+
+        bytesReceived = recvfrom((*parameter->socketForProbe), pReceivedData->data, USHRT_MAX, 0, (sockaddr*)&receivedFrom, &fromlen);
+        if(SOCKET_ERROR == bytesReceived)
+        {
+            if(NULL != pReceivedData)
+            {
+                if(NULL != pReceivedData->data)
+                {
+                    free(pReceivedData->data);
+                }
+                free(pReceivedData);
+                pReceivedData = NULL;
+            }
+            break;
+        }
+        else
+        {
+            pReceivedData->endPointAddr.S_un = receivedFrom.sin_addr.S_un;
+            parameter->receivedDataList->push_back(pReceivedData);
+        }
+    }
+
+    return 0;
+}
+
 ONVIFOPERATION_API int init_DLL(void)
 {
     pSoap = soap_new1(SOAP_IO_DEFAULT | SOAP_XML_IGNORENS); // ignore namespace, avoid namespace mismatch
@@ -34,11 +112,15 @@ ONVIFOPERATION_API int init_DLL(void)
         return -1;
     }
 
-    //SoapForSearch = soap_new1(SOAP_IO_DEFAULT | SOAP_XML_IGNORENS); // ignore namespace, avoid namespace mismatch
-    //if(NULL == pSoap)
-    //{
-    //    return -1;
-    //}
+    WSADATA wsaData;
+    int result;
+
+    result = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if(0 != result)
+    {
+        handleError(_T("WSAStartup"), _T(__FILE__), __LINE__);
+        return -1;
+    }
 
     initialsuccess = true;
 
@@ -52,15 +134,17 @@ ONVIFOPERATION_API int uninit_DLL(void)
         return -1;
     }
 
-    //soap_destroy(SoapForSearch);
-    //soap_end(SoapForSearch);
-    //soap_done(SoapForSearch);
+    int result = WSACleanup();
+    if(0 != result)
+    {
+        handleError(_T("WSACleanup"), _T(__FILE__), __LINE__);
+        return -1;
+    }
 
     soap_destroy(pSoap);
     soap_end(pSoap);
     soap_done(pSoap);
 
-    //SoapForSearch = NULL;
     pSoap = NULL;
 
     initialsuccess = false;
@@ -120,205 +204,206 @@ ONVIFOPERATION_API void free_device_list(onvif_device_list** pp_onvif_device_lis
 
 ONVIFOPERATION_API int search_onvif_device(onvif_device_list* p_onvif_device_list, int wait_time)
 {
-    vector<string>              device_service_address_list;
-    vector<string>              device_IPv4_list;
-    onvif_device*               p_onvif_device_temp;
-    size_t                      i;
-    size_t                      j;
-    wsdd__ProbeType             probe;
-    struct __wsdd__ProbeMatches probeMatches;
-    regex                       expression("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}");
-    smatch                      match;
-    soap                        SoapForSearch;
-
+    // check parameters
     if(!initialsuccess || NULL == p_onvif_device_list)
     {
         return -1;
     }
 
-    //soap_init1(&SoapForSearch, SOAP_IO_DEFAULT | SOAP_XML_IGNORENS);
-
-    soap_default_SOAP_ENV__Header(&SoapForSearch, &header);
-    soap_set_namespaces(&SoapForSearch, discovery_namespace);
-    SoapForSearch.recv_timeout = wait_time;
-
-    header.wsa__MessageID = (char*)soap_wsa_rand_uuid(&SoapForSearch);
-    if(NULL == header.wsa__MessageID)
+    SOCKET socketForProbe = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if(INVALID_SOCKET == socketForProbe)
     {
-        soap_destroy(&SoapForSearch);
-        soap_end(&SoapForSearch);
-        soap_done(&SoapForSearch);
+        handleError(_T("socket"), _T(__FILE__), __LINE__);
         return -1;
     }
 
-    header.wsa__To = "urn:schemas-xmlsoap-org:ws:2005:04:discovery";
-    header.wsa__Action = "http://schemas.xmlsoap.org/ws/2005/04/discovery/Probe";
-    SoapForSearch.header = &header;
+    sockaddr_in sockaddrClient;
+    memset(&sockaddrClient, 0x0, sizeof(sockaddr_in));
+    sockaddrClient.sin_addr.s_addr = htonl(INADDR_ANY);
+    sockaddrClient.sin_family = AF_INET;
+    sockaddrClient.sin_port = htons(0);
 
-    soap_default_wsdd__ScopesType(&SoapForSearch, &scopes);
-    scopes.__item = ""; //onvif://www.onvif.org
-    soap_default_wsdd__ProbeType(&SoapForSearch, &probe);
-    probe.Scopes = &scopes;
-    probe.Types = "NetworkVideoTransmitter"; /*ns1:NetworkVideoTransmitter*/
-    //probe.Types = "";
+    sockaddr_in sockaddrMulticastAddrForOnvif;
+    memset(&sockaddrMulticastAddrForOnvif, 0x0, sizeof(sockaddr_in));
+    InetPton(AF_INET, _T("239.255.255.250"), &sockaddrMulticastAddrForOnvif.sin_addr.s_addr);
+    sockaddrMulticastAddrForOnvif.sin_family = AF_INET;
+    sockaddrMulticastAddrForOnvif.sin_port = htons(3702);
 
-    if(SOAP_OK != soap_send___wsdd__Probe(&SoapForSearch, "soap.udp://239.255.255.250:3702", NULL, &probe))
+    // for receive thread loop control
+    BOOL loop = TRUE;
+
+    DWORD timeOut;
+    if(0 > wait_time)
     {
-        soap_destroy(&SoapForSearch);
-        soap_end(&SoapForSearch);
-        soap_done(&SoapForSearch);
-        return -1;
-    }
-
-    // get match result and put into vector
-    while(TRUE)
-    {
-        if(SOAP_OK != soap_recv___wsdd__ProbeMatches(&SoapForSearch, &probeMatches))
-        {
-            break;
-        }
-        else
-        {
-            if(NULL == probeMatches.wsdd__ProbeMatches)
-            {
-                continue;
-            }
-            if(NULL == probeMatches.wsdd__ProbeMatches->ProbeMatch)
-            {
-                continue;
-            }
-            if(NULL == probeMatches.wsdd__ProbeMatches->ProbeMatch->XAddrs)
-            {
-                continue;
-            }
-
-            device_service_address_list.push_back(probeMatches.wsdd__ProbeMatches->ProbeMatch->XAddrs);
-        }
-    }
-
-    // get IPv4
-    device_IPv4_list.resize(device_service_address_list.size());
-    for(i = 0; i < device_IPv4_list.size(); ++i)
-    {
-        auto words_begin = sregex_iterator(device_service_address_list[i].begin(), device_service_address_list[i].end(), expression);
-        auto words_end = sregex_iterator();
-
-        for(sregex_iterator iterator = words_begin; iterator != words_end; ++iterator)
-        {
-            match = *iterator;
-        }
-
-        device_IPv4_list[i] = match.str();
-    }
-
-    //check lock
-    while(p_onvif_device_list->devcie_list_lock)
-    {
-        Sleep(10);
-    }
-    // add lock
-    p_onvif_device_list->devcie_list_lock = true;
-
-    // set all to not duplicated
-    for(i = 0; i < p_onvif_device_list->number_of_onvif_devices; ++i)
-    {
-        p_onvif_device_list->p_onvif_devices[i].duplicated = false;
-    }
-
-    // add new device into list
-    for(i = 0; i < device_IPv4_list.size(); ++i)
-    {
-        // find device already in the list and set to duplicated
-        for(j = 0; j < p_onvif_device_list->number_of_onvif_devices; ++j)
-        {
-            if(0 == strncmp(device_IPv4_list[i].c_str(), p_onvif_device_list->p_onvif_devices[j].IPv4, 256))
-            {
-                p_onvif_device_list->p_onvif_devices[j].duplicated = true;
-                break;
-            }
-        }
-        // if not found, it is new device
-        if(j == p_onvif_device_list->number_of_onvif_devices)
-        {
-            p_onvif_device_list->number_of_onvif_devices += 1;
-            p_onvif_device_temp = (onvif_device*)realloc(p_onvif_device_list->p_onvif_devices, p_onvif_device_list->number_of_onvif_devices * sizeof(onvif_device));
-            if(NULL == p_onvif_device_temp)
-            {
-                p_onvif_device_list->devcie_list_lock = false;
-                soap_destroy(&SoapForSearch);
-                soap_end(&SoapForSearch);
-                soap_done(&SoapForSearch);
-                return -1;
-            }
-            else
-            {
-                p_onvif_device_list->p_onvif_devices = p_onvif_device_temp;
-                memset(&p_onvif_device_list->p_onvif_devices[p_onvif_device_list->number_of_onvif_devices - 1], 0x0, sizeof(onvif_device));
-                strncpy(
-                    p_onvif_device_list->p_onvif_devices[p_onvif_device_list->number_of_onvif_devices - 1].service_address_device_service.xaddr,
-                    device_service_address_list[i].c_str(),
-                    256);
-                strncpy(
-                    p_onvif_device_list->p_onvif_devices[p_onvif_device_list->number_of_onvif_devices - 1].IPv4,
-                    device_IPv4_list[i].c_str(),
-                    17);
-                p_onvif_device_list->p_onvif_devices[p_onvif_device_list->number_of_onvif_devices - 1].duplicated = true;
-            }
-        }
-    }
-
-    // remove old disappeared device
-    for(i = 0; i < p_onvif_device_list->number_of_onvif_devices; ++i)
-    {
-        if(!p_onvif_device_list->p_onvif_devices[i].duplicated)
-        {
-            // remove profiles array
-            if(NULL != p_onvif_device_list->p_onvif_devices[i].p_onvif_ipc_profiles)
-            {
-                free(p_onvif_device_list->p_onvif_devices[i].p_onvif_ipc_profiles);
-                p_onvif_device_list->p_onvif_devices[i].p_onvif_ipc_profiles = NULL;
-            }
-
-            // remove NVR receivers array
-            if(NULL != p_onvif_device_list->p_onvif_devices[i].p_onvif_NVR_receivers)
-            {
-                free(p_onvif_device_list->p_onvif_devices[i].p_onvif_NVR_receivers);
-                p_onvif_device_list->p_onvif_devices[i].p_onvif_NVR_receivers = NULL;
-            }
-
-            // move elements behind forward
-            for(j = i; j + 1 < p_onvif_device_list->number_of_onvif_devices; ++j)
-            {
-                p_onvif_device_list->p_onvif_devices[j] = p_onvif_device_list->p_onvif_devices[j + 1];
-            }
-
-            --i;
-            --(p_onvif_device_list->number_of_onvif_devices);
-        }
-    }
-
-    // resize memory
-    p_onvif_device_list->number_of_onvif_devices = device_service_address_list.size();
-    p_onvif_device_temp = (onvif_device*)realloc(p_onvif_device_list->p_onvif_devices, p_onvif_device_list->number_of_onvif_devices * sizeof(onvif_device));
-    if(NULL == p_onvif_device_temp)
-    {
-        p_onvif_device_list->devcie_list_lock = false;
-        soap_destroy(&SoapForSearch);
-        soap_end(&SoapForSearch);
-        soap_done(&SoapForSearch);
-        return -1;
+        timeOut = -wait_time;
     }
     else
     {
-        p_onvif_device_list->p_onvif_devices = p_onvif_device_temp;
+        timeOut = wait_time * 1000;
     }
 
-    // release lock
-    p_onvif_device_list->devcie_list_lock = false;
+    char* pProbeMessage = (char*)malloc(2048);
+    if(NULL == pProbeMessage)
+    {
+        handleError(_T("malloc"), _T(__FILE__), __LINE__);
+        closesocket(socketForProbe);
+        return -1;
+    }
 
-    soap_destroy(&SoapForSearch);
-    soap_end(&SoapForSearch);
-    soap_done(&SoapForSearch);
+    int result = bind(socketForProbe, (struct sockaddr*)&sockaddrClient, sizeof(sockaddr_in));
+    if(0 != result)
+    {
+        handleError(_T("bind"), _T(__FILE__), __LINE__);
+        closesocket(socketForProbe);
+        return -1;
+    }
+
+    result = setsockopt(socketForProbe, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeOut, sizeof(DWORD));
+    if(0 != result)
+    {
+        handleError(_T("setsockopt"), _T(__FILE__), __LINE__);
+        closesocket(socketForProbe);
+        return -1;
+    }
+
+    UUID uuid;
+    RPC_STATUS rpcStatus = UuidCreate(&uuid);
+    if(RPC_S_OK != rpcStatus)
+    {
+        handleError(_T("UuidCreate"), _T(__FILE__), __LINE__);
+        closesocket(socketForProbe);
+        return -1;
+    }
+
+    RPC_CSTR RpcCstr;
+    rpcStatus = UuidToStringA(&uuid, &RpcCstr);
+    if(RPC_S_OK != rpcStatus)
+    {
+        handleError(_T("UuidToStringA"), _T(__FILE__), __LINE__);
+        closesocket(socketForProbe);
+        return -1;
+    }
+
+    result = _snprintf_s(pProbeMessage, 2048, _TRUNCATE, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:SOAP-ENC=\"http://www.w3.org/2003/05/soap-encoding\" xmlns:wsa=\"http://schemas.xmlsoap.org/ws/2004/08/addressing\" xmlns:wsdd=\"http://schemas.xmlsoap.org/ws/2005/04/discovery\"><SOAP-ENV:Header><wsa:MessageID>urn:uuid:%s</wsa:MessageID><wsa:To SOAP-ENV:mustUnderstand=\"true\">urn:schemas-xmlsoap-org:ws:2005:04:discovery</wsa:To><wsa:Action SOAP-ENV:mustUnderstand=\"true\">http://schemas.xmlsoap.org/ws/2005/04/discovery/Probe</wsa:Action></SOAP-ENV:Header><SOAP-ENV:Body><wsdd:Probe></wsdd:Probe></SOAP-ENV:Body></SOAP-ENV:Envelope>", RpcCstr);
+    if(-1 == result)
+    {
+        handleError(_T("_snprintf_s"), _T(__FILE__), __LINE__);
+        closesocket(socketForProbe);
+        return -1;
+    }
+
+    rpcStatus = RpcStringFreeA(&RpcCstr);
+    if(RPC_S_OK != rpcStatus)
+    {
+        handleError(_T("RpcStringFreeA"), _T(__FILE__), __LINE__);
+        closesocket(socketForProbe);
+        return -1;
+    }
+
+    vector<receivedData*> receivedDataList;
+    DWORD threadID;
+    receiveThreadParameter parameter;
+    parameter.bLoop = &loop;
+    parameter.receivedDataList = &receivedDataList;
+    parameter.socketForProbe = &socketForProbe;
+
+    HANDLE hThread = CreateThread(NULL, 0, receiveThread, &parameter, 0, &threadID);
+    if(NULL == hThread)
+    {
+        handleError(_T("CreateThread"), _T(__FILE__), __LINE__);
+        closesocket(socketForProbe);
+        return -1;
+    }
+
+    result = sendto(socketForProbe, pProbeMessage, result, 0, (sockaddr*)&sockaddrMulticastAddrForOnvif, sizeof(sockaddr_in));
+    if(SOCKET_ERROR == result)
+    {
+        handleError(_T("sendto"), _T(__FILE__), __LINE__);
+        closesocket(socketForProbe);
+        return -1;
+    }
+
+    free(pProbeMessage);
+    pProbeMessage = NULL;
+
+    Sleep(timeOut);
+
+    loop = FALSE;
+
+    WaitForMultipleObjects(1, &hThread, TRUE, INFINITE);
+
+    CloseHandle(hThread);
+
+    result = closesocket(socketForProbe);
+    if(0 != result)
+    {
+        handleError(_T("sendto"), _T(__FILE__), __LINE__);
+        return -1;
+    }
+
+    // set to no delete
+    size_t size = receivedDataList.size();
+    for(size_t i = 0; i < size; i++)
+    {
+        receivedDataList[i]->forDelete = FALSE;
+    }
+
+    // set dup to delete
+    for(size_t i = 0; i < size; i++)
+    {
+        for(size_t j = i + 1; j < size; j++)
+        {
+            if(0 == memcmp(&(receivedDataList[i]->endPointAddr), &(receivedDataList[j]->endPointAddr), sizeof(IN_ADDR)))
+            {
+                receivedDataList[j]->forDelete = TRUE;
+            }
+        }
+    }
+
+    // delete
+    vector<receivedData*>::iterator it;
+    for(size_t i = 0; i < size; i++)
+    {
+        for(it = receivedDataList.begin(); it != receivedDataList.end(); ++it)
+        {
+            if((*it)->forDelete)
+            {
+                if(NULL != (*it)->data)
+                {
+                    free((*it)->data);
+                }
+                free((*it));
+                receivedDataList.erase(it);
+                break;
+            }
+        }
+    }
+
+    //check lock
+    //while(p_onvif_device_list->devcie_list_lock)
+    //{
+    //    Sleep(10);
+    //}
+    //// add lock
+    //p_onvif_device_list->devcie_list_lock = true;
+
+    parseDiscoveredDeviceXML(p_onvif_device_list, &receivedDataList);
+
+    //// release lock
+    //p_onvif_device_list->devcie_list_lock = false;
+
+    size = receivedDataList.size();
+
+    for(size_t i = 0; i < size; i++)
+    {
+        if(NULL != receivedDataList[i]->data)
+        {
+            free(receivedDataList[i]->data);
+        }
+        free(receivedDataList[i]);
+    }
+
+    receivedDataList.clear();
 
     return 0;
 }

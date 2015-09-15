@@ -125,7 +125,7 @@
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
       <AdditionalLibraryDirectories>D:\OpenSSL-Win64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libeay32.lib;ssleay32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Rpcrt4.lib;Ws2_32.lib;libeay32.lib;ssleay32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -187,6 +187,7 @@
     <ClInclude Include="wsaapi.h" />
     <ClInclude Include="wsdd.h" />
     <ClInclude Include="wsseapi.h" />
+    <ClInclude Include="xmlParser.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -214,6 +215,7 @@
     <ClCompile Include="threads.c" />
     <ClCompile Include="wsaapi.c" />
     <ClCompile Include="wsseapi.c" />
+    <ClCompile Include="xmlParser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="OnvifOperation.def" />
