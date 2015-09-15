@@ -103,35 +103,35 @@ void parseDiscoveredDeviceXML(onvif_device_list* p_onvif_device_list, void* rece
                 p_onvif_device_list->p_onvif_devices[p_onvif_device_list->number_of_onvif_devices - 1].duplicated = true;
             }
         }
+    }
 
-        // remove old disappeared device
-        for(i = 0; i < p_onvif_device_list->number_of_onvif_devices; ++i)
+    // remove old disappeared device
+    for(i = 0; i < p_onvif_device_list->number_of_onvif_devices; ++i)
+    {
+        if(!p_onvif_device_list->p_onvif_devices[i].duplicated)
         {
-            if(!p_onvif_device_list->p_onvif_devices[i].duplicated)
+            // remove profiles array
+            if(NULL != p_onvif_device_list->p_onvif_devices[i].p_onvif_ipc_profiles)
             {
-                // remove profiles array
-                if(NULL != p_onvif_device_list->p_onvif_devices[i].p_onvif_ipc_profiles)
-                {
-                    free(p_onvif_device_list->p_onvif_devices[i].p_onvif_ipc_profiles);
-                    p_onvif_device_list->p_onvif_devices[i].p_onvif_ipc_profiles = NULL;
-                }
-
-                // remove NVR receivers array
-                if(NULL != p_onvif_device_list->p_onvif_devices[i].p_onvif_NVR_receivers)
-                {
-                    free(p_onvif_device_list->p_onvif_devices[i].p_onvif_NVR_receivers);
-                    p_onvif_device_list->p_onvif_devices[i].p_onvif_NVR_receivers = NULL;
-                }
-
-                // move elements behind forward
-                for(j = i; j + 1 < p_onvif_device_list->number_of_onvif_devices; ++j)
-                {
-                    p_onvif_device_list->p_onvif_devices[j] = p_onvif_device_list->p_onvif_devices[j + 1];
-                }
-
-                --i;
-                --(p_onvif_device_list->number_of_onvif_devices);
+                free(p_onvif_device_list->p_onvif_devices[i].p_onvif_ipc_profiles);
+                p_onvif_device_list->p_onvif_devices[i].p_onvif_ipc_profiles = NULL;
             }
+
+            // remove NVR receivers array
+            if(NULL != p_onvif_device_list->p_onvif_devices[i].p_onvif_NVR_receivers)
+            {
+                free(p_onvif_device_list->p_onvif_devices[i].p_onvif_NVR_receivers);
+                p_onvif_device_list->p_onvif_devices[i].p_onvif_NVR_receivers = NULL;
+            }
+
+            // move elements behind forward
+            for(j = i; j + 1 < p_onvif_device_list->number_of_onvif_devices; ++j)
+            {
+                p_onvif_device_list->p_onvif_devices[j] = p_onvif_device_list->p_onvif_devices[j + 1];
+            }
+
+            --i;
+            --(p_onvif_device_list->number_of_onvif_devices);
         }
     }
 }
