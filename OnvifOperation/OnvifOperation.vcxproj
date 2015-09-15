@@ -176,6 +176,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="duration.h" />
+    <ClInclude Include="errorHandling.h" />
     <ClInclude Include="mecevp.h" />
     <ClInclude Include="OnvifOperation.h" />
     <ClInclude Include="resource.h" />
@@ -206,6 +207,7 @@
     </ClCompile>
     <ClCompile Include="dom.c" />
     <ClCompile Include="duration.c" />
+    <ClCompile Include="errorHandling.c" />
     <ClCompile Include="mecevp.c" />
     <ClCompile Include="OnvifOperation.cpp" />
     <ClCompile Include="smdevp.c" />

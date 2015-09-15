@@ -12,17 +12,6 @@ typedef struct _receivedData
     char* data;
 }receivedData;
 
-void xmlHandleError(TCHAR* message, TCHAR* sourceFileName, int sourceFileLine)
-{
-    TCHAR buffer[2048];
-#ifdef UNICODE
-    _snwprintf_s(buffer, 2048, _TRUNCATE, _T("message: %s, error code: %d, file: %s, line: %d"), message, GetLastError(), sourceFileName, sourceFileLine);
-#else
-    _snprintf_s(buffer, 2048, _TRUNCATE, _T("message: %s, error code: %d, file: %s, line: %d"), message, GetLastError(), sourceFileName, sourceFileLine);
-#endif // UNICODE
-    MessageBox(NULL, buffer, _T("Error"), MB_OK);
-}
-
 void parseDiscoveredDeviceXML(onvif_device_list* p_onvif_device_list, void* receivedDataList)
 {
     vector<receivedData*>* pReceivedDataList = static_cast<vector<receivedData*>*>(receivedDataList);
