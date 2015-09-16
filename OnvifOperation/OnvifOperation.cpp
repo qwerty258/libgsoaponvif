@@ -18,6 +18,7 @@
 #include <vector>
 #include <regex>
 
+#include <objbase.h>
 #include <rpc.h>
 #include <tchar.h>
 
@@ -113,6 +114,13 @@ ONVIFOPERATION_API int init_DLL(void)
         return -1;
     }
 
+    HRESULT hResult = CoInitialize(NULL);
+    if(FAILED(hResult))
+    {
+        CoUninitialize();
+        return -1;
+    }
+
     initialsuccess = true;
 
     return 0;
@@ -137,6 +145,8 @@ ONVIFOPERATION_API int uninit_DLL(void)
     soap_done(pSoap);
 
     pSoap = NULL;
+
+    CoUninitialize();
 
     initialsuccess = false;
 
