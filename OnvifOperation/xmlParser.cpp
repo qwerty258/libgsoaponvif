@@ -1,6 +1,9 @@
 #include "xmlParser.h"
 #include <tchar.h>
 #include <WS2tcpip.h>
+#include <objbase.h>
+#include <comutil.h>
+#include <MsXml6.h>
 #include <vector>
 #include <string>
 using namespace std;
@@ -11,6 +14,69 @@ typedef struct _receivedData
     BOOL forDelete;
     char* data;
 }receivedData;
+
+IXMLDOMNode* findNode(IXMLDOMNode* pIXMLDOMNode, char* pSzElementName)
+{
+    IXMLDOMNode* pIXMLDOMNodeTemp = NULL;
+    IXMLDOMNodeList* pIXMLDOMNodeList = NULL;
+    long length = 0;
+    long releaseCount = 0;
+    HRESULT hResult = 0;
+    BSTR nodeName = NULL;
+    char* szNodeName = NULL;
+
+    hResult = pIXMLDOMNode->get_childNodes(&pIXMLDOMNodeList);
+    if(FAILED(hResult))
+    {
+        goto findNodeCleanUp;
+    }
+
+    hResult = pIXMLDOMNodeList->get_length(&length);
+    if(FAILED(hResult))
+    {
+        goto findNodeCleanUp;
+    }
+
+    for(long i = 0; i < length; i++)
+    {
+        pIXMLDOMNodeList->get_item(i, &pIXMLDOMNodeTemp);
+        pIXMLDOMNodeTemp->get_nodeName(&nodeName);
+        szNodeName = _com_util::ConvertBSTRToString(nodeName);
+
+        SysFreeString(nodeName);
+        nodeName = NULL;
+
+        if(NULL != strstr(szNodeName, pSzElementName))
+        {
+            delete[] szNodeName;
+            goto findNodeCleanUp;
+        }
+
+        delete[] szNodeName;
+
+        if(NULL != pIXMLDOMNodeTemp)
+        {
+            do
+            {
+                releaseCount = pIXMLDOMNodeTemp->Release();
+            } while(releaseCount > 0);
+            pIXMLDOMNodeTemp = NULL;
+        }
+    }
+
+findNodeCleanUp:
+
+    if(NULL != pIXMLDOMNodeList)
+    {
+        do
+        {
+            releaseCount = pIXMLDOMNodeList->Release();
+        } while(releaseCount > 0);
+        pIXMLDOMNodeList = NULL;
+    }
+
+    return pIXMLDOMNodeTemp;
+}
 
 void parseDiscoveredDeviceXML(onvif_device_list* p_onvif_device_list, void* receivedDataList)
 {
@@ -23,10 +89,6 @@ void parseDiscoveredDeviceXML(onvif_device_list* p_onvif_device_list, void* rece
     }
 
     char ipTemp[50];
-    if(NULL == ipTemp)
-    {
-        exit(-1);
-    }
 
     size_t size = pReceivedDataList->size();
     onvif_device* p_onvif_device_temp;
