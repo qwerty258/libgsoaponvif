@@ -1,4 +1,5 @@
 #include "xmlParser.h"
+#include "errorHandling.h"
 #include <tchar.h>
 #include <WS2tcpip.h>
 #include <objbase.h>
@@ -78,6 +79,184 @@ findNodeCleanUp:
     return pIXMLDOMNodeTemp;
 }
 
+void getProbeMachXaddr(char* buffer, char* xml)
+{
+    HRESULT hResult = 0;
+    long releaseResult;
+    VARIANT_BOOL varStatus;
+
+    BSTR bstrXMLInMemory = NULL;
+    BSTR bstrError = NULL;
+    BSTR bstrURI = NULL;
+    char* szURI = NULL;
+
+    IXMLDOMDocument* pIXMLDOMDocument = NULL;
+    IXMLDOMParseError* pIXMLDOMParseError = NULL;
+    IXMLDOMNode* pIXMLDOMNodeTemp = NULL;
+    IXMLDOMNode* pIXMLDOMNodeFound = NULL;
+
+    hResult = CoCreateInstance(__uuidof(DOMDocument60), NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pIXMLDOMDocument));
+    if(FAILED(hResult))
+    {
+        goto getProbeMachXaddrCleanUp;
+    }
+
+    hResult = pIXMLDOMDocument->put_async(VARIANT_FALSE);
+    if(FAILED(hResult))
+    {
+        goto getProbeMachXaddrCleanUp;
+    }
+
+    hResult = pIXMLDOMDocument->put_validateOnParse(VARIANT_FALSE);
+    if(FAILED(hResult))
+    {
+        goto getProbeMachXaddrCleanUp;
+    }
+
+    hResult = pIXMLDOMDocument->put_resolveExternals(VARIANT_FALSE);
+    if(FAILED(hResult))
+    {
+        goto getProbeMachXaddrCleanUp;
+    }
+
+    bstrXMLInMemory = _com_util::ConvertStringToBSTR(xml);
+    hResult = pIXMLDOMDocument->loadXML(bstrXMLInMemory, &varStatus);
+    if(FAILED(hResult))
+    {
+        goto getProbeMachXaddrCleanUp;
+    }
+    if(varStatus != VARIANT_TRUE)
+    {
+        hResult = pIXMLDOMDocument->get_parseError(&pIXMLDOMParseError);
+        if(FAILED(hResult))
+        {
+            goto getProbeMachXaddrCleanUp;
+        }
+
+        hResult = pIXMLDOMParseError->get_reason(&bstrError);
+        if(FAILED(hResult))
+        {
+            goto getProbeMachXaddrCleanUp;
+        }
+
+        handleError(bstrError, _T(__FILE__), __LINE__);
+    }
+
+    pIXMLDOMNodeFound = findNode(pIXMLDOMDocument, "Envelope");
+    if(NULL == pIXMLDOMNodeFound)
+    {
+        goto getProbeMachXaddrCleanUp;
+    }
+
+    pIXMLDOMNodeTemp = pIXMLDOMNodeFound;
+
+    pIXMLDOMNodeFound = findNode(pIXMLDOMNodeTemp, "Body");
+
+    do
+    {
+        releaseResult = pIXMLDOMNodeTemp->Release();
+    } while(releaseResult > 0);
+    pIXMLDOMNodeTemp = NULL;
+
+    if(NULL == pIXMLDOMNodeFound)
+    {
+        goto getProbeMachXaddrCleanUp;
+    }
+    pIXMLDOMNodeTemp = pIXMLDOMNodeFound;
+
+    pIXMLDOMNodeFound = findNode(pIXMLDOMNodeTemp, "ProbeMatches");
+
+    do
+    {
+        releaseResult = pIXMLDOMNodeTemp->Release();
+    } while(releaseResult > 0);
+    pIXMLDOMNodeTemp = NULL;
+
+    if(NULL == pIXMLDOMNodeFound)
+    {
+        goto getProbeMachXaddrCleanUp;
+    }
+
+    pIXMLDOMNodeTemp = pIXMLDOMNodeFound;
+
+    pIXMLDOMNodeFound = findNode(pIXMLDOMNodeTemp, "ProbeMatch");
+
+    do
+    {
+        releaseResult = pIXMLDOMNodeTemp->Release();
+    } while(releaseResult > 0);
+    pIXMLDOMNodeTemp = NULL;
+
+    if(NULL == pIXMLDOMNodeFound)
+    {
+        goto getProbeMachXaddrCleanUp;
+    }
+
+    pIXMLDOMNodeTemp = pIXMLDOMNodeFound;
+
+    pIXMLDOMNodeFound = findNode(pIXMLDOMNodeTemp, "XAddrs");
+
+    do
+    {
+        releaseResult = pIXMLDOMNodeTemp->Release();
+    } while(releaseResult > 0);
+    pIXMLDOMNodeTemp = NULL;
+
+    if(NULL == pIXMLDOMNodeFound)
+    {
+        goto getProbeMachXaddrCleanUp;
+    }
+
+    hResult = pIXMLDOMNodeFound->get_text(&bstrURI);
+    if(FAILED(hResult))
+    {
+        goto getProbeMachXaddrCleanUp;
+    }
+
+    szURI = _com_util::ConvertBSTRToString(bstrURI);
+
+    strncpy(buffer, szURI, 256);
+
+    if(NULL != szURI)
+    {
+        delete[] szURI;
+        szURI = NULL;
+    }
+
+getProbeMachXaddrCleanUp:
+
+    if(NULL != pIXMLDOMNodeFound)
+    {
+        do
+        {
+            releaseResult = pIXMLDOMNodeFound->Release();
+        } while(releaseResult > 0);
+        pIXMLDOMNodeFound = NULL;
+    }
+
+    if(NULL != pIXMLDOMParseError)
+    {
+        do
+        {
+            releaseResult = pIXMLDOMParseError->Release();
+        } while(releaseResult > 0);
+        pIXMLDOMParseError = NULL;
+    }
+
+    if(NULL != pIXMLDOMDocument)
+    {
+        do
+        {
+            releaseResult = pIXMLDOMDocument->Release();
+        } while(releaseResult > 0);
+        pIXMLDOMDocument = NULL;
+    }
+
+    SysFreeString(bstrError);
+    SysFreeString(bstrXMLInMemory);
+    SysFreeString(bstrURI);
+}
+
 void parseDiscoveredDeviceXML(onvif_device_list* p_onvif_device_list, void* receivedDataList)
 {
     vector<receivedData*>* pReceivedDataList = static_cast<vector<receivedData*>*>(receivedDataList);
@@ -89,37 +268,32 @@ void parseDiscoveredDeviceXML(onvif_device_list* p_onvif_device_list, void* rece
     }
 
     char ipTemp[50];
+    char URI[256];
 
     size_t size = pReceivedDataList->size();
     onvif_device* p_onvif_device_temp;
     int result;
     size_t i;
     size_t j;
-    char* begin;
 
     // add new device into list
     for(i = 0; i < size; ++i)
     {
         memset(ipTemp, 0x0, 50);
+        memset(URI, 0x0, 256);
         result = _snprintf_s(ipTemp, 50, _TRUNCATE, "%d.%d.%d.%d", (*pReceivedDataList)[i]->endPointAddr.S_un.S_un_b.s_b1, (*pReceivedDataList)[i]->endPointAddr.S_un.S_un_b.s_b2, (*pReceivedDataList)[i]->endPointAddr.S_un.S_un_b.s_b3, (*pReceivedDataList)[i]->endPointAddr.S_un.S_un_b.s_b4);
         if(-1 == result)
         {
             continue;
         }
 
-        if(NULL == strstr((*pReceivedDataList)[i]->data, "onvif"))
+        getProbeMachXaddr(URI, (*pReceivedDataList)[i]->data);
+        if(5 > strnlen(URI, 256))
         {
             continue;
         }
 
-        begin = strstr((*pReceivedDataList)[i]->data, "XAddrs");
-        if(NULL == begin)
-        {
-            continue;
-        }
-
-        begin = strstr(begin, "http");
-        if(NULL == begin)
+        if(NULL == strstr(URI, "onvif"))
         {
             continue;
         }
@@ -148,15 +322,10 @@ void parseDiscoveredDeviceXML(onvif_device_list* p_onvif_device_list, void* rece
                 p_onvif_device_list->p_onvif_devices = p_onvif_device_temp;
                 memset(&p_onvif_device_list->p_onvif_devices[p_onvif_device_list->number_of_onvif_devices - 1], 0x0, sizeof(onvif_device));
 
-                for(size_t i = 0; i < 255; i++)
-                {
-                    if('<' == begin[i])
-                    {
-                        break;
-                    }
-                    p_onvif_device_list->p_onvif_devices[p_onvif_device_list->number_of_onvif_devices - 1].service_address_device_service.xaddr[i] = begin[i];
-                }
-                p_onvif_device_list->p_onvif_devices[p_onvif_device_list->number_of_onvif_devices - 1].service_address_device_service.xaddr[255] = '\0';
+                strncpy(
+                    p_onvif_device_list->p_onvif_devices[p_onvif_device_list->number_of_onvif_devices - 1].service_address_device_service.xaddr,
+                    URI,
+                    256);
 
                 strncpy(
                     p_onvif_device_list->p_onvif_devices[p_onvif_device_list->number_of_onvif_devices - 1].IPv4,
