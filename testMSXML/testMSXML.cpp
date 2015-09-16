@@ -95,176 +95,181 @@ int _tmain(int argc, _TCHAR* argv[])
         goto CleanUp;
     }
 
+    // memory leak test
+    for(size_t i = 0; i < 10000; i++)
+    {
 
-    hResult = CoCreateInstance(__uuidof(DOMDocument60), NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pIXMLDOMDocument));
-    if(FAILED(hResult))
-    {
-        goto CleanUp;
-    }
-
-    hResult = pIXMLDOMDocument->put_async(VARIANT_FALSE);
-    if(FAILED(hResult))
-    {
-        goto CleanUp;
-    }
-
-    hResult = pIXMLDOMDocument->put_validateOnParse(VARIANT_FALSE);
-    if(FAILED(hResult))
-    {
-        goto CleanUp;
-    }
-
-    hResult = pIXMLDOMDocument->put_resolveExternals(VARIANT_FALSE);
-    if(FAILED(hResult))
-    {
-        goto CleanUp;
-    }
-
-    bstrXMLInMemory = _com_util::ConvertStringToBSTR(testXML);
-    hResult = pIXMLDOMDocument->loadXML(bstrXMLInMemory, &varStatus);
-    if(FAILED(hResult))
-    {
-        goto CleanUp;
-    }
-    if(varStatus != VARIANT_TRUE)
-    {
-        hResult = pIXMLDOMDocument->get_parseError(&pIXMLDOMParseError);
+        hResult = CoCreateInstance(__uuidof(DOMDocument60), NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pIXMLDOMDocument));
         if(FAILED(hResult))
         {
             goto CleanUp;
         }
 
-        hResult = pIXMLDOMParseError->get_reason(&bstrError);
+        hResult = pIXMLDOMDocument->put_async(VARIANT_FALSE);
         if(FAILED(hResult))
         {
             goto CleanUp;
         }
 
-        _tprintf_s(_T("%s\n"), bstrError);
-    }
+        hResult = pIXMLDOMDocument->put_validateOnParse(VARIANT_FALSE);
+        if(FAILED(hResult))
+        {
+            goto CleanUp;
+        }
 
-    pIXMLDOMNodeFound = findNode(pIXMLDOMDocument, "Envelope");
-    if(NULL == pIXMLDOMNodeFound)
-    {
-        goto CleanUp;
-    }
+        hResult = pIXMLDOMDocument->put_resolveExternals(VARIANT_FALSE);
+        if(FAILED(hResult))
+        {
+            goto CleanUp;
+        }
 
-    pIXMLDOMNodeTemp = pIXMLDOMNodeFound;
+        bstrXMLInMemory = _com_util::ConvertStringToBSTR(testXML);
+        hResult = pIXMLDOMDocument->loadXML(bstrXMLInMemory, &varStatus);
+        if(FAILED(hResult))
+        {
+            goto CleanUp;
+        }
+        if(varStatus != VARIANT_TRUE)
+        {
+            hResult = pIXMLDOMDocument->get_parseError(&pIXMLDOMParseError);
+            if(FAILED(hResult))
+            {
+                goto CleanUp;
+            }
 
-    pIXMLDOMNodeFound = findNode(pIXMLDOMNodeTemp, "Body");
+            hResult = pIXMLDOMParseError->get_reason(&bstrError);
+            if(FAILED(hResult))
+            {
+                goto CleanUp;
+            }
 
-    do
-    {
-        releaseResult = pIXMLDOMNodeTemp->Release();
-    } while(releaseResult > 0);
-    pIXMLDOMNodeTemp = NULL;
+            _tprintf_s(_T("%s\n"), bstrError);
+        }
 
-    if(NULL == pIXMLDOMNodeFound)
-    {
-        goto CleanUp;
-    }
+        pIXMLDOMNodeFound = findNode(pIXMLDOMDocument, "Envelope");
+        if(NULL == pIXMLDOMNodeFound)
+        {
+            goto CleanUp;
+        }
 
-    pIXMLDOMNodeTemp = pIXMLDOMNodeFound;
+        pIXMLDOMNodeTemp = pIXMLDOMNodeFound;
 
-    pIXMLDOMNodeFound = findNode(pIXMLDOMNodeTemp, "ProbeMatches");
+        pIXMLDOMNodeFound = findNode(pIXMLDOMNodeTemp, "Body");
 
-    do
-    {
-        releaseResult = pIXMLDOMNodeTemp->Release();
-    } while(releaseResult > 0);
-    pIXMLDOMNodeTemp = NULL;
-
-    if(NULL == pIXMLDOMNodeFound)
-    {
-        goto CleanUp;
-    }
-
-    pIXMLDOMNodeTemp = pIXMLDOMNodeFound;
-
-    pIXMLDOMNodeFound = findNode(pIXMLDOMNodeTemp, "ProbeMatch");
-
-    do
-    {
-        releaseResult = pIXMLDOMNodeTemp->Release();
-    } while(releaseResult > 0);
-    pIXMLDOMNodeTemp = NULL;
-
-    if(NULL == pIXMLDOMNodeFound)
-    {
-        goto CleanUp;
-    }
-
-    pIXMLDOMNodeTemp = pIXMLDOMNodeFound;
-
-    pIXMLDOMNodeFound = findNode(pIXMLDOMNodeTemp, "XAddrs");
-
-    do
-    {
-        releaseResult = pIXMLDOMNodeTemp->Release();
-    } while(releaseResult > 0);
-    pIXMLDOMNodeTemp = NULL;
-
-    if(NULL == pIXMLDOMNodeFound)
-    {
-        goto CleanUp;
-    }
-
-    hResult = pIXMLDOMNodeFound->get_text(&bstrURI);
-    if(FAILED(hResult))
-    {
-        goto CleanUp;
-    }
-
-    _tprintf_s(_T("%s\n"), bstrURI);
-
-CleanUp:
-
-
-
-
-
-
-
-
-    if(NULL != pIXMLDOMNodeFound)
-    {
         do
         {
-            releaseResult = pIXMLDOMNodeFound->Release();
+            releaseResult = pIXMLDOMNodeTemp->Release();
         } while(releaseResult > 0);
-        pIXMLDOMNodeFound = NULL;
-    }
+        pIXMLDOMNodeTemp = NULL;
 
-    //if(NULL != pIXMLDOMNode)
-    //{
-    //    do
-    //    {
-    //        releaseResult = pIXMLDOMNode->Release();
-    //    } while(releaseResult > 0);
-    //    pIXMLDOMNode = NULL;
-    //}
+        if(NULL == pIXMLDOMNodeFound)
+        {
+            goto CleanUp;
+        }
 
-    if(NULL != pIXMLDOMParseError)
-    {
+        pIXMLDOMNodeTemp = pIXMLDOMNodeFound;
+
+        pIXMLDOMNodeFound = findNode(pIXMLDOMNodeTemp, "ProbeMatches");
+
         do
         {
-            releaseResult = pIXMLDOMParseError->Release();
+            releaseResult = pIXMLDOMNodeTemp->Release();
         } while(releaseResult > 0);
-        pIXMLDOMParseError = NULL;
-    }
+        pIXMLDOMNodeTemp = NULL;
 
-    if(NULL != pIXMLDOMDocument)
-    {
+        if(NULL == pIXMLDOMNodeFound)
+        {
+            goto CleanUp;
+        }
+
+        pIXMLDOMNodeTemp = pIXMLDOMNodeFound;
+
+        pIXMLDOMNodeFound = findNode(pIXMLDOMNodeTemp, "ProbeMatch");
+
         do
         {
-            releaseResult = pIXMLDOMDocument->Release();
+            releaseResult = pIXMLDOMNodeTemp->Release();
         } while(releaseResult > 0);
-        pIXMLDOMDocument = NULL;
-    }
+        pIXMLDOMNodeTemp = NULL;
 
-    SysFreeString(bstrError);
-    SysFreeString(bstrXMLInMemory);
-    SysFreeString(bstrURI);
+        if(NULL == pIXMLDOMNodeFound)
+        {
+            goto CleanUp;
+        }
+
+        pIXMLDOMNodeTemp = pIXMLDOMNodeFound;
+
+        pIXMLDOMNodeFound = findNode(pIXMLDOMNodeTemp, "XAddrs");
+
+        do
+        {
+            releaseResult = pIXMLDOMNodeTemp->Release();
+        } while(releaseResult > 0);
+        pIXMLDOMNodeTemp = NULL;
+
+        if(NULL == pIXMLDOMNodeFound)
+        {
+            goto CleanUp;
+        }
+
+        hResult = pIXMLDOMNodeFound->get_text(&bstrURI);
+        if(FAILED(hResult))
+        {
+            goto CleanUp;
+        }
+
+        _tprintf_s(_T("%s\n"), bstrURI);
+
+    CleanUp:
+
+
+
+
+
+
+
+
+        if(NULL != pIXMLDOMNodeFound)
+        {
+            do
+            {
+                releaseResult = pIXMLDOMNodeFound->Release();
+            } while(releaseResult > 0);
+            pIXMLDOMNodeFound = NULL;
+        }
+
+        //if(NULL != pIXMLDOMNode)
+        //{
+        //    do
+        //    {
+        //        releaseResult = pIXMLDOMNode->Release();
+        //    } while(releaseResult > 0);
+        //    pIXMLDOMNode = NULL;
+        //}
+
+        if(NULL != pIXMLDOMParseError)
+        {
+            do
+            {
+                releaseResult = pIXMLDOMParseError->Release();
+            } while(releaseResult > 0);
+            pIXMLDOMParseError = NULL;
+        }
+
+        if(NULL != pIXMLDOMDocument)
+        {
+            do
+            {
+                releaseResult = pIXMLDOMDocument->Release();
+            } while(releaseResult > 0);
+            pIXMLDOMDocument = NULL;
+        }
+
+        SysFreeString(bstrError);
+        SysFreeString(bstrXMLInMemory);
+        SysFreeString(bstrURI);
+    }
+    // memory leak test
 
     CoUninitialize();
 
