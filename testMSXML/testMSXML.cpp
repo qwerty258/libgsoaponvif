@@ -7,177 +7,271 @@
 #include <comutil.h>
 #include <MsXml6.h>
 
-// Macro that calls a COM method returning HRESULT value.
-#define CHK_HR(stmt)        do { hr=(stmt); if (FAILED(hr)) goto CleanUp; } while(0)
-
-// Macro to verify memory allcation.
-#define CHK_ALLOC(p)        do { if (!(p)) { hr = E_OUTOFMEMORY; goto CleanUp; } } while(0)
-
-// Macro that releases a COM object if not NULL.
-#define SAFE_RELEASE(p)     do { if ((p)) { (p)->Release(); (p) = NULL; } } while(0)\
-
-// Helper function to create a VT_BSTR variant from a null terminated string. 
-HRESULT VariantFromString(PCWSTR wszValue, VARIANT &Variant)
+IXMLDOMNode* findNode(IXMLDOMNode* pIXMLDOMNode, char* pSzElementName)
 {
-    HRESULT hr = S_OK;
-    BSTR bstr = SysAllocString(wszValue);
-    CHK_ALLOC(bstr);
-
-    V_VT(&Variant) = VT_BSTR;
-    V_BSTR(&Variant) = bstr;
-
-CleanUp:
-    return hr;
-}
-
-// Helper function to create a DOM instance. 
-HRESULT CreateAndInitDOM(IXMLDOMDocument **ppDoc)
-{
-    HRESULT hr = CoCreateInstance(__uuidof(DOMDocument60), NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(ppDoc));
-    if(SUCCEEDED(hr))
-    {
-        // these methods should not fail so don't inspect result
-        (*ppDoc)->put_async(VARIANT_FALSE);
-        (*ppDoc)->put_validateOnParse(VARIANT_FALSE);
-        (*ppDoc)->put_resolveExternals(VARIANT_FALSE);
-    }
-    return hr;
-}
-
-void loadDOMRaw(char* testXML)
-{
-    HRESULT hr = S_OK;
-    IXMLDOMDocument *pXMLDom = NULL;
-    IXMLDOMParseError *pXMLErr = NULL;
-
+    IXMLDOMNode* pIXMLDOMNodeTemp = NULL;
     IXMLDOMNodeList* pIXMLDOMNodeList = NULL;
-    IXMLDOMNodeList* pIXMLDOMNodeListOfEnvelope = NULL;
-
-    IXMLDOMNode* pIXMLDOMNode = NULL;
-    IXMLDOMNode* pIXMLDOMNodeOfEnvelope = NULL;
-
+    long length = 0;
+    long releaseCount = 0;
+    HRESULT hResult = 0;
     BSTR nodeName = NULL;
-    BSTR nodeNameOfEnvelope = NULL;
-    char* szNodeName;
-    char* szNodeNameOfEnvelope;
+    char* szNodeName = NULL;
 
-    long length;
-    long lengthOfEnvelope;
-    long releaseCount;
-
-    BSTR bstrXML = NULL;
-    BSTR bstrErr = NULL;
-
-    BSTR bstrXMLInMemory = NULL;
-
-    VARIANT_BOOL varStatus;
-    VARIANT varFileName;
-    VariantInit(&varFileName);
-
-    CHK_HR(CreateAndInitDOM(&pXMLDom));
-
-    // XML file name to load
-    // CHK_HR(VariantFromString(L"stocks.xml", varFileName));
-    // CHK_HR(pXMLDom->load(varFileName, &varStatus));
-
-    bstrXMLInMemory = _com_util::ConvertStringToBSTR(testXML);
-    CHK_HR(pXMLDom->loadXML(bstrXMLInMemory, &varStatus));
-    if(varStatus == VARIANT_TRUE)
+    hResult = pIXMLDOMNode->get_childNodes(&pIXMLDOMNodeList);
+    if(FAILED(hResult))
     {
-        CHK_HR(pXMLDom->get_xml(&bstrXML));
-        printf("XML DOM loaded from stocks.xml:\n%S\n", bstrXML);
-        pXMLDom->get_childNodes(&pIXMLDOMNodeList);
+        goto findNodeCleanUp;
+    }
 
-        pIXMLDOMNodeList->get_length(&length);
-        for(long i = 0; i < length; i++)
+    hResult = pIXMLDOMNodeList->get_length(&length);
+    if(FAILED(hResult))
+    {
+        goto findNodeCleanUp;
+    }
+
+    for(long i = 0; i < length; i++)
+    {
+        pIXMLDOMNodeList->get_item(i, &pIXMLDOMNodeTemp);
+        pIXMLDOMNodeTemp->get_nodeName(&nodeName);
+        szNodeName = _com_util::ConvertBSTRToString(nodeName);
+
+        SysFreeString(nodeName);
+        nodeName = NULL;
+
+        if(NULL != strstr(szNodeName, pSzElementName))
         {
-            pIXMLDOMNodeList->get_item(i, &pIXMLDOMNode);
-            pIXMLDOMNode->get_nodeName(&nodeName);
-            szNodeName = _com_util::ConvertBSTRToString(nodeName);
-            printf_s("%s\n", szNodeName);
-
-            if(NULL != strstr(szNodeName, "Envelope"))
-            {
-                pIXMLDOMNode->get_childNodes(&pIXMLDOMNodeListOfEnvelope);
-
-                pIXMLDOMNodeListOfEnvelope->get_length(&lengthOfEnvelope);
-                for(long i = 0; i < lengthOfEnvelope; i++)
-                {
-                    pIXMLDOMNodeListOfEnvelope->get_item(i, &pIXMLDOMNodeOfEnvelope);
-                    pIXMLDOMNodeOfEnvelope->get_nodeName(&nodeNameOfEnvelope);
-                    szNodeNameOfEnvelope = _com_util::ConvertBSTRToString(nodeNameOfEnvelope);
-                    printf_s("%s\n", szNodeNameOfEnvelope);
-
-                    delete[] szNodeNameOfEnvelope;
-
-                    do
-                    {
-                        releaseCount = pIXMLDOMNodeOfEnvelope->Release();
-                    } while(releaseCount > 0);
-                    pIXMLDOMNodeOfEnvelope = NULL;
-
-                    SysFreeString(nodeNameOfEnvelope);
-                    nodeNameOfEnvelope = NULL;
-                }
-
-                do
-                {
-                    releaseCount = pIXMLDOMNodeListOfEnvelope->Release();
-                } while(releaseCount > 0);
-
-            }
-
             delete[] szNodeName;
-
-            do
-            {
-                releaseCount = pIXMLDOMNode->Release();
-            } while(releaseCount > 0);
-            pIXMLDOMNode = NULL;
-
-            SysFreeString(nodeName);
-            nodeName = NULL;
+            goto findNodeCleanUp;
         }
 
+        delete[] szNodeName;
+
+        if(NULL != pIXMLDOMNodeTemp)
+        {
+            do
+            {
+                releaseCount = pIXMLDOMNodeTemp->Release();
+            } while(releaseCount > 0);
+            pIXMLDOMNodeTemp = NULL;
+        }
+    }
+
+findNodeCleanUp:
+
+    if(NULL != pIXMLDOMNodeList)
+    {
         do
         {
             releaseCount = pIXMLDOMNodeList->Release();
         } while(releaseCount > 0);
-    }
-    else
-    {
-        // Failed to load xml, get last parsing error
-        CHK_HR(pXMLDom->get_parseError(&pXMLErr));
-        CHK_HR(pXMLErr->get_reason(&bstrErr));
-        printf("Failed to load DOM from stocks.xml. %S\n", bstrErr);
+        pIXMLDOMNodeList = NULL;
     }
 
-CleanUp:
-    SAFE_RELEASE(pXMLDom);
-    SAFE_RELEASE(pXMLErr);
-    SysFreeString(bstrXML);
-    SysFreeString(bstrErr);
-    SysFreeString(bstrXMLInMemory);
-    VariantClear(&varFileName);
+    return pIXMLDOMNodeTemp;
 }
-
 
 int _tmain(int argc, _TCHAR* argv[])
 {
     char* testXML = (char*)malloc(2048);
     memset(testXML, 0x0, 2048);
-    _snprintf_s(testXML, 2048, _TRUNCATE, "<?xml version=\"1.0\" encoding=\"utf-8\"?><SOAP-ENV:Envelope xmlns:tdn=\"http://www.onvif.org/ver10/network/wsdl\" xmlns:wsa=\"http://schemas.xmlsoap.org/ws/2004/08/addressing\" xmlns:wsdd=\"http://schemas.xmlsoap.org/ws/2005/04/discovery\" xmlns:SOAP-ENV=\"http://www.w3.org/2003/05/soap-envelope\"><SOAP-ENV:Header><wsa:Action>http://schemas.xmlsoap.org/ws/2005/04/discovery/ProbeMatches</wsa:Action><wsa:MessageID>uuid:e32e6863-ea5e-4ee4-997e-69539d1ff2cc</wsa:MessageID><wsa:RelatesTo>uuid:759a9a95-610f-40a9-bf26-fe2c2836ed50</wsa:RelatesTo><wsa:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</wsa:To></SOAP-ENV:Header><SOAP-ENV:Body><wsdd:ProbeMatches><wsdd:ProbeMatch><wsa:EndpointReference><wsa:Address>urn:uuid:4fe963b6-e06a-409b-8000-3C970E326186</wsa:Address></wsa:EndpointReference><wsdd:Types>tdn:NetworkVideoTransmitter</wsdd:Types><wsdd:Scopes>onvif://www.onvif.org/type/NetworkVideoTransmitter</wsdd:Scopes><wsdd:XAddrs>http://192.168.10.183:8080/onvif/device_service</wsdd:XAddrs><wsdd:MetadataVersion>10</wsdd:MetadataVersion></wsdd:ProbeMatch></wsdd:ProbeMatches></SOAP-ENV:Body></SOAP-ENV:Envelope>");
+    _snprintf_s(testXML, 2048, _TRUNCATE, "<?xml version = \"1.0\" encoding = \"utf-8\"?><SOAP-ENV:Envelope xmlns:tdn = \"http://www.onvif.org/ver10/network/wsdl\" xmlns:wsa = \"http://schemas.xmlsoap.org/ws/2004/08/addressing\" xmlns:wsdd = \"http://schemas.xmlsoap.org/ws/2005/04/discovery\" xmlns:SOAP-ENV = \"http://www.w3.org/2003/05/soap-envelope\"><SOAP-ENV:Header><wsa:Action>http://schemas.xmlsoap.org/ws/2005/04/discovery/ProbeMatches</wsa:Action><wsa:MessageID>uuid:e32e6863-ea5e-4ee4-997e-69539d1ff2cc</wsa:MessageID><wsa:RelatesTo>uuid:759a9a95-610f-40a9-bf26-fe2c2836ed50</wsa:RelatesTo><wsa:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</wsa:To></SOAP-ENV:Header><SOAP-ENV:Body><wsdd:ProbeMatches><wsdd:ProbeMatch><wsa:EndpointReference><wsa:Address>urn:uuid:4fe963b6-e06a-409b-8000-3C970E326186</wsa:Address></wsa:EndpointReference><wsdd:Types>tdn:NetworkVideoTransmitter</wsdd:Types><wsdd:Scopes>onvif://www.onvif.org/type/NetworkVideoTransmitter</wsdd:Scopes><wsdd:XAddrs>http://192.168.10.183:8080/onvif/device_service</wsdd:XAddrs><wsdd:MetadataVersion>10</wsdd:MetadataVersion></wsdd:ProbeMatch></wsdd:ProbeMatches></SOAP-ENV:Body></SOAP-ENV:Envelope>");
+
+    IXMLDOMDocument* pIXMLDOMDocument = NULL;
+    BSTR bstrXMLInMemory = NULL;
+    BSTR bstrError = NULL;
+    BSTR bstrURI = NULL;
+    VARIANT_BOOL varStatus;
+    IXMLDOMParseError* pIXMLDOMParseError = NULL;
+    IXMLDOMNode* pIXMLDOMNodeTemp = NULL;
+    IXMLDOMNode* pIXMLDOMNodeFound = NULL;
+    long releaseResult;
 
 
-    HRESULT hr = CoInitialize(NULL);
-    if(SUCCEEDED(hr))
+
+
+    HRESULT hResult = CoInitialize(NULL);
+    if(FAILED(hResult))
     {
-        loadDOMRaw(testXML);
-        CoUninitialize();
+        goto CleanUp;
     }
+
+
+    hResult = CoCreateInstance(__uuidof(DOMDocument60), NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pIXMLDOMDocument));
+    if(FAILED(hResult))
+    {
+        goto CleanUp;
+    }
+
+    hResult = pIXMLDOMDocument->put_async(VARIANT_FALSE);
+    if(FAILED(hResult))
+    {
+        goto CleanUp;
+    }
+
+    hResult = pIXMLDOMDocument->put_validateOnParse(VARIANT_FALSE);
+    if(FAILED(hResult))
+    {
+        goto CleanUp;
+    }
+
+    hResult = pIXMLDOMDocument->put_resolveExternals(VARIANT_FALSE);
+    if(FAILED(hResult))
+    {
+        goto CleanUp;
+    }
+
+    bstrXMLInMemory = _com_util::ConvertStringToBSTR(testXML);
+    hResult = pIXMLDOMDocument->loadXML(bstrXMLInMemory, &varStatus);
+    if(FAILED(hResult))
+    {
+        goto CleanUp;
+    }
+    if(varStatus != VARIANT_TRUE)
+    {
+        hResult = pIXMLDOMDocument->get_parseError(&pIXMLDOMParseError);
+        if(FAILED(hResult))
+        {
+            goto CleanUp;
+        }
+
+        hResult = pIXMLDOMParseError->get_reason(&bstrError);
+        if(FAILED(hResult))
+        {
+            goto CleanUp;
+        }
+
+        _tprintf_s(_T("%s\n"), bstrError);
+    }
+
+    pIXMLDOMNodeFound = findNode(pIXMLDOMDocument, "Envelope");
+    if(NULL == pIXMLDOMNodeFound)
+    {
+        goto CleanUp;
+    }
+
+    pIXMLDOMNodeTemp = pIXMLDOMNodeFound;
+
+    pIXMLDOMNodeFound = findNode(pIXMLDOMNodeTemp, "Body");
+
+    do
+    {
+        releaseResult = pIXMLDOMNodeTemp->Release();
+    } while(releaseResult > 0);
+    pIXMLDOMNodeTemp = NULL;
+
+    if(NULL == pIXMLDOMNodeFound)
+    {
+        goto CleanUp;
+    }
+
+    pIXMLDOMNodeTemp = pIXMLDOMNodeFound;
+
+    pIXMLDOMNodeFound = findNode(pIXMLDOMNodeTemp, "ProbeMatches");
+
+    do
+    {
+        releaseResult = pIXMLDOMNodeTemp->Release();
+    } while(releaseResult > 0);
+    pIXMLDOMNodeTemp = NULL;
+
+    if(NULL == pIXMLDOMNodeFound)
+    {
+        goto CleanUp;
+    }
+
+    pIXMLDOMNodeTemp = pIXMLDOMNodeFound;
+
+    pIXMLDOMNodeFound = findNode(pIXMLDOMNodeTemp, "ProbeMatch");
+
+    do
+    {
+        releaseResult = pIXMLDOMNodeTemp->Release();
+    } while(releaseResult > 0);
+    pIXMLDOMNodeTemp = NULL;
+
+    if(NULL == pIXMLDOMNodeFound)
+    {
+        goto CleanUp;
+    }
+
+    pIXMLDOMNodeTemp = pIXMLDOMNodeFound;
+
+    pIXMLDOMNodeFound = findNode(pIXMLDOMNodeTemp, "XAddrs");
+
+    do
+    {
+        releaseResult = pIXMLDOMNodeTemp->Release();
+    } while(releaseResult > 0);
+    pIXMLDOMNodeTemp = NULL;
+
+    if(NULL == pIXMLDOMNodeFound)
+    {
+        goto CleanUp;
+    }
+
+    hResult = pIXMLDOMNodeFound->get_text(&bstrURI);
+    if(FAILED(hResult))
+    {
+        goto CleanUp;
+    }
+
+    _tprintf_s(_T("%s\n"), bstrURI);
+
+CleanUp:
+
+
+
+
+
+
+
+
+    if(NULL != pIXMLDOMNodeFound)
+    {
+        do
+        {
+            releaseResult = pIXMLDOMNodeFound->Release();
+        } while(releaseResult > 0);
+        pIXMLDOMNodeFound = NULL;
+    }
+
+    //if(NULL != pIXMLDOMNode)
+    //{
+    //    do
+    //    {
+    //        releaseResult = pIXMLDOMNode->Release();
+    //    } while(releaseResult > 0);
+    //    pIXMLDOMNode = NULL;
+    //}
+
+    if(NULL != pIXMLDOMParseError)
+    {
+        do
+        {
+            releaseResult = pIXMLDOMParseError->Release();
+        } while(releaseResult > 0);
+        pIXMLDOMParseError = NULL;
+    }
+
+    if(NULL != pIXMLDOMDocument)
+    {
+        do
+        {
+            releaseResult = pIXMLDOMDocument->Release();
+        } while(releaseResult > 0);
+        pIXMLDOMDocument = NULL;
+    }
+
+    SysFreeString(bstrError);
+    SysFreeString(bstrXMLInMemory);
+    SysFreeString(bstrURI);
+
+    CoUninitialize();
 
     free(testXML);
     testXML = NULL;
+
+    system("pause");
 
     return 0;
 }
