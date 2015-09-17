@@ -17,12 +17,12 @@
 #include <string>
 #include <vector>
 #include <regex>
+using namespace std;
 
 #include <objbase.h>
 #include <rpc.h>
 #include <tchar.h>
-
-using namespace std;
+#include "receiveThreads.h"
 // C++ 11
 
 static soap*            pSoap;
@@ -45,56 +45,6 @@ typedef struct _receiveThreadParameter
     BOOL* bLoop;
     vector<receivedData*>* receivedDataList;
 }receiveThreadParameter;
-
-DWORD WINAPI receiveThread(LPVOID lpParam)
-{
-    receiveThreadParameter* parameter = static_cast<receiveThreadParameter*>(lpParam);
-
-    sockaddr_in receivedFrom;
-    int fromlen = sizeof(sockaddr_in);
-    int bytesReceived;
-    receivedData* pReceivedData = NULL;
-
-    while((*parameter->bLoop))
-    {
-        pReceivedData = (receivedData*)malloc(sizeof(receivedData));
-        if(NULL == pReceivedData)
-        {
-            handleError(_T("malloc"), _T(__FILE__), __LINE__);
-            break;
-        }
-        memset(pReceivedData, 0x0, sizeof(receivedData));
-        pReceivedData->data = (char*)malloc(USHRT_MAX);
-        if(NULL == pReceivedData->data)
-        {
-            handleError(_T("malloc"), _T(__FILE__), __LINE__);
-            break;
-        }
-        memset(pReceivedData->data, 0x0, USHRT_MAX);
-
-        bytesReceived = recvfrom((*parameter->socketForProbe), pReceivedData->data, USHRT_MAX, 0, (sockaddr*)&receivedFrom, &fromlen);
-        if(SOCKET_ERROR == bytesReceived)
-        {
-            if(NULL != pReceivedData)
-            {
-                if(NULL != pReceivedData->data)
-                {
-                    free(pReceivedData->data);
-                }
-                free(pReceivedData);
-                pReceivedData = NULL;
-            }
-            break;
-        }
-        else
-        {
-            pReceivedData->endPointAddr.S_un = receivedFrom.sin_addr.S_un;
-            parameter->receivedDataList->push_back(pReceivedData);
-        }
-    }
-
-    return 0;
-}
 
 ONVIFOPERATION_API int init_DLL(void)
 {
@@ -317,7 +267,7 @@ ONVIFOPERATION_API int search_onvif_device(onvif_device_list* p_onvif_device_lis
     parameter.receivedDataList = &receivedDataList;
     parameter.socketForProbe = &socketForProbe;
 
-    HANDLE hThread = CreateThread(NULL, 0, receiveThread, &parameter, 0, &threadID);
+    HANDLE hThread = CreateThread(NULL, 0, receiveProbeMatchThread, &parameter, 0, &threadID);
     if(NULL == hThread)
     {
         handleError(_T("CreateThread"), _T(__FILE__), __LINE__);

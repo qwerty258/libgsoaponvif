@@ -179,6 +179,7 @@
     <ClInclude Include="errorHandling.h" />
     <ClInclude Include="mecevp.h" />
     <ClInclude Include="OnvifOperation.h" />
+    <ClInclude Include="receiveThreads.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="smdevp.h" />
     <ClInclude Include="soapH.h" />
@@ -210,6 +211,7 @@
     <ClCompile Include="errorHandling.c" />
     <ClCompile Include="mecevp.c" />
     <ClCompile Include="OnvifOperation.cpp" />
+    <ClCompile Include="receiveThreads.cpp" />
     <ClCompile Include="smdevp.c" />
     <ClCompile Include="soapC.c" />
     <ClCompile Include="soapClient.c" />
