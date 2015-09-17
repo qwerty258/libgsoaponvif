@@ -175,6 +175,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="crypto.h" />
     <ClInclude Include="duration.h" />
     <ClInclude Include="errorHandling.h" />
     <ClInclude Include="mecevp.h" />
@@ -192,6 +193,7 @@
     <ClInclude Include="xmlParser.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="crypto.cpp" />
     <ClCompile Include="dllmain.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
