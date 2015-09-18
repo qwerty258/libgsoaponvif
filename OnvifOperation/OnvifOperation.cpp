@@ -12,6 +12,7 @@
 #include "wsaapi.h"
 
 #include "errorHandling.h"
+#include "crypto.h"
 
 #include <iostream>
 #include <string>
@@ -582,6 +583,18 @@ ONVIFOPERATION_API int get_onvif_device_service_addresses(onvif_device_list* p_o
     }
 
     if(p_onvif_device_list->number_of_onvif_devices <= index)
+    {
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
+        return -1;
+    }
+
+    int result;
+    unsigned char nonce[25];
+    unsigned char encrytedPassword[20];
+    char timeBuffer[50];
+
+    result = generateEncrytedAuthorizationInformation(nonce, 20, encrytedPassword, p_onvif_device_list->p_onvif_devices[index].password, strnlen(p_onvif_device_list->p_onvif_devices[index].password, 50), timeBuffer, 50);
+    if(0 > result)
     {
         LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
         return -1;
