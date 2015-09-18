@@ -366,3 +366,163 @@ void parseDiscoveredDeviceXML(onvif_device_list* p_onvif_device_list, void* rece
         }
     }
 }
+
+void parseGetServicesResponse(onvif_device* p_onvif_device, void* receivedDataList)
+{
+    vector<receivedData*>* pReceivedDataList = static_cast<vector<receivedData*>*>(receivedDataList);
+
+    if(1 != pReceivedDataList->size())
+    {
+        return;
+    }
+
+    /*
+    for(i = 0; i < tds__GetServicesResponse.__sizeService; i++)
+    {
+    if(NULL == tds__GetServicesResponse.Service[i].Version)
+    {
+    continue;
+    }
+
+    if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver10/device/wsdl", 256))
+    {
+    p_onvif_device_list->p_onvif_devices[index].service_address_device_service.major_version = tds__GetServicesResponse.Service[i].Version->Major;
+    p_onvif_device_list->p_onvif_devices[index].service_address_device_service.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
+    strncpy(
+    p_onvif_device_list->p_onvif_devices[index].service_address_device_service.namesapce,
+    tds__GetServicesResponse.Service[i].Namespace,
+    256);
+    strncpy(
+    p_onvif_device_list->p_onvif_devices[index].service_address_device_service.xaddr,
+    tds__GetServicesResponse.Service[i].XAddr,
+    256);
+    }
+
+    if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver10/media/wsdl", 256))
+    {
+    p_onvif_device_list->p_onvif_devices[index].service_address_media.major_version = tds__GetServicesResponse.Service[i].Version->Major;
+    p_onvif_device_list->p_onvif_devices[index].service_address_media.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
+    strncpy(
+    p_onvif_device_list->p_onvif_devices[index].service_address_media.namesapce,
+    tds__GetServicesResponse.Service[i].Namespace,
+    256);
+    strncpy(
+    p_onvif_device_list->p_onvif_devices[index].service_address_media.xaddr,
+    tds__GetServicesResponse.Service[i].XAddr,
+    256);
+    }
+
+    if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver10/events/wsdl", 256))
+    {
+    p_onvif_device_list->p_onvif_devices[index].service_address_events.major_version = tds__GetServicesResponse.Service[i].Version->Major;
+    p_onvif_device_list->p_onvif_devices[index].service_address_events.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
+    strncpy(
+    p_onvif_device_list->p_onvif_devices[index].service_address_events.namesapce,
+    tds__GetServicesResponse.Service[i].Namespace,
+    256);
+    strncpy(
+    p_onvif_device_list->p_onvif_devices[index].service_address_events.xaddr,
+    tds__GetServicesResponse.Service[i].XAddr,
+    256);
+    }
+
+    if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver20/imaging/wsdl", 256))
+    {
+    p_onvif_device_list->p_onvif_devices[index].service_address_imaging.major_version = tds__GetServicesResponse.Service[i].Version->Major;
+    p_onvif_device_list->p_onvif_devices[index].service_address_imaging.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
+    strncpy(
+    p_onvif_device_list->p_onvif_devices[index].service_address_imaging.namesapce,
+    tds__GetServicesResponse.Service[i].Namespace,
+    256);
+    strncpy(
+    p_onvif_device_list->p_onvif_devices[index].service_address_imaging.xaddr,
+    tds__GetServicesResponse.Service[i].XAddr,
+    256);
+    }
+
+    if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver10/deviceIO/wsdl", 256))
+    {
+    p_onvif_device_list->p_onvif_devices[index].service_address_deviceIO.major_version = tds__GetServicesResponse.Service[i].Version->Major;
+    p_onvif_device_list->p_onvif_devices[index].service_address_deviceIO.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
+    strncpy(
+    p_onvif_device_list->p_onvif_devices[index].service_address_deviceIO.namesapce,
+    tds__GetServicesResponse.Service[i].Namespace,
+    256);
+    strncpy(
+    p_onvif_device_list->p_onvif_devices[index].service_address_deviceIO.xaddr,
+    tds__GetServicesResponse.Service[i].XAddr,
+    256);
+    }
+
+    if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver20/analytics/wsdl", 256))
+    {
+    p_onvif_device_list->p_onvif_devices[index].service_address_analytics.major_version = tds__GetServicesResponse.Service[i].Version->Major;
+    p_onvif_device_list->p_onvif_devices[index].service_address_analytics.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
+    strncpy(
+    p_onvif_device_list->p_onvif_devices[index].service_address_analytics.namesapce,
+    tds__GetServicesResponse.Service[i].Namespace,
+    256);
+    strncpy(
+    p_onvif_device_list->p_onvif_devices[index].service_address_analytics.xaddr,
+    tds__GetServicesResponse.Service[i].XAddr,
+    256);
+    }
+
+    if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver10/recording/wsdl", 256))
+    {
+    p_onvif_device_list->p_onvif_devices[index].service_address_recording.major_version = tds__GetServicesResponse.Service[i].Version->Major;
+    p_onvif_device_list->p_onvif_devices[index].service_address_recording.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
+    strncpy(
+    p_onvif_device_list->p_onvif_devices[index].service_address_recording.namesapce,
+    tds__GetServicesResponse.Service[i].Namespace,
+    256);
+    strncpy(
+    p_onvif_device_list->p_onvif_devices[index].service_address_recording.xaddr,
+    tds__GetServicesResponse.Service[i].XAddr,
+    256);
+    }
+
+    if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver10/search/wsdl", 256))
+    {
+    p_onvif_device_list->p_onvif_devices[index].service_address_search_recording.major_version = tds__GetServicesResponse.Service[i].Version->Major;
+    p_onvif_device_list->p_onvif_devices[index].service_address_search_recording.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
+    strncpy(
+    p_onvif_device_list->p_onvif_devices[index].service_address_search_recording.namesapce,
+    tds__GetServicesResponse.Service[i].Namespace,
+    256);
+    strncpy(
+    p_onvif_device_list->p_onvif_devices[index].service_address_search_recording.xaddr,
+    tds__GetServicesResponse.Service[i].XAddr,
+    256);
+    }
+
+    if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver10/replay/wsdl", 256))
+    {
+    p_onvif_device_list->p_onvif_devices[index].service_address_replay.major_version = tds__GetServicesResponse.Service[i].Version->Major;
+    p_onvif_device_list->p_onvif_devices[index].service_address_replay.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
+    strncpy(
+    p_onvif_device_list->p_onvif_devices[index].service_address_replay.namesapce,
+    tds__GetServicesResponse.Service[i].Namespace,
+    256);
+    strncpy(
+    p_onvif_device_list->p_onvif_devices[index].service_address_replay.xaddr,
+    tds__GetServicesResponse.Service[i].XAddr,
+    256);
+    }
+
+    if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver10/receiver/wsdl", 256))
+    {
+    p_onvif_device_list->p_onvif_devices[index].service_address_receiver.major_version = tds__GetServicesResponse.Service[i].Version->Major;
+    p_onvif_device_list->p_onvif_devices[index].service_address_receiver.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
+    strncpy(
+    p_onvif_device_list->p_onvif_devices[index].service_address_receiver.namesapce,
+    tds__GetServicesResponse.Service[i].Namespace,
+    256);
+    strncpy(
+    p_onvif_device_list->p_onvif_devices[index].service_address_receiver.xaddr,
+    tds__GetServicesResponse.Service[i].XAddr,
+    256);
+    }
+    }
+    */
+}

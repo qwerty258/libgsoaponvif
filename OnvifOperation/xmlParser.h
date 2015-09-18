@@ -8,6 +8,8 @@ extern "C" {
 
     void parseDiscoveredDeviceXML(onvif_device_list* p_onvif_device_list, void* receivedDataList);
 
+    void parseGetServicesResponse(onvif_device* p_onvif_device, void* receivedDataList);
+
 #ifdef __cplusplus
 }
 #endif // _cplusplus
