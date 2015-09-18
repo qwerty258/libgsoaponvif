@@ -175,6 +175,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="base64.h" />
     <ClInclude Include="crypto.h" />
     <ClInclude Include="duration.h" />
     <ClInclude Include="errorHandling.h" />
@@ -193,6 +194,7 @@
     <ClInclude Include="xmlParser.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="base64.c" />
     <ClCompile Include="crypto.c" />
     <ClCompile Include="dllmain.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>

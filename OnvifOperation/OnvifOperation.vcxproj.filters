@@ -63,6 +63,9 @@
     <ClInclude Include="crypto.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="base64.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="OnvifOperation.cpp">
@@ -111,6 +114,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="crypto.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="base64.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
