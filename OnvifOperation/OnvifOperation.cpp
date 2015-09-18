@@ -555,9 +555,7 @@ ONVIFOPERATION_API int get_onvif_device_information(onvif_device_list* p_onvif_d
 
 ONVIFOPERATION_API int get_onvif_device_service_addresses(onvif_device_list* p_onvif_device_list, char* IP, size_t index)
 {
-    size_t                      i;
-    _tds__GetServices           tds__GetServices;
-    _tds__GetServicesResponse   tds__GetServicesResponse;
+    size_t i;
 
     if(!initialsuccess || NULL == p_onvif_device_list)
     {
@@ -589,8 +587,8 @@ ONVIFOPERATION_API int get_onvif_device_service_addresses(onvif_device_list* p_o
     }
 
     int result;
-    unsigned char nonce[25];
-    unsigned char encrytedPassword[20];
+    unsigned char nonce[25]; // 20 bytes
+    unsigned char encrytedPassword[25]; // 20 bytes
     char timeBuffer[50];
 
     result = generateEncrytedAuthorizationInformation(nonce, 20, encrytedPassword, p_onvif_device_list->p_onvif_devices[index].password, strnlen(p_onvif_device_list->p_onvif_devices[index].password, 50), timeBuffer, 50);
@@ -600,168 +598,198 @@ ONVIFOPERATION_API int get_onvif_device_service_addresses(onvif_device_list* p_o
         return -1;
     }
 
-    tds__GetServices.IncludeCapability = xsd__boolean__false_;
 
-    soap_set_namespaces(pSoap, device_namespace);
-
-    soap_wsse_add_UsernameTokenDigest(
-        pSoap,
-        "user",
-        p_onvif_device_list->p_onvif_devices[index].username,
-        p_onvif_device_list->p_onvif_devices[index].password);
-
-    if(SOAP_OK != soap_call___tds__GetServices(pSoap, p_onvif_device_list->p_onvif_devices[index].service_address_device_service.xaddr, NULL, &tds__GetServices, &tds__GetServicesResponse))
+    // encrypt nonce using base64 begin
+    base64encodeContext* pbase64encodeContext = getBase64encodeContext(nonce, 20);
+    if(NULL == pbase64encodeContext)
     {
         LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
         return -1;
     }
 
-    for(i = 0; i < tds__GetServicesResponse.__sizeService; i++)
+    char* nonceBase64 = (char*)malloc(getBase64encodeResultSize(pbase64encodeContext));
+    if(NULL == nonceBase64)
     {
-        if(NULL == tds__GetServicesResponse.Service[i].Version)
-        {
-            continue;
-        }
+        handleError(_T("malloc"), _T(__FILE__), __LINE__);
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
+        return -1;
+    }
 
-        if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver10/device/wsdl", 256))
-        {
-            p_onvif_device_list->p_onvif_devices[index].service_address_device_service.major_version = tds__GetServicesResponse.Service[i].Version->Major;
-            p_onvif_device_list->p_onvif_devices[index].service_address_device_service.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
-            strncpy(
-                p_onvif_device_list->p_onvif_devices[index].service_address_device_service.namesapce,
-                tds__GetServicesResponse.Service[i].Namespace,
-                256);
-            strncpy(
-                p_onvif_device_list->p_onvif_devices[index].service_address_device_service.xaddr,
-                tds__GetServicesResponse.Service[i].XAddr,
-                256);
-        }
+    result = getBase64encodeResult(pbase64encodeContext, nonceBase64, getBase64encodeResultSize(pbase64encodeContext));
+    if(0 > result)
+    {
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
+        return -1;
+    }
 
-        if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver10/media/wsdl", 256))
-        {
-            p_onvif_device_list->p_onvif_devices[index].service_address_media.major_version = tds__GetServicesResponse.Service[i].Version->Major;
-            p_onvif_device_list->p_onvif_devices[index].service_address_media.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
-            strncpy(
-                p_onvif_device_list->p_onvif_devices[index].service_address_media.namesapce,
-                tds__GetServicesResponse.Service[i].Namespace,
-                256);
-            strncpy(
-                p_onvif_device_list->p_onvif_devices[index].service_address_media.xaddr,
-                tds__GetServicesResponse.Service[i].XAddr,
-                256);
-        }
+    freeBase64encodeContext(&pbase64encodeContext);
+    // encrypt nonce using base64 end
 
-        if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver10/events/wsdl", 256))
-        {
-            p_onvif_device_list->p_onvif_devices[index].service_address_events.major_version = tds__GetServicesResponse.Service[i].Version->Major;
-            p_onvif_device_list->p_onvif_devices[index].service_address_events.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
-            strncpy(
-                p_onvif_device_list->p_onvif_devices[index].service_address_events.namesapce,
-                tds__GetServicesResponse.Service[i].Namespace,
-                256);
-            strncpy(
-                p_onvif_device_list->p_onvif_devices[index].service_address_events.xaddr,
-                tds__GetServicesResponse.Service[i].XAddr,
-                256);
-        }
+    // encrypt password sha1 using base64 begin
+    pbase64encodeContext = getBase64encodeContext(encrytedPassword, 20);
+    if(NULL == pbase64encodeContext)
+    {
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
+        return -1;
+    }
 
-        if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver20/imaging/wsdl", 256))
-        {
-            p_onvif_device_list->p_onvif_devices[index].service_address_imaging.major_version = tds__GetServicesResponse.Service[i].Version->Major;
-            p_onvif_device_list->p_onvif_devices[index].service_address_imaging.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
-            strncpy(
-                p_onvif_device_list->p_onvif_devices[index].service_address_imaging.namesapce,
-                tds__GetServicesResponse.Service[i].Namespace,
-                256);
-            strncpy(
-                p_onvif_device_list->p_onvif_devices[index].service_address_imaging.xaddr,
-                tds__GetServicesResponse.Service[i].XAddr,
-                256);
-        }
+    char* passwordBase64 = (char*)malloc(getBase64encodeResultSize(pbase64encodeContext));
+    if(NULL == passwordBase64)
+    {
+        handleError(_T("malloc"), _T(__FILE__), __LINE__);
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
+        return -1;
+    }
 
-        if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver10/deviceIO/wsdl", 256))
-        {
-            p_onvif_device_list->p_onvif_devices[index].service_address_deviceIO.major_version = tds__GetServicesResponse.Service[i].Version->Major;
-            p_onvif_device_list->p_onvif_devices[index].service_address_deviceIO.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
-            strncpy(
-                p_onvif_device_list->p_onvif_devices[index].service_address_deviceIO.namesapce,
-                tds__GetServicesResponse.Service[i].Namespace,
-                256);
-            strncpy(
-                p_onvif_device_list->p_onvif_devices[index].service_address_deviceIO.xaddr,
-                tds__GetServicesResponse.Service[i].XAddr,
-                256);
-        }
+    result = getBase64encodeResult(pbase64encodeContext, passwordBase64, getBase64encodeResultSize(pbase64encodeContext));
+    if(0 > result)
+    {
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
+        return -1;
+    }
 
-        if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver20/analytics/wsdl", 256))
-        {
-            p_onvif_device_list->p_onvif_devices[index].service_address_analytics.major_version = tds__GetServicesResponse.Service[i].Version->Major;
-            p_onvif_device_list->p_onvif_devices[index].service_address_analytics.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
-            strncpy(
-                p_onvif_device_list->p_onvif_devices[index].service_address_analytics.namesapce,
-                tds__GetServicesResponse.Service[i].Namespace,
-                256);
-            strncpy(
-                p_onvif_device_list->p_onvif_devices[index].service_address_analytics.xaddr,
-                tds__GetServicesResponse.Service[i].XAddr,
-                256);
-        }
+    freeBase64encodeContext(&pbase64encodeContext);
+    // encrypt password sha1 using base64 end
 
-        if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver10/recording/wsdl", 256))
-        {
-            p_onvif_device_list->p_onvif_devices[index].service_address_recording.major_version = tds__GetServicesResponse.Service[i].Version->Major;
-            p_onvif_device_list->p_onvif_devices[index].service_address_recording.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
-            strncpy(
-                p_onvif_device_list->p_onvif_devices[index].service_address_recording.namesapce,
-                tds__GetServicesResponse.Service[i].Namespace,
-                256);
-            strncpy(
-                p_onvif_device_list->p_onvif_devices[index].service_address_recording.xaddr,
-                tds__GetServicesResponse.Service[i].XAddr,
-                256);
-        }
+    char* soapMessage = (char*)malloc(1600);
+    if(NULL == soapMessage)
+    {
+        handleError(_T("malloc"), _T(__FILE__), __LINE__);
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
+        return -1;
+    }
+    memset(soapMessage, 0x0, 1600);
 
-        if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver10/search/wsdl", 256))
-        {
-            p_onvif_device_list->p_onvif_devices[index].service_address_search_recording.major_version = tds__GetServicesResponse.Service[i].Version->Major;
-            p_onvif_device_list->p_onvif_devices[index].service_address_search_recording.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
-            strncpy(
-                p_onvif_device_list->p_onvif_devices[index].service_address_search_recording.namesapce,
-                tds__GetServicesResponse.Service[i].Namespace,
-                256);
-            strncpy(
-                p_onvif_device_list->p_onvif_devices[index].service_address_search_recording.xaddr,
-                tds__GetServicesResponse.Service[i].XAddr,
-                256);
-        }
+    result = sprintf_s(soapMessage, 1600, "<?xml version=\"1.0\" encoding=\"utf-8\"?><SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:SOAP-ENC=\"http://www.w3.org/2003/05/soap-encoding\" xmlns:wsse=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\" xmlns:wsu=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\" xmlns:tds=\"http://www.onvif.org/ver10/device/wsdl\"><SOAP-ENV:Header><wsse:Security SOAP-ENV:mustUnderstand=\"true\"><wsse:UsernameToken wsu:Id=\"user\"><wsse:Username>%s</wsse:Username><wsse:Password Type=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordDigest\">%s</wsse:Password><wsse:Nonce>%s</wsse:Nonce><wsu:Created>%s</wsu:Created></wsse:UsernameToken></wsse:Security></SOAP-ENV:Header><SOAP-ENV:Body><tds:GetServices><tds:IncludeCapability>false</tds:IncludeCapability></tds:GetServices></SOAP-ENV:Body></SOAP-ENV:Envelope>", p_onvif_device_list->p_onvif_devices[index].username, passwordBase64, nonceBase64, timeBuffer);
 
-        if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver10/replay/wsdl", 256))
-        {
-            p_onvif_device_list->p_onvif_devices[index].service_address_replay.major_version = tds__GetServicesResponse.Service[i].Version->Major;
-            p_onvif_device_list->p_onvif_devices[index].service_address_replay.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
-            strncpy(
-                p_onvif_device_list->p_onvif_devices[index].service_address_replay.namesapce,
-                tds__GetServicesResponse.Service[i].Namespace,
-                256);
-            strncpy(
-                p_onvif_device_list->p_onvif_devices[index].service_address_replay.xaddr,
-                tds__GetServicesResponse.Service[i].XAddr,
-                256);
-        }
+    char* httpPOSTMessage = (char*)malloc(2000);
+    if(NULL == httpPOSTMessage)
+    {
+        handleError(_T("malloc"), _T(__FILE__), __LINE__);
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
+        return -1;
+    }
+    memset(httpPOSTMessage, 0x0, 2000);
 
-        if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver10/receiver/wsdl", 256))
-        {
-            p_onvif_device_list->p_onvif_devices[index].service_address_receiver.major_version = tds__GetServicesResponse.Service[i].Version->Major;
-            p_onvif_device_list->p_onvif_devices[index].service_address_receiver.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
-            strncpy(
-                p_onvif_device_list->p_onvif_devices[index].service_address_receiver.namesapce,
-                tds__GetServicesResponse.Service[i].Namespace,
-                256);
-            strncpy(
-                p_onvif_device_list->p_onvif_devices[index].service_address_receiver.xaddr,
-                tds__GetServicesResponse.Service[i].XAddr,
-                256);
-        }
+    result = sprintf_s(httpPOSTMessage, 2000, "POST /onvif/device_service HTTP/1.1\r\nHost: %s\r\nUser-Agent: OnvifOperation\r\nContent-Type: application/soap+xml; charset=utf-8; action=\"http://www.onvif.org/ver10/device/wsdl/GetServices\"\r\nContent-Length: %u\r\nConnection: close\r\nSOAPAction: \"http://www.onvif.org/ver10/device/wsdl/GetServices\"\r\n\r\n%s", p_onvif_device_list->p_onvif_devices[index].IPv4, strnlen(soapMessage, 1600), soapMessage);
+
+    if(NULL != soapMessage)
+    {
+        free(soapMessage);
+        soapMessage = NULL;
+    }
+
+    SOCKET socketGetServices = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if(INVALID_SOCKET == socketGetServices)
+    {
+        handleError(_T("socket"), _T(__FILE__), __LINE__);
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
+        return -1;
+    }
+
+    sockaddr_in sockaddrClient;
+    memset(&sockaddrClient, 0x0, sizeof(sockaddr_in));
+    sockaddrClient.sin_addr.s_addr = htonl(INADDR_ANY);
+    sockaddrClient.sin_family = AF_INET;
+    sockaddrClient.sin_port = htons(0);
+
+    sockaddr_in sockaddrEndpoint;
+    memset(&sockaddrEndpoint, 0x0, sizeof(sockaddr_in));
+    result = InetPtonA(AF_INET, p_onvif_device_list->p_onvif_devices[index].IPv4, &sockaddrEndpoint.sin_addr.s_addr);
+    if(1 != result)
+    {
+        handleError(_T("InetPton"), _T(__FILE__), __LINE__);
+    }
+    sockaddrEndpoint.sin_family = AF_INET;
+
+    sockaddrEndpoint.sin_port = htons(80);
+    char* currentPositionForPort = strstr(p_onvif_device_list->p_onvif_devices[index].service_address_device_service.xaddr, "://");
+    currentPositionForPort = strstr(currentPositionForPort + 1, ":");
+    char* end;
+    if(NULL != currentPositionForPort)
+    {
+        sockaddrEndpoint.sin_port = htons(strtoul(currentPositionForPort + 1, &end, 10));
+    }
+
+    if(0 == sockaddrEndpoint.sin_port)
+    {
+        sockaddrEndpoint.sin_port = htons(80);
+    }
+
+    DWORD timeOut = 5000;
+
+    result = setsockopt(socketGetServices, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeOut, sizeof(DWORD));
+    if(0 != result)
+    {
+        handleError(_T("setsockopt"), _T(__FILE__), __LINE__);
+        closesocket(socketGetServices);
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
+        return -1;
+    }
+
+    result = connect(socketGetServices, (sockaddr*)&sockaddrEndpoint, sizeof(sockaddr_in));
+    if(0 != result)
+    {
+        handleError(_T("connect"), _T(__FILE__), __LINE__);
+        closesocket(socketGetServices);
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
+        return -1;
+    }
+
+    vector<receivedData*> receivedDataList;
+    DWORD threadID;
+    receiveThreadParameter parameter;
+    parameter.receivedDataList = &receivedDataList;
+    parameter.socket = &socketGetServices;
+
+    HANDLE hThread = CreateThread(NULL, 0, receiveGetServicesThread, &parameter, 0, &threadID);
+    if(NULL == hThread)
+    {
+        handleError(_T("CreateThread"), _T(__FILE__), __LINE__);
+        closesocket(socketGetServices);
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
+        return -1;
+    }
+
+    result = send(socketGetServices, httpPOSTMessage, strnlen(httpPOSTMessage, 2000), 0);
+    if(SOCKET_ERROR == result)
+    {
+        handleError(_T("send"), _T(__FILE__), __LINE__);
+        closesocket(socketGetServices);
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
+        return -1;
+    }
+
+    WaitForMultipleObjects(1, &hThread, TRUE, INFINITE);
+
+    CloseHandle(hThread);
+
+    result = closesocket(socketGetServices);
+    if(0 != result)
+    {
+        handleError(_T("sendto"), _T(__FILE__), __LINE__);
+        LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
+        return -1;
+    }
+
+    parseGetServicesResponse(&p_onvif_device_list->p_onvif_devices[index], &receivedDataList);
+
+    if(NULL != httpPOSTMessage)
+    {
+        free(httpPOSTMessage);
+        httpPOSTMessage = NULL;
+    }
+
+    if(NULL != passwordBase64)
+    {
+        free(passwordBase64);
+        passwordBase64 = NULL;
+    }
+
+    if(NULL != nonceBase64)
+    {
+        free(nonceBase64);
+        nonceBase64 = NULL;
     }
 
     LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
