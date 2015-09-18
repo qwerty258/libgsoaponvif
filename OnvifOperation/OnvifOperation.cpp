@@ -41,7 +41,7 @@ typedef struct _receivedData
 
 typedef struct _receiveThreadParameter
 {
-    SOCKET* socketForProbe;
+    SOCKET* socket;
     BOOL* bLoop;
     vector<receivedData*>* receivedDataList;
 }receiveThreadParameter;
@@ -265,7 +265,7 @@ ONVIFOPERATION_API int search_onvif_device(onvif_device_list* p_onvif_device_lis
     receiveThreadParameter parameter;
     parameter.bLoop = &loop;
     parameter.receivedDataList = &receivedDataList;
-    parameter.socketForProbe = &socketForProbe;
+    parameter.socket = &socketForProbe;
 
     HANDLE hThread = CreateThread(NULL, 0, receiveProbeMatchThread, &parameter, 0, &threadID);
     if(NULL == hThread)

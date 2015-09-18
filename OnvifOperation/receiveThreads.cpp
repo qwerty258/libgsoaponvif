@@ -14,7 +14,7 @@ typedef struct _receivedData
 
 typedef struct _receiveThreadParameter
 {
-    SOCKET* socketForProbe;
+    SOCKET* socket;
     BOOL* bLoop;
     vector<receivedData*>* receivedDataList;
 }receiveThreadParameter;
@@ -45,7 +45,7 @@ DWORD WINAPI receiveProbeMatchThread(LPVOID lpParam)
         }
         memset(pReceivedData->data, 0x0, USHRT_MAX);
 
-        bytesReceived = recvfrom((*parameter->socketForProbe), pReceivedData->data, USHRT_MAX, 0, (sockaddr*)&receivedFrom, &fromlen);
+        bytesReceived = recvfrom((*parameter->socket), pReceivedData->data, USHRT_MAX, 0, (sockaddr*)&receivedFrom, &fromlen);
         if(SOCKET_ERROR == bytesReceived)
         {
             if(NULL != pReceivedData)
