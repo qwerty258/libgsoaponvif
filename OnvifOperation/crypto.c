@@ -1,11 +1,9 @@
 #include "crypto.h"
 #include "errorHandling.h"
+#include "base64.h"
 #include <tchar.h>
 #include <openssl\rand.h>
 #include <openssl\sha.h>
-#include <openssl\evp.h>
-#include <openssl\bio.h>
-#include <openssl\buffer.h>
 #include <stdio.h>
 #include <Windows.h>
 
@@ -135,36 +133,9 @@ base64encodeContext* getBase64encodeContext(unsigned char* rawData, int rawDataS
         return pbase64encodeContext;
     }
 
-    pbase64encodeContext->b64 = BIO_new(BIO_f_base64());
-    if(NULL == pbase64encodeContext->b64)
-    {
-        freeBase64encodeContext(&pbase64encodeContext);
-        return pbase64encodeContext;
-    }
-
-    pbase64encodeContext->bmem = BIO_new(BIO_s_mem());
-    if(NULL == pbase64encodeContext->bmem)
-    {
-        freeBase64encodeContext(&pbase64encodeContext);
-        return pbase64encodeContext;
-    }
-
-    BIO* b64Temp = BIO_push((BIO*)pbase64encodeContext->b64, (BIO*)pbase64encodeContext->bmem);
-    if(NULL == b64Temp)
-    {
-        freeBase64encodeContext(&pbase64encodeContext);
-        return pbase64encodeContext;
-    }
-    pbase64encodeContext->b64 = b64Temp;
-
-    int result = BIO_write((BIO*)pbase64encodeContext->b64, rawData, rawDataSize);
-    if(0 >= result)
-    {
-        freeBase64encodeContext(&pbase64encodeContext);
-        return pbase64encodeContext;
-    }
-
-    BIO_get_mem_ptr((BIO*)pbase64encodeContext->b64, &(pbase64encodeContext->bptr));
+    pbase64encodeContext->len = Base64encode_len(rawDataSize);
+    pbase64encodeContext->rawData = rawData;
+    pbase64encodeContext->rawDataSize = rawDataSize;
 
     return pbase64encodeContext;
 }
@@ -176,11 +147,7 @@ void freeBase64encodeContext(base64encodeContext** base64Context)
         return;
     }
 
-    base64encodeContext* pbase64encodeContext = (base64encodeContext*)(*base64Context);
-
-    BIO_free_all((BIO*)pbase64encodeContext->b64);
-
-    free(pbase64encodeContext);
+    free(*base64Context);
 
     (*base64Context) = NULL;
 }
@@ -192,7 +159,7 @@ size_t getBase64encodeResultSize(base64encodeContext* base64Context)
         return -1;
     }
 
-    return ((BUF_MEM*)base64Context->bptr)->length;
+    return base64Context->len;
 }
 
 int getBase64encodeResult(base64encodeContext* base64Context, char* buffer, int bufferSize)
@@ -202,12 +169,8 @@ int getBase64encodeResult(base64encodeContext* base64Context, char* buffer, int 
         return -1;
     }
 
-    errno_t error = memcpy_s(buffer, bufferSize, ((BUF_MEM*)base64Context->bptr)->data, ((BUF_MEM*)base64Context->bptr)->length);
-    if(0 != error)
-    {
-        handleError(_T("memcpy_s"), _T(__FILE__), __LINE__);
-        return -1;
-    }
+    Base64encode(buffer, base64Context->rawData, base64Context->rawDataSize);
+
 
     return 0;
 }

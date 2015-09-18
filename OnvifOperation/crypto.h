@@ -6,9 +6,9 @@ extern "C" {
 
     typedef struct _base64encodeContext
     {
-        void* b64;
-        void* bmem;
-        void* bptr;
+        int len;
+        unsigned char* rawData;
+        int rawDataSize;
     }base64encodeContext;
 
     int generateEncrytedAuthorizationInformation(unsigned char* bufferForNonce, int nonceSize, unsigned char* encrytedPassword, char* password, int passwordSize, char* timeBuffer, int timeBufferSize);
