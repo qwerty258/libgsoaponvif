@@ -110,7 +110,7 @@
     <ClCompile Include="receiveThreads.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="crypto.cpp">
+    <ClCompile Include="crypto.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
