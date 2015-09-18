@@ -208,4 +208,6 @@ int getBase64encodeResult(base64encodeContext* base64Context, char* buffer, int 
         handleError(_T("memcpy_s"), _T(__FILE__), __LINE__);
         return -1;
     }
+
+    return 0;
 }
