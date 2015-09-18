@@ -68,3 +68,46 @@ DWORD WINAPI receiveProbeMatchThread(LPVOID lpParam)
 
     return 0;
 }
+
+DWORD WINAPI receiveGetServicesThread(LPVOID lpParam)
+{
+    receiveThreadParameter* parameter = static_cast<receiveThreadParameter*>(lpParam);
+    receivedData* pReceivedData = NULL;
+
+    pReceivedData = (receivedData*)malloc(sizeof(receivedData));
+    if(NULL == pReceivedData)
+    {
+        handleError(_T("malloc"), _T(__FILE__), __LINE__);
+        return -1;
+    }
+    memset(pReceivedData, 0x0, sizeof(receivedData));
+    pReceivedData->data = (char*)malloc(USHRT_MAX);
+    if(NULL == pReceivedData->data)
+    {
+        handleError(_T("malloc"), _T(__FILE__), __LINE__);
+        free(pReceivedData);
+        return -1;
+    }
+    memset(pReceivedData->data, 0x0, USHRT_MAX);
+
+    int bytesReceived = recv((*parameter->socket), pReceivedData->data, USHRT_MAX, 0);
+    if(SOCKET_ERROR == bytesReceived)
+    {
+        if(NULL != pReceivedData)
+        {
+            if(NULL != pReceivedData->data)
+            {
+                free(pReceivedData->data);
+            }
+            free(pReceivedData);
+            pReceivedData = NULL;
+        }
+        return -1;
+    }
+    else
+    {
+        parameter->receivedDataList->push_back(pReceivedData);
+    }
+
+    return 0;
+}
