@@ -543,7 +543,7 @@ void parseGetServicesResponse(onvif_device* p_onvif_device, void* receivedDataLi
                 bstrNamespace = NULL;
 
                 // service_address_device_service begin
-                if(NULL != strstr(szNamespace, "device"))
+                if(NULL != strstr(szNamespace, "device/wsdl"))
                 {
                     strncpy(p_onvif_device->service_address_device_service.namesapce, szNamespace, 256);
                     pNodeOfXAddr = findNode(pIXMLDOMNodeTemp, "XAddr");
@@ -613,7 +613,7 @@ void parseGetServicesResponse(onvif_device* p_onvif_device, void* receivedDataLi
                 // service_address_device_service end
 
                 // service_address_media begin
-                if(NULL != strstr(szNamespace, "media"))
+                if(NULL != strstr(szNamespace, "media/wsdl"))
                 {
                     strncpy(p_onvif_device->service_address_media.namesapce, szNamespace, 256);
                     pNodeOfXAddr = findNode(pIXMLDOMNodeTemp, "XAddr");
@@ -683,7 +683,7 @@ void parseGetServicesResponse(onvif_device* p_onvif_device, void* receivedDataLi
                 // service_address_media end
 
                 // service_address_events begin
-                if(NULL != strstr(szNamespace, "events"))
+                if(NULL != strstr(szNamespace, "events/wsdl"))
                 {
                     strncpy(p_onvif_device->service_address_events.namesapce, szNamespace, 256);
                     pNodeOfXAddr = findNode(pIXMLDOMNodeTemp, "XAddr");
@@ -753,7 +753,7 @@ void parseGetServicesResponse(onvif_device* p_onvif_device, void* receivedDataLi
                 // service_address_events end
 
                 // service_address_PTZ begin
-                if(NULL != strstr(szNamespace, "ptz"))
+                if(NULL != strstr(szNamespace, "ptz/wsdl"))
                 {
                     strncpy(p_onvif_device->service_address_PTZ.namesapce, szNamespace, 256);
                     pNodeOfXAddr = findNode(pIXMLDOMNodeTemp, "XAddr");
@@ -823,7 +823,7 @@ void parseGetServicesResponse(onvif_device* p_onvif_device, void* receivedDataLi
                 // service_address_PTZ end
 
                 // service_address_imaging begin
-                if(NULL != strstr(szNamespace, "imaging"))
+                if(NULL != strstr(szNamespace, "imaging/wsdl"))
                 {
                     strncpy(p_onvif_device->service_address_imaging.namesapce, szNamespace, 256);
                     pNodeOfXAddr = findNode(pIXMLDOMNodeTemp, "XAddr");
@@ -893,7 +893,7 @@ void parseGetServicesResponse(onvif_device* p_onvif_device, void* receivedDataLi
                 // service_address_imaging end
 
                 // service_address_deviceIO begin
-                if(NULL != strstr(szNamespace, "deviceIO"))
+                if(NULL != strstr(szNamespace, "deviceIO/wsdl"))
                 {
                     strncpy(p_onvif_device->service_address_deviceIO.namesapce, szNamespace, 256);
                     pNodeOfXAddr = findNode(pIXMLDOMNodeTemp, "XAddr");
@@ -963,7 +963,7 @@ void parseGetServicesResponse(onvif_device* p_onvif_device, void* receivedDataLi
                 // service_address_deviceIO end
 
                 // service_address_analytics begin
-                if(NULL != strstr(szNamespace, "analytics"))
+                if(NULL != strstr(szNamespace, "analytics/wsdl"))
                 {
                     strncpy(p_onvif_device->service_address_analytics.namesapce, szNamespace, 256);
                     pNodeOfXAddr = findNode(pIXMLDOMNodeTemp, "XAddr");
@@ -1033,7 +1033,7 @@ void parseGetServicesResponse(onvif_device* p_onvif_device, void* receivedDataLi
                 // service_address_analytics end
 
                 // service_address_recording begin
-                if(NULL != strstr(szNamespace, "recording"))
+                if(NULL != strstr(szNamespace, "recording/wsdl"))
                 {
                     strncpy(p_onvif_device->service_address_recording.namesapce, szNamespace, 256);
                     pNodeOfXAddr = findNode(pIXMLDOMNodeTemp, "XAddr");
@@ -1103,7 +1103,7 @@ void parseGetServicesResponse(onvif_device* p_onvif_device, void* receivedDataLi
                 // service_address_recording end
 
                 // service_address_search_recording begin
-                if(NULL != strstr(szNamespace, "search"))
+                if(NULL != strstr(szNamespace, "search/wsdl"))
                 {
                     strncpy(p_onvif_device->service_address_search_recording.namesapce, szNamespace, 256);
                     pNodeOfXAddr = findNode(pIXMLDOMNodeTemp, "XAddr");
@@ -1173,7 +1173,7 @@ void parseGetServicesResponse(onvif_device* p_onvif_device, void* receivedDataLi
                 // service_address_search_recording end
 
                 // service_address_replay begin
-                if(NULL != strstr(szNamespace, "replay"))
+                if(NULL != strstr(szNamespace, "replay/wsdl"))
                 {
                     strncpy(p_onvif_device->service_address_replay.namesapce, szNamespace, 256);
                     pNodeOfXAddr = findNode(pIXMLDOMNodeTemp, "XAddr");
@@ -1243,7 +1243,7 @@ void parseGetServicesResponse(onvif_device* p_onvif_device, void* receivedDataLi
                 // service_address_replay end
 
                 // service_address_receiver begin
-                if(NULL != strstr(szNamespace, "receiver"))
+                if(NULL != strstr(szNamespace, "receiver/wsdl"))
                 {
                     strncpy(p_onvif_device->service_address_receiver.namesapce, szNamespace, 256);
                     pNodeOfXAddr = findNode(pIXMLDOMNodeTemp, "XAddr");
