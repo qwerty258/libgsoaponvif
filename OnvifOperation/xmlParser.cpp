@@ -525,4 +525,18 @@ void parseGetServicesResponse(onvif_device* p_onvif_device, void* receivedDataLi
     }
     }
     */
+
+    for(size_t i = 0; i < pReceivedDataList->size(); i++)
+    {
+        if(NULL != (*pReceivedDataList)[i])
+        {
+            if(NULL != (*pReceivedDataList)[i]->data)
+            {
+                free((*pReceivedDataList)[i]->data);
+            }
+            free((*pReceivedDataList)[i]);
+        }
+    }
+
+    pReceivedDataList->clear();
 }
