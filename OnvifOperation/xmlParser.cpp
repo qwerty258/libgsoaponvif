@@ -371,160 +371,1004 @@ void parseGetServicesResponse(onvif_device* p_onvif_device, void* receivedDataLi
 {
     vector<receivedData*>* pReceivedDataList = static_cast<vector<receivedData*>*>(receivedDataList);
 
+    HRESULT hResult;
+    long releaseResult;
+    VARIANT_BOOL varStatus;
+
+    BSTR bstrXMLInMemory = NULL;
+    BSTR bstrError = NULL;
+
+    IXMLDOMDocument* pIXMLDOMDocument = NULL;
+    IXMLDOMParseError* pIXMLDOMParseError = NULL;
+    IXMLDOMNode* pIXMLDOMNodeTemp = NULL;
+    IXMLDOMNode* pIXMLDOMNodeFound = NULL;
+
+    long length = 0;
+
+    BSTR bstrNamespace = NULL;
+    BSTR bstrXAddr = NULL;
+    BSTR bstrMajor = NULL;
+    BSTR bstrMinor = NULL;
+    char* szNamespace = NULL;
+    char* szXAddr = NULL;
+    char* szMajor = NULL;
+    char* szMinor = NULL;
+
+    IXMLDOMNodeList* pIXMLDOMNodeList = NULL;
+    IXMLDOMNode* pNodeOfNamespace = NULL;
+    IXMLDOMNode* pNodeOfXAddr = NULL;
+    IXMLDOMNode* pNodeOfVersion = NULL;
+    IXMLDOMNode* pNodeOfMajor = NULL;
+    IXMLDOMNode* pNodeOfMinor = NULL;
+
     if(1 != pReceivedDataList->size())
     {
         return;
     }
 
-    /*
-    for(i = 0; i < tds__GetServicesResponse.__sizeService; i++)
+    char* end;
+    char* currentPosition = strstr((*pReceivedDataList)[0]->data, "Content-Length");
+    if(NULL == currentPosition)
     {
-    if(NULL == tds__GetServicesResponse.Service[i].Version)
-    {
-    continue;
+        goto parseGetServicesResponseCleanUp;
     }
 
-    if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver10/device/wsdl", 256))
+    currentPosition = strstr(currentPosition, ":");
+    if(NULL == currentPosition)
     {
-    p_onvif_device_list->p_onvif_devices[index].service_address_device_service.major_version = tds__GetServicesResponse.Service[i].Version->Major;
-    p_onvif_device_list->p_onvif_devices[index].service_address_device_service.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
-    strncpy(
-    p_onvif_device_list->p_onvif_devices[index].service_address_device_service.namesapce,
-    tds__GetServicesResponse.Service[i].Namespace,
-    256);
-    strncpy(
-    p_onvif_device_list->p_onvif_devices[index].service_address_device_service.xaddr,
-    tds__GetServicesResponse.Service[i].XAddr,
-    256);
+        goto parseGetServicesResponseCleanUp;
     }
 
-    if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver10/media/wsdl", 256))
+    int contentLength = strtol(currentPosition + 1, &end, 10);
+
+    currentPosition = strstr(currentPosition, "\r\n\r\n");
+    if(NULL == currentPosition)
     {
-    p_onvif_device_list->p_onvif_devices[index].service_address_media.major_version = tds__GetServicesResponse.Service[i].Version->Major;
-    p_onvif_device_list->p_onvif_devices[index].service_address_media.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
-    strncpy(
-    p_onvif_device_list->p_onvif_devices[index].service_address_media.namesapce,
-    tds__GetServicesResponse.Service[i].Namespace,
-    256);
-    strncpy(
-    p_onvif_device_list->p_onvif_devices[index].service_address_media.xaddr,
-    tds__GetServicesResponse.Service[i].XAddr,
-    256);
+        goto parseGetServicesResponseCleanUp;
     }
 
-    if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver10/events/wsdl", 256))
+    currentPosition += 4;
+
+
+    hResult = CoCreateInstance(__uuidof(DOMDocument60), NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pIXMLDOMDocument));
+    if(FAILED(hResult))
     {
-    p_onvif_device_list->p_onvif_devices[index].service_address_events.major_version = tds__GetServicesResponse.Service[i].Version->Major;
-    p_onvif_device_list->p_onvif_devices[index].service_address_events.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
-    strncpy(
-    p_onvif_device_list->p_onvif_devices[index].service_address_events.namesapce,
-    tds__GetServicesResponse.Service[i].Namespace,
-    256);
-    strncpy(
-    p_onvif_device_list->p_onvif_devices[index].service_address_events.xaddr,
-    tds__GetServicesResponse.Service[i].XAddr,
-    256);
+        goto parseGetServicesResponseCleanUp;
     }
 
-    if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver20/imaging/wsdl", 256))
+    hResult = pIXMLDOMDocument->put_async(VARIANT_FALSE);
+    if(FAILED(hResult))
     {
-    p_onvif_device_list->p_onvif_devices[index].service_address_imaging.major_version = tds__GetServicesResponse.Service[i].Version->Major;
-    p_onvif_device_list->p_onvif_devices[index].service_address_imaging.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
-    strncpy(
-    p_onvif_device_list->p_onvif_devices[index].service_address_imaging.namesapce,
-    tds__GetServicesResponse.Service[i].Namespace,
-    256);
-    strncpy(
-    p_onvif_device_list->p_onvif_devices[index].service_address_imaging.xaddr,
-    tds__GetServicesResponse.Service[i].XAddr,
-    256);
+        goto parseGetServicesResponseCleanUp;
     }
 
-    if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver10/deviceIO/wsdl", 256))
+    hResult = pIXMLDOMDocument->put_validateOnParse(VARIANT_FALSE);
+    if(FAILED(hResult))
     {
-    p_onvif_device_list->p_onvif_devices[index].service_address_deviceIO.major_version = tds__GetServicesResponse.Service[i].Version->Major;
-    p_onvif_device_list->p_onvif_devices[index].service_address_deviceIO.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
-    strncpy(
-    p_onvif_device_list->p_onvif_devices[index].service_address_deviceIO.namesapce,
-    tds__GetServicesResponse.Service[i].Namespace,
-    256);
-    strncpy(
-    p_onvif_device_list->p_onvif_devices[index].service_address_deviceIO.xaddr,
-    tds__GetServicesResponse.Service[i].XAddr,
-    256);
+        goto parseGetServicesResponseCleanUp;
     }
 
-    if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver20/analytics/wsdl", 256))
+    hResult = pIXMLDOMDocument->put_resolveExternals(VARIANT_FALSE);
+    if(FAILED(hResult))
     {
-    p_onvif_device_list->p_onvif_devices[index].service_address_analytics.major_version = tds__GetServicesResponse.Service[i].Version->Major;
-    p_onvif_device_list->p_onvif_devices[index].service_address_analytics.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
-    strncpy(
-    p_onvif_device_list->p_onvif_devices[index].service_address_analytics.namesapce,
-    tds__GetServicesResponse.Service[i].Namespace,
-    256);
-    strncpy(
-    p_onvif_device_list->p_onvif_devices[index].service_address_analytics.xaddr,
-    tds__GetServicesResponse.Service[i].XAddr,
-    256);
+        goto parseGetServicesResponseCleanUp;
     }
 
-    if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver10/recording/wsdl", 256))
+    bstrXMLInMemory = _com_util::ConvertStringToBSTR(currentPosition);
+    hResult = pIXMLDOMDocument->loadXML(bstrXMLInMemory, &varStatus);
+    if(FAILED(hResult))
     {
-    p_onvif_device_list->p_onvif_devices[index].service_address_recording.major_version = tds__GetServicesResponse.Service[i].Version->Major;
-    p_onvif_device_list->p_onvif_devices[index].service_address_recording.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
-    strncpy(
-    p_onvif_device_list->p_onvif_devices[index].service_address_recording.namesapce,
-    tds__GetServicesResponse.Service[i].Namespace,
-    256);
-    strncpy(
-    p_onvif_device_list->p_onvif_devices[index].service_address_recording.xaddr,
-    tds__GetServicesResponse.Service[i].XAddr,
-    256);
+        goto parseGetServicesResponseCleanUp;
+    }
+    if(varStatus != VARIANT_TRUE)
+    {
+        hResult = pIXMLDOMDocument->get_parseError(&pIXMLDOMParseError);
+        if(FAILED(hResult))
+        {
+            goto parseGetServicesResponseCleanUp;
+        }
+
+        hResult = pIXMLDOMParseError->get_reason(&bstrError);
+        if(FAILED(hResult))
+        {
+            goto parseGetServicesResponseCleanUp;
+        }
+
+        handleError(bstrError, _T(__FILE__), __LINE__);
     }
 
-    if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver10/search/wsdl", 256))
+    pIXMLDOMNodeFound = findNode(pIXMLDOMDocument, "Envelope");
+    if(NULL == pIXMLDOMNodeFound)
     {
-    p_onvif_device_list->p_onvif_devices[index].service_address_search_recording.major_version = tds__GetServicesResponse.Service[i].Version->Major;
-    p_onvif_device_list->p_onvif_devices[index].service_address_search_recording.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
-    strncpy(
-    p_onvif_device_list->p_onvif_devices[index].service_address_search_recording.namesapce,
-    tds__GetServicesResponse.Service[i].Namespace,
-    256);
-    strncpy(
-    p_onvif_device_list->p_onvif_devices[index].service_address_search_recording.xaddr,
-    tds__GetServicesResponse.Service[i].XAddr,
-    256);
+        goto parseGetServicesResponseCleanUp;
     }
 
-    if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver10/replay/wsdl", 256))
+    pIXMLDOMNodeTemp = pIXMLDOMNodeFound;
+
+    pIXMLDOMNodeFound = findNode(pIXMLDOMNodeTemp, "Body");
+
+    do
     {
-    p_onvif_device_list->p_onvif_devices[index].service_address_replay.major_version = tds__GetServicesResponse.Service[i].Version->Major;
-    p_onvif_device_list->p_onvif_devices[index].service_address_replay.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
-    strncpy(
-    p_onvif_device_list->p_onvif_devices[index].service_address_replay.namesapce,
-    tds__GetServicesResponse.Service[i].Namespace,
-    256);
-    strncpy(
-    p_onvif_device_list->p_onvif_devices[index].service_address_replay.xaddr,
-    tds__GetServicesResponse.Service[i].XAddr,
-    256);
+        releaseResult = pIXMLDOMNodeTemp->Release();
+    } while(releaseResult > 0);
+    pIXMLDOMNodeTemp = NULL;
+
+    if(NULL == pIXMLDOMNodeFound)
+    {
+        goto parseGetServicesResponseCleanUp;
+    }
+    pIXMLDOMNodeTemp = pIXMLDOMNodeFound;
+
+    pIXMLDOMNodeFound = findNode(pIXMLDOMNodeTemp, "GetServicesResponse");
+
+    do
+    {
+        releaseResult = pIXMLDOMNodeTemp->Release();
+    } while(releaseResult > 0);
+    pIXMLDOMNodeTemp = NULL;
+
+    if(NULL == pIXMLDOMNodeFound)
+    {
+        goto parseGetServicesResponseCleanUp;
     }
 
-    if(0 == strncmp(tds__GetServicesResponse.Service[i].Namespace, "http://www.onvif.org/ver10/receiver/wsdl", 256))
+    hResult = pIXMLDOMNodeFound->get_childNodes(&pIXMLDOMNodeList);
+    if(FAILED(hResult))
     {
-    p_onvif_device_list->p_onvif_devices[index].service_address_receiver.major_version = tds__GetServicesResponse.Service[i].Version->Major;
-    p_onvif_device_list->p_onvif_devices[index].service_address_receiver.minor_version = tds__GetServicesResponse.Service[i].Version->Minor;
-    strncpy(
-    p_onvif_device_list->p_onvif_devices[index].service_address_receiver.namesapce,
-    tds__GetServicesResponse.Service[i].Namespace,
-    256);
-    strncpy(
-    p_onvif_device_list->p_onvif_devices[index].service_address_receiver.xaddr,
-    tds__GetServicesResponse.Service[i].XAddr,
-    256);
+        goto parseGetServicesResponseCleanUp;
     }
+
+    hResult = pIXMLDOMNodeList->get_length(&length);
+    if(FAILED(hResult))
+    {
+        goto parseGetServicesResponseCleanUp;
     }
-    */
+
+    for(long i = 0; i < length; i++)
+    {
+        hResult = pIXMLDOMNodeList->get_item(i, &pIXMLDOMNodeTemp);
+        if(FAILED(hResult))
+        {
+            break;
+        }
+
+        pNodeOfNamespace = findNode(pIXMLDOMNodeTemp, "Namespace");
+        if(NULL != pNodeOfNamespace)
+        {
+            hResult = pNodeOfNamespace->get_text(&bstrNamespace);
+            if(SUCCEEDED(hResult))
+            {
+                szNamespace = _com_util::ConvertBSTRToString(bstrNamespace);
+                SysFreeString(bstrNamespace);
+                bstrNamespace = NULL;
+
+                // service_address_device_service begin
+                if(NULL != strstr(szNamespace, "device"))
+                {
+                    strncpy(p_onvif_device->service_address_device_service.namesapce, szNamespace, 256);
+                    pNodeOfXAddr = findNode(pIXMLDOMNodeTemp, "XAddr");
+                    if(NULL != pNodeOfXAddr)
+                    {
+                        hResult = pNodeOfXAddr->get_text(&bstrXAddr);
+                        if(SUCCEEDED(hResult))
+                        {
+                            szXAddr = _com_util::ConvertBSTRToString(bstrXAddr);
+                            SysFreeString(bstrXAddr);
+                            bstrXAddr = NULL;
+                            strncpy(p_onvif_device->service_address_device_service.xaddr, szXAddr, 256);
+                            delete[] szXAddr;
+                        }
+                        do
+                        {
+                            releaseResult = pNodeOfXAddr->Release();
+                        } while(releaseResult > 0);
+                        pNodeOfXAddr = NULL;
+                    }
+                    pNodeOfVersion = findNode(pIXMLDOMNodeTemp, "Version");
+                    if(NULL != pNodeOfVersion)
+                    {
+                        pNodeOfMajor = findNode(pNodeOfVersion, "Major");
+                        if(NULL != pNodeOfMajor)
+                        {
+                            hResult = pNodeOfMajor->get_text(&bstrMajor);
+                            if(SUCCEEDED(hResult))
+                            {
+                                szMajor = _com_util::ConvertBSTRToString(bstrMajor);
+                                SysFreeString(bstrMajor);
+                                p_onvif_device->service_address_device_service.major_version = strtol(szMajor, &end, 10);
+                                delete[] szMajor;
+                                szMajor = NULL;
+                            }
+                            do
+                            {
+                                releaseResult = pNodeOfMajor->Release();
+                            } while(releaseResult > 0);
+                            pNodeOfMajor = NULL;
+                        }
+                        pNodeOfMinor = findNode(pNodeOfVersion, "Minor");
+                        if(NULL != pNodeOfMinor)
+                        {
+                            hResult = pNodeOfMinor->get_text(&bstrMinor);
+                            if(SUCCEEDED(hResult))
+                            {
+                                szMinor = _com_util::ConvertBSTRToString(bstrMinor);
+                                SysFreeString(bstrMinor);
+                                p_onvif_device->service_address_device_service.minor_version = strtol(szMinor, &end, 10);
+                                delete[] szMinor;
+                                szMinor = NULL;
+                            }
+                            do
+                            {
+                                releaseResult = pNodeOfMinor->Release();
+                            } while(releaseResult > 0);
+                            pNodeOfMinor = NULL;
+                        }
+                        do
+                        {
+                            releaseResult = pNodeOfVersion->Release();
+                        } while(releaseResult > 0);
+                        pNodeOfVersion = NULL;
+                    }
+                }
+                // service_address_device_service end
+
+                // service_address_media begin
+                if(NULL != strstr(szNamespace, "media"))
+                {
+                    strncpy(p_onvif_device->service_address_media.namesapce, szNamespace, 256);
+                    pNodeOfXAddr = findNode(pIXMLDOMNodeTemp, "XAddr");
+                    if(NULL != pNodeOfXAddr)
+                    {
+                        hResult = pNodeOfXAddr->get_text(&bstrXAddr);
+                        if(SUCCEEDED(hResult))
+                        {
+                            szXAddr = _com_util::ConvertBSTRToString(bstrXAddr);
+                            SysFreeString(bstrXAddr);
+                            bstrXAddr = NULL;
+                            strncpy(p_onvif_device->service_address_media.xaddr, szXAddr, 256);
+                            delete[] szXAddr;
+                        }
+                        do
+                        {
+                            releaseResult = pNodeOfXAddr->Release();
+                        } while(releaseResult > 0);
+                        pNodeOfXAddr = NULL;
+                    }
+                    pNodeOfVersion = findNode(pIXMLDOMNodeTemp, "Version");
+                    if(NULL != pNodeOfVersion)
+                    {
+                        pNodeOfMajor = findNode(pNodeOfVersion, "Major");
+                        if(NULL != pNodeOfMajor)
+                        {
+                            hResult = pNodeOfMajor->get_text(&bstrMajor);
+                            if(SUCCEEDED(hResult))
+                            {
+                                szMajor = _com_util::ConvertBSTRToString(bstrMajor);
+                                SysFreeString(bstrMajor);
+                                p_onvif_device->service_address_media.major_version = strtol(szMajor, &end, 10);
+                                delete[] szMajor;
+                                szMajor = NULL;
+                            }
+                            do
+                            {
+                                releaseResult = pNodeOfMajor->Release();
+                            } while(releaseResult > 0);
+                            pNodeOfMajor = NULL;
+                        }
+                        pNodeOfMinor = findNode(pNodeOfVersion, "Minor");
+                        if(NULL != pNodeOfMinor)
+                        {
+                            hResult = pNodeOfMinor->get_text(&bstrMinor);
+                            if(SUCCEEDED(hResult))
+                            {
+                                szMinor = _com_util::ConvertBSTRToString(bstrMinor);
+                                SysFreeString(bstrMinor);
+                                p_onvif_device->service_address_media.minor_version = strtol(szMinor, &end, 10);
+                                delete[] szMinor;
+                                szMinor = NULL;
+                            }
+                            do
+                            {
+                                releaseResult = pNodeOfMinor->Release();
+                            } while(releaseResult > 0);
+                            pNodeOfMinor = NULL;
+                        }
+                        do
+                        {
+                            releaseResult = pNodeOfVersion->Release();
+                        } while(releaseResult > 0);
+                        pNodeOfVersion = NULL;
+                    }
+                }
+                // service_address_media end
+
+                // service_address_events begin
+                if(NULL != strstr(szNamespace, "events"))
+                {
+                    strncpy(p_onvif_device->service_address_events.namesapce, szNamespace, 256);
+                    pNodeOfXAddr = findNode(pIXMLDOMNodeTemp, "XAddr");
+                    if(NULL != pNodeOfXAddr)
+                    {
+                        hResult = pNodeOfXAddr->get_text(&bstrXAddr);
+                        if(SUCCEEDED(hResult))
+                        {
+                            szXAddr = _com_util::ConvertBSTRToString(bstrXAddr);
+                            SysFreeString(bstrXAddr);
+                            bstrXAddr = NULL;
+                            strncpy(p_onvif_device->service_address_events.xaddr, szXAddr, 256);
+                            delete[] szXAddr;
+                        }
+                        do
+                        {
+                            releaseResult = pNodeOfXAddr->Release();
+                        } while(releaseResult > 0);
+                        pNodeOfXAddr = NULL;
+                    }
+                    pNodeOfVersion = findNode(pIXMLDOMNodeTemp, "Version");
+                    if(NULL != pNodeOfVersion)
+                    {
+                        pNodeOfMajor = findNode(pNodeOfVersion, "Major");
+                        if(NULL != pNodeOfMajor)
+                        {
+                            hResult = pNodeOfMajor->get_text(&bstrMajor);
+                            if(SUCCEEDED(hResult))
+                            {
+                                szMajor = _com_util::ConvertBSTRToString(bstrMajor);
+                                SysFreeString(bstrMajor);
+                                p_onvif_device->service_address_events.major_version = strtol(szMajor, &end, 10);
+                                delete[] szMajor;
+                                szMajor = NULL;
+                            }
+                            do
+                            {
+                                releaseResult = pNodeOfMajor->Release();
+                            } while(releaseResult > 0);
+                            pNodeOfMajor = NULL;
+                        }
+                        pNodeOfMinor = findNode(pNodeOfVersion, "Minor");
+                        if(NULL != pNodeOfMinor)
+                        {
+                            hResult = pNodeOfMinor->get_text(&bstrMinor);
+                            if(SUCCEEDED(hResult))
+                            {
+                                szMinor = _com_util::ConvertBSTRToString(bstrMinor);
+                                SysFreeString(bstrMinor);
+                                p_onvif_device->service_address_events.minor_version = strtol(szMinor, &end, 10);
+                                delete[] szMinor;
+                                szMinor = NULL;
+                            }
+                            do
+                            {
+                                releaseResult = pNodeOfMinor->Release();
+                            } while(releaseResult > 0);
+                            pNodeOfMinor = NULL;
+                        }
+                        do
+                        {
+                            releaseResult = pNodeOfVersion->Release();
+                        } while(releaseResult > 0);
+                        pNodeOfVersion = NULL;
+                    }
+                }
+                // service_address_events end
+
+                // service_address_PTZ begin
+                if(NULL != strstr(szNamespace, "ptz"))
+                {
+                    strncpy(p_onvif_device->service_address_PTZ.namesapce, szNamespace, 256);
+                    pNodeOfXAddr = findNode(pIXMLDOMNodeTemp, "XAddr");
+                    if(NULL != pNodeOfXAddr)
+                    {
+                        hResult = pNodeOfXAddr->get_text(&bstrXAddr);
+                        if(SUCCEEDED(hResult))
+                        {
+                            szXAddr = _com_util::ConvertBSTRToString(bstrXAddr);
+                            SysFreeString(bstrXAddr);
+                            bstrXAddr = NULL;
+                            strncpy(p_onvif_device->service_address_PTZ.xaddr, szXAddr, 256);
+                            delete[] szXAddr;
+                        }
+                        do
+                        {
+                            releaseResult = pNodeOfXAddr->Release();
+                        } while(releaseResult > 0);
+                        pNodeOfXAddr = NULL;
+                    }
+                    pNodeOfVersion = findNode(pIXMLDOMNodeTemp, "Version");
+                    if(NULL != pNodeOfVersion)
+                    {
+                        pNodeOfMajor = findNode(pNodeOfVersion, "Major");
+                        if(NULL != pNodeOfMajor)
+                        {
+                            hResult = pNodeOfMajor->get_text(&bstrMajor);
+                            if(SUCCEEDED(hResult))
+                            {
+                                szMajor = _com_util::ConvertBSTRToString(bstrMajor);
+                                SysFreeString(bstrMajor);
+                                p_onvif_device->service_address_PTZ.major_version = strtol(szMajor, &end, 10);
+                                delete[] szMajor;
+                                szMajor = NULL;
+                            }
+                            do
+                            {
+                                releaseResult = pNodeOfMajor->Release();
+                            } while(releaseResult > 0);
+                            pNodeOfMajor = NULL;
+                        }
+                        pNodeOfMinor = findNode(pNodeOfVersion, "Minor");
+                        if(NULL != pNodeOfMinor)
+                        {
+                            hResult = pNodeOfMinor->get_text(&bstrMinor);
+                            if(SUCCEEDED(hResult))
+                            {
+                                szMinor = _com_util::ConvertBSTRToString(bstrMinor);
+                                SysFreeString(bstrMinor);
+                                p_onvif_device->service_address_PTZ.minor_version = strtol(szMinor, &end, 10);
+                                delete[] szMinor;
+                                szMinor = NULL;
+                            }
+                            do
+                            {
+                                releaseResult = pNodeOfMinor->Release();
+                            } while(releaseResult > 0);
+                            pNodeOfMinor = NULL;
+                        }
+                        do
+                        {
+                            releaseResult = pNodeOfVersion->Release();
+                        } while(releaseResult > 0);
+                        pNodeOfVersion = NULL;
+                    }
+                }
+                // service_address_PTZ end
+
+                // service_address_imaging begin
+                if(NULL != strstr(szNamespace, "imaging"))
+                {
+                    strncpy(p_onvif_device->service_address_imaging.namesapce, szNamespace, 256);
+                    pNodeOfXAddr = findNode(pIXMLDOMNodeTemp, "XAddr");
+                    if(NULL != pNodeOfXAddr)
+                    {
+                        hResult = pNodeOfXAddr->get_text(&bstrXAddr);
+                        if(SUCCEEDED(hResult))
+                        {
+                            szXAddr = _com_util::ConvertBSTRToString(bstrXAddr);
+                            SysFreeString(bstrXAddr);
+                            bstrXAddr = NULL;
+                            strncpy(p_onvif_device->service_address_imaging.xaddr, szXAddr, 256);
+                            delete[] szXAddr;
+                        }
+                        do
+                        {
+                            releaseResult = pNodeOfXAddr->Release();
+                        } while(releaseResult > 0);
+                        pNodeOfXAddr = NULL;
+                    }
+                    pNodeOfVersion = findNode(pIXMLDOMNodeTemp, "Version");
+                    if(NULL != pNodeOfVersion)
+                    {
+                        pNodeOfMajor = findNode(pNodeOfVersion, "Major");
+                        if(NULL != pNodeOfMajor)
+                        {
+                            hResult = pNodeOfMajor->get_text(&bstrMajor);
+                            if(SUCCEEDED(hResult))
+                            {
+                                szMajor = _com_util::ConvertBSTRToString(bstrMajor);
+                                SysFreeString(bstrMajor);
+                                p_onvif_device->service_address_imaging.major_version = strtol(szMajor, &end, 10);
+                                delete[] szMajor;
+                                szMajor = NULL;
+                            }
+                            do
+                            {
+                                releaseResult = pNodeOfMajor->Release();
+                            } while(releaseResult > 0);
+                            pNodeOfMajor = NULL;
+                        }
+                        pNodeOfMinor = findNode(pNodeOfVersion, "Minor");
+                        if(NULL != pNodeOfMinor)
+                        {
+                            hResult = pNodeOfMinor->get_text(&bstrMinor);
+                            if(SUCCEEDED(hResult))
+                            {
+                                szMinor = _com_util::ConvertBSTRToString(bstrMinor);
+                                SysFreeString(bstrMinor);
+                                p_onvif_device->service_address_imaging.minor_version = strtol(szMinor, &end, 10);
+                                delete[] szMinor;
+                                szMinor = NULL;
+                            }
+                            do
+                            {
+                                releaseResult = pNodeOfMinor->Release();
+                            } while(releaseResult > 0);
+                            pNodeOfMinor = NULL;
+                        }
+                        do
+                        {
+                            releaseResult = pNodeOfVersion->Release();
+                        } while(releaseResult > 0);
+                        pNodeOfVersion = NULL;
+                    }
+                }
+                // service_address_imaging end
+
+                // service_address_deviceIO begin
+                if(NULL != strstr(szNamespace, "deviceIO"))
+                {
+                    strncpy(p_onvif_device->service_address_deviceIO.namesapce, szNamespace, 256);
+                    pNodeOfXAddr = findNode(pIXMLDOMNodeTemp, "XAddr");
+                    if(NULL != pNodeOfXAddr)
+                    {
+                        hResult = pNodeOfXAddr->get_text(&bstrXAddr);
+                        if(SUCCEEDED(hResult))
+                        {
+                            szXAddr = _com_util::ConvertBSTRToString(bstrXAddr);
+                            SysFreeString(bstrXAddr);
+                            bstrXAddr = NULL;
+                            strncpy(p_onvif_device->service_address_deviceIO.xaddr, szXAddr, 256);
+                            delete[] szXAddr;
+                        }
+                        do
+                        {
+                            releaseResult = pNodeOfXAddr->Release();
+                        } while(releaseResult > 0);
+                        pNodeOfXAddr = NULL;
+                    }
+                    pNodeOfVersion = findNode(pIXMLDOMNodeTemp, "Version");
+                    if(NULL != pNodeOfVersion)
+                    {
+                        pNodeOfMajor = findNode(pNodeOfVersion, "Major");
+                        if(NULL != pNodeOfMajor)
+                        {
+                            hResult = pNodeOfMajor->get_text(&bstrMajor);
+                            if(SUCCEEDED(hResult))
+                            {
+                                szMajor = _com_util::ConvertBSTRToString(bstrMajor);
+                                SysFreeString(bstrMajor);
+                                p_onvif_device->service_address_deviceIO.major_version = strtol(szMajor, &end, 10);
+                                delete[] szMajor;
+                                szMajor = NULL;
+                            }
+                            do
+                            {
+                                releaseResult = pNodeOfMajor->Release();
+                            } while(releaseResult > 0);
+                            pNodeOfMajor = NULL;
+                        }
+                        pNodeOfMinor = findNode(pNodeOfVersion, "Minor");
+                        if(NULL != pNodeOfMinor)
+                        {
+                            hResult = pNodeOfMinor->get_text(&bstrMinor);
+                            if(SUCCEEDED(hResult))
+                            {
+                                szMinor = _com_util::ConvertBSTRToString(bstrMinor);
+                                SysFreeString(bstrMinor);
+                                p_onvif_device->service_address_deviceIO.minor_version = strtol(szMinor, &end, 10);
+                                delete[] szMinor;
+                                szMinor = NULL;
+                            }
+                            do
+                            {
+                                releaseResult = pNodeOfMinor->Release();
+                            } while(releaseResult > 0);
+                            pNodeOfMinor = NULL;
+                        }
+                        do
+                        {
+                            releaseResult = pNodeOfVersion->Release();
+                        } while(releaseResult > 0);
+                        pNodeOfVersion = NULL;
+                    }
+                }
+                // service_address_deviceIO end
+
+                // service_address_analytics begin
+                if(NULL != strstr(szNamespace, "analytics"))
+                {
+                    strncpy(p_onvif_device->service_address_analytics.namesapce, szNamespace, 256);
+                    pNodeOfXAddr = findNode(pIXMLDOMNodeTemp, "XAddr");
+                    if(NULL != pNodeOfXAddr)
+                    {
+                        hResult = pNodeOfXAddr->get_text(&bstrXAddr);
+                        if(SUCCEEDED(hResult))
+                        {
+                            szXAddr = _com_util::ConvertBSTRToString(bstrXAddr);
+                            SysFreeString(bstrXAddr);
+                            bstrXAddr = NULL;
+                            strncpy(p_onvif_device->service_address_analytics.xaddr, szXAddr, 256);
+                            delete[] szXAddr;
+                        }
+                        do
+                        {
+                            releaseResult = pNodeOfXAddr->Release();
+                        } while(releaseResult > 0);
+                        pNodeOfXAddr = NULL;
+                    }
+                    pNodeOfVersion = findNode(pIXMLDOMNodeTemp, "Version");
+                    if(NULL != pNodeOfVersion)
+                    {
+                        pNodeOfMajor = findNode(pNodeOfVersion, "Major");
+                        if(NULL != pNodeOfMajor)
+                        {
+                            hResult = pNodeOfMajor->get_text(&bstrMajor);
+                            if(SUCCEEDED(hResult))
+                            {
+                                szMajor = _com_util::ConvertBSTRToString(bstrMajor);
+                                SysFreeString(bstrMajor);
+                                p_onvif_device->service_address_analytics.major_version = strtol(szMajor, &end, 10);
+                                delete[] szMajor;
+                                szMajor = NULL;
+                            }
+                            do
+                            {
+                                releaseResult = pNodeOfMajor->Release();
+                            } while(releaseResult > 0);
+                            pNodeOfMajor = NULL;
+                        }
+                        pNodeOfMinor = findNode(pNodeOfVersion, "Minor");
+                        if(NULL != pNodeOfMinor)
+                        {
+                            hResult = pNodeOfMinor->get_text(&bstrMinor);
+                            if(SUCCEEDED(hResult))
+                            {
+                                szMinor = _com_util::ConvertBSTRToString(bstrMinor);
+                                SysFreeString(bstrMinor);
+                                p_onvif_device->service_address_analytics.minor_version = strtol(szMinor, &end, 10);
+                                delete[] szMinor;
+                                szMinor = NULL;
+                            }
+                            do
+                            {
+                                releaseResult = pNodeOfMinor->Release();
+                            } while(releaseResult > 0);
+                            pNodeOfMinor = NULL;
+                        }
+                        do
+                        {
+                            releaseResult = pNodeOfVersion->Release();
+                        } while(releaseResult > 0);
+                        pNodeOfVersion = NULL;
+                    }
+                }
+                // service_address_analytics end
+
+                // service_address_recording begin
+                if(NULL != strstr(szNamespace, "recording"))
+                {
+                    strncpy(p_onvif_device->service_address_recording.namesapce, szNamespace, 256);
+                    pNodeOfXAddr = findNode(pIXMLDOMNodeTemp, "XAddr");
+                    if(NULL != pNodeOfXAddr)
+                    {
+                        hResult = pNodeOfXAddr->get_text(&bstrXAddr);
+                        if(SUCCEEDED(hResult))
+                        {
+                            szXAddr = _com_util::ConvertBSTRToString(bstrXAddr);
+                            SysFreeString(bstrXAddr);
+                            bstrXAddr = NULL;
+                            strncpy(p_onvif_device->service_address_recording.xaddr, szXAddr, 256);
+                            delete[] szXAddr;
+                        }
+                        do
+                        {
+                            releaseResult = pNodeOfXAddr->Release();
+                        } while(releaseResult > 0);
+                        pNodeOfXAddr = NULL;
+                    }
+                    pNodeOfVersion = findNode(pIXMLDOMNodeTemp, "Version");
+                    if(NULL != pNodeOfVersion)
+                    {
+                        pNodeOfMajor = findNode(pNodeOfVersion, "Major");
+                        if(NULL != pNodeOfMajor)
+                        {
+                            hResult = pNodeOfMajor->get_text(&bstrMajor);
+                            if(SUCCEEDED(hResult))
+                            {
+                                szMajor = _com_util::ConvertBSTRToString(bstrMajor);
+                                SysFreeString(bstrMajor);
+                                p_onvif_device->service_address_recording.major_version = strtol(szMajor, &end, 10);
+                                delete[] szMajor;
+                                szMajor = NULL;
+                            }
+                            do
+                            {
+                                releaseResult = pNodeOfMajor->Release();
+                            } while(releaseResult > 0);
+                            pNodeOfMajor = NULL;
+                        }
+                        pNodeOfMinor = findNode(pNodeOfVersion, "Minor");
+                        if(NULL != pNodeOfMinor)
+                        {
+                            hResult = pNodeOfMinor->get_text(&bstrMinor);
+                            if(SUCCEEDED(hResult))
+                            {
+                                szMinor = _com_util::ConvertBSTRToString(bstrMinor);
+                                SysFreeString(bstrMinor);
+                                p_onvif_device->service_address_recording.minor_version = strtol(szMinor, &end, 10);
+                                delete[] szMinor;
+                                szMinor = NULL;
+                            }
+                            do
+                            {
+                                releaseResult = pNodeOfMinor->Release();
+                            } while(releaseResult > 0);
+                            pNodeOfMinor = NULL;
+                        }
+                        do
+                        {
+                            releaseResult = pNodeOfVersion->Release();
+                        } while(releaseResult > 0);
+                        pNodeOfVersion = NULL;
+                    }
+                }
+                // service_address_recording end
+
+                // service_address_search_recording begin
+                if(NULL != strstr(szNamespace, "search"))
+                {
+                    strncpy(p_onvif_device->service_address_search_recording.namesapce, szNamespace, 256);
+                    pNodeOfXAddr = findNode(pIXMLDOMNodeTemp, "XAddr");
+                    if(NULL != pNodeOfXAddr)
+                    {
+                        hResult = pNodeOfXAddr->get_text(&bstrXAddr);
+                        if(SUCCEEDED(hResult))
+                        {
+                            szXAddr = _com_util::ConvertBSTRToString(bstrXAddr);
+                            SysFreeString(bstrXAddr);
+                            bstrXAddr = NULL;
+                            strncpy(p_onvif_device->service_address_search_recording.xaddr, szXAddr, 256);
+                            delete[] szXAddr;
+                        }
+                        do
+                        {
+                            releaseResult = pNodeOfXAddr->Release();
+                        } while(releaseResult > 0);
+                        pNodeOfXAddr = NULL;
+                    }
+                    pNodeOfVersion = findNode(pIXMLDOMNodeTemp, "Version");
+                    if(NULL != pNodeOfVersion)
+                    {
+                        pNodeOfMajor = findNode(pNodeOfVersion, "Major");
+                        if(NULL != pNodeOfMajor)
+                        {
+                            hResult = pNodeOfMajor->get_text(&bstrMajor);
+                            if(SUCCEEDED(hResult))
+                            {
+                                szMajor = _com_util::ConvertBSTRToString(bstrMajor);
+                                SysFreeString(bstrMajor);
+                                p_onvif_device->service_address_search_recording.major_version = strtol(szMajor, &end, 10);
+                                delete[] szMajor;
+                                szMajor = NULL;
+                            }
+                            do
+                            {
+                                releaseResult = pNodeOfMajor->Release();
+                            } while(releaseResult > 0);
+                            pNodeOfMajor = NULL;
+                        }
+                        pNodeOfMinor = findNode(pNodeOfVersion, "Minor");
+                        if(NULL != pNodeOfMinor)
+                        {
+                            hResult = pNodeOfMinor->get_text(&bstrMinor);
+                            if(SUCCEEDED(hResult))
+                            {
+                                szMinor = _com_util::ConvertBSTRToString(bstrMinor);
+                                SysFreeString(bstrMinor);
+                                p_onvif_device->service_address_search_recording.minor_version = strtol(szMinor, &end, 10);
+                                delete[] szMinor;
+                                szMinor = NULL;
+                            }
+                            do
+                            {
+                                releaseResult = pNodeOfMinor->Release();
+                            } while(releaseResult > 0);
+                            pNodeOfMinor = NULL;
+                        }
+                        do
+                        {
+                            releaseResult = pNodeOfVersion->Release();
+                        } while(releaseResult > 0);
+                        pNodeOfVersion = NULL;
+                    }
+                }
+                // service_address_search_recording end
+
+                // service_address_replay begin
+                if(NULL != strstr(szNamespace, "replay"))
+                {
+                    strncpy(p_onvif_device->service_address_replay.namesapce, szNamespace, 256);
+                    pNodeOfXAddr = findNode(pIXMLDOMNodeTemp, "XAddr");
+                    if(NULL != pNodeOfXAddr)
+                    {
+                        hResult = pNodeOfXAddr->get_text(&bstrXAddr);
+                        if(SUCCEEDED(hResult))
+                        {
+                            szXAddr = _com_util::ConvertBSTRToString(bstrXAddr);
+                            SysFreeString(bstrXAddr);
+                            bstrXAddr = NULL;
+                            strncpy(p_onvif_device->service_address_replay.xaddr, szXAddr, 256);
+                            delete[] szXAddr;
+                        }
+                        do
+                        {
+                            releaseResult = pNodeOfXAddr->Release();
+                        } while(releaseResult > 0);
+                        pNodeOfXAddr = NULL;
+                    }
+                    pNodeOfVersion = findNode(pIXMLDOMNodeTemp, "Version");
+                    if(NULL != pNodeOfVersion)
+                    {
+                        pNodeOfMajor = findNode(pNodeOfVersion, "Major");
+                        if(NULL != pNodeOfMajor)
+                        {
+                            hResult = pNodeOfMajor->get_text(&bstrMajor);
+                            if(SUCCEEDED(hResult))
+                            {
+                                szMajor = _com_util::ConvertBSTRToString(bstrMajor);
+                                SysFreeString(bstrMajor);
+                                p_onvif_device->service_address_replay.major_version = strtol(szMajor, &end, 10);
+                                delete[] szMajor;
+                                szMajor = NULL;
+                            }
+                            do
+                            {
+                                releaseResult = pNodeOfMajor->Release();
+                            } while(releaseResult > 0);
+                            pNodeOfMajor = NULL;
+                        }
+                        pNodeOfMinor = findNode(pNodeOfVersion, "Minor");
+                        if(NULL != pNodeOfMinor)
+                        {
+                            hResult = pNodeOfMinor->get_text(&bstrMinor);
+                            if(SUCCEEDED(hResult))
+                            {
+                                szMinor = _com_util::ConvertBSTRToString(bstrMinor);
+                                SysFreeString(bstrMinor);
+                                p_onvif_device->service_address_replay.minor_version = strtol(szMinor, &end, 10);
+                                delete[] szMinor;
+                                szMinor = NULL;
+                            }
+                            do
+                            {
+                                releaseResult = pNodeOfMinor->Release();
+                            } while(releaseResult > 0);
+                            pNodeOfMinor = NULL;
+                        }
+                        do
+                        {
+                            releaseResult = pNodeOfVersion->Release();
+                        } while(releaseResult > 0);
+                        pNodeOfVersion = NULL;
+                    }
+                }
+                // service_address_replay end
+
+                // service_address_receiver begin
+                if(NULL != strstr(szNamespace, "receiver"))
+                {
+                    strncpy(p_onvif_device->service_address_receiver.namesapce, szNamespace, 256);
+                    pNodeOfXAddr = findNode(pIXMLDOMNodeTemp, "XAddr");
+                    if(NULL != pNodeOfXAddr)
+                    {
+                        hResult = pNodeOfXAddr->get_text(&bstrXAddr);
+                        if(SUCCEEDED(hResult))
+                        {
+                            szXAddr = _com_util::ConvertBSTRToString(bstrXAddr);
+                            SysFreeString(bstrXAddr);
+                            bstrXAddr = NULL;
+                            strncpy(p_onvif_device->service_address_receiver.xaddr, szXAddr, 256);
+                            delete[] szXAddr;
+                        }
+                        do
+                        {
+                            releaseResult = pNodeOfXAddr->Release();
+                        } while(releaseResult > 0);
+                        pNodeOfXAddr = NULL;
+                    }
+                    pNodeOfVersion = findNode(pIXMLDOMNodeTemp, "Version");
+                    if(NULL != pNodeOfVersion)
+                    {
+                        pNodeOfMajor = findNode(pNodeOfVersion, "Major");
+                        if(NULL != pNodeOfMajor)
+                        {
+                            hResult = pNodeOfMajor->get_text(&bstrMajor);
+                            if(SUCCEEDED(hResult))
+                            {
+                                szMajor = _com_util::ConvertBSTRToString(bstrMajor);
+                                SysFreeString(bstrMajor);
+                                p_onvif_device->service_address_receiver.major_version = strtol(szMajor, &end, 10);
+                                delete[] szMajor;
+                                szMajor = NULL;
+                            }
+                            do
+                            {
+                                releaseResult = pNodeOfMajor->Release();
+                            } while(releaseResult > 0);
+                            pNodeOfMajor = NULL;
+                        }
+                        pNodeOfMinor = findNode(pNodeOfVersion, "Minor");
+                        if(NULL != pNodeOfMinor)
+                        {
+                            hResult = pNodeOfMinor->get_text(&bstrMinor);
+                            if(SUCCEEDED(hResult))
+                            {
+                                szMinor = _com_util::ConvertBSTRToString(bstrMinor);
+                                SysFreeString(bstrMinor);
+                                p_onvif_device->service_address_receiver.minor_version = strtol(szMinor, &end, 10);
+                                delete[] szMinor;
+                                szMinor = NULL;
+                            }
+                            do
+                            {
+                                releaseResult = pNodeOfMinor->Release();
+                            } while(releaseResult > 0);
+                            pNodeOfMinor = NULL;
+                        }
+                        do
+                        {
+                            releaseResult = pNodeOfVersion->Release();
+                        } while(releaseResult > 0);
+                        pNodeOfVersion = NULL;
+                    }
+                }
+                // service_address_receiver end
+                delete[] szNamespace;
+                szNamespace = NULL;
+            }
+
+            do
+            {
+                releaseResult = pNodeOfNamespace->Release();
+            } while(releaseResult > 0);
+            pNodeOfNamespace = NULL;
+        }
+
+        do
+        {
+            releaseResult = pIXMLDOMNodeTemp->Release();
+        } while(releaseResult > 0);
+        pIXMLDOMNodeTemp = NULL;
+    }
+
+parseGetServicesResponseCleanUp:
+
+    if(NULL != pIXMLDOMNodeList)
+    {
+        do
+        {
+            releaseResult = pIXMLDOMNodeList->Release();
+        } while(releaseResult > 0);
+        pIXMLDOMNodeList = NULL;
+    }
+
+    if(NULL != pIXMLDOMNodeFound)
+    {
+        do
+        {
+            releaseResult = pIXMLDOMNodeFound->Release();
+        } while(releaseResult > 0);
+        pIXMLDOMNodeFound = NULL;
+    }
+
+    if(NULL != pIXMLDOMParseError)
+    {
+        do
+        {
+            releaseResult = pIXMLDOMParseError->Release();
+        } while(releaseResult > 0);
+        pIXMLDOMParseError = NULL;
+    }
+
+    if(NULL != pIXMLDOMDocument)
+    {
+        do
+        {
+            releaseResult = pIXMLDOMDocument->Release();
+        } while(releaseResult > 0);
+        pIXMLDOMDocument = NULL;
+    }
+
+    SysFreeString(bstrError);
+    SysFreeString(bstrXMLInMemory);
 
     for(size_t i = 0; i < pReceivedDataList->size(); i++)
     {

@@ -718,19 +718,19 @@ ONVIFOPERATION_API int get_onvif_device_service_addresses(onvif_device_list* p_o
 
     DWORD timeOut = 5000;
 
-    result = setsockopt(socketGetServices, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeOut, sizeof(DWORD));
+    result = connect(socketGetServices, (sockaddr*)&sockaddrEndpoint, sizeof(sockaddr_in));
     if(0 != result)
     {
-        handleError(_T("setsockopt"), _T(__FILE__), __LINE__);
+        handleError(_T("connect"), _T(__FILE__), __LINE__);
         closesocket(socketGetServices);
         LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
         return -1;
     }
 
-    result = connect(socketGetServices, (sockaddr*)&sockaddrEndpoint, sizeof(sockaddr_in));
+    result = setsockopt(socketGetServices, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeOut, sizeof(DWORD));
     if(0 != result)
     {
-        handleError(_T("connect"), _T(__FILE__), __LINE__);
+        handleError(_T("setsockopt"), _T(__FILE__), __LINE__);
         closesocket(socketGetServices);
         LeaveCriticalSection((LPCRITICAL_SECTION)p_onvif_device_list->critical_section);
         return -1;

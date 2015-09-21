@@ -90,24 +90,17 @@ DWORD WINAPI receiveGetServicesThread(LPVOID lpParam)
     }
     memset(pReceivedData->data, 0x0, USHRT_MAX);
 
-    int bytesReceived = recv((*parameter->socket), pReceivedData->data, USHRT_MAX, 0);
-    if(SOCKET_ERROR == bytesReceived)
+    int bytesReceived = 1;
+    char buffer[501];
+
+    while(0 != bytesReceived && SOCKET_ERROR != bytesReceived)
     {
-        if(NULL != pReceivedData)
-        {
-            if(NULL != pReceivedData->data)
-            {
-                free(pReceivedData->data);
-            }
-            free(pReceivedData);
-            pReceivedData = NULL;
-        }
-        return -1;
+        memset(buffer, 0x0, 501);
+        bytesReceived = recv((*parameter->socket), buffer, 500, 0);
+        strncat(pReceivedData->data, buffer, 501);
     }
-    else
-    {
-        parameter->receivedDataList->push_back(pReceivedData);
-    }
+
+    parameter->receivedDataList->push_back(pReceivedData);
 
     return 0;
 }
