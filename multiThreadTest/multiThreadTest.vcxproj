@@ -76,6 +76,7 @@
     <IncludePath>$(SolutionDir)\OnvifOperation;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)$(PlatformTarget)\$(Configuration)\;$(LibraryPath)</LibraryPath>
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)$(PlatformTarget)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -87,6 +88,7 @@
     <IncludePath>$(SolutionDir)\OnvifOperation;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)$(PlatformTarget)\$(Configuration)\;$(LibraryPath)</LibraryPath>
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)$(PlatformTarget)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
