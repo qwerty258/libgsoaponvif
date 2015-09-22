@@ -152,14 +152,14 @@ void freeBase64encodeContext(base64encodeContext** base64Context)
     (*base64Context) = NULL;
 }
 
-size_t getBase64encodeResultSize(base64encodeContext* base64Context)
+unsigned int getBase64encodeResultSize(base64encodeContext* base64Context)
 {
     if(NULL == base64Context)
     {
         return -1;
     }
 
-    return base64Context->len;
+    return (unsigned int)base64Context->len;
 }
 
 int getBase64encodeResult(base64encodeContext* base64Context, char* buffer, int bufferSize)

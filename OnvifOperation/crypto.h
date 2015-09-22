@@ -14,7 +14,7 @@ extern "C" {
     int generateEncrytedAuthorizationInformation(unsigned char* bufferForNonce, int nonceSize, unsigned char* encrytedPassword, char* password, int passwordSize, char* timeBuffer, int timeBufferSize);
 
     base64encodeContext* getBase64encodeContext(unsigned char* rawData, int rawDataSize);
-    size_t getBase64encodeResultSize(base64encodeContext* base64Context);
+    unsigned int getBase64encodeResultSize(base64encodeContext* base64Context);
     int getBase64encodeResult(base64encodeContext* base64Context, char* buffer, int bufferSize);
     void freeBase64encodeContext(base64encodeContext** base64Context);
 
