@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-Copyright (c) 2010-2015 by ONVIF: Open Network Video Interface Forum. All rights reserved.
+Copyright (c) 2010-2019 by ONVIF: Open Network Video Interface Forum. All rights reserved.
 
 Recipients of this document may copy, distribute, publish, or display this
 document so long as this copyright notice, license and disclaimer are
@@ -29,11 +29,14 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 		   xmlns:xs="http://www.w3.org/2001/XMLSchema"
 		   xmlns:pt="http://www.onvif.org/ver10/pacs"
 		   elementFormDefault="qualified"
-		   version="1.1">
+		   version="19.12">
 	<!--====== types ======-->
 	<xs:simpleType name="ReferenceToken">
 		<xs:annotation>
-			<xs:documentation>Type used to reference logical and physical entities.</xs:documentation>
+			<xs:documentation>Type used to reference logical and physical entities.
+			Token may be extended by intermediate terminal with adding prefix to make it global unique.
+			The length should be within 36 characters for generating as a local token.
+			See "Remote Token" section in Resource Query specification.</xs:documentation>
 		</xs:annotation>
 		<xs:restriction base="xs:string">
 			<xs:maxLength value="64"/>
@@ -95,7 +98,7 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 			</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+			<xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>   <!-- first ONVIF then Vendor -->
 		</xs:sequence>
 		<xs:attribute name="Name" type="xs:string" use="required">
 			<xs:annotation>
@@ -111,4 +114,68 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 		</xs:attribute>
 		<xs:anyAttribute processContents="lax"/>
 	</xs:complexType>
+	<!--===============================-->
+	<xs:simpleType name="RecognitionType">
+		<xs:annotation>
+			<xs:documentation>Recognition/identification types supported by ONVIF.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="pt:Card">
+				<xs:annotation>
+					<xs:documentation>A credential number is used for recognition/identification.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="pt:PIN">
+				<xs:annotation>
+					<xs:documentation>A PIN code is used for recognition/identification.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="pt:Fingerprint">
+				<xs:annotation>
+					<xs:documentation>A fingerprint is used for recognition/identification.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="pt:Face">
+				<xs:annotation>
+					<xs:documentation>A face is used for recognition/identification.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="pt:Iris">
+				<xs:annotation>
+					<xs:documentation>An iris is used for recognition/identification.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="pt:Vein">
+				<xs:annotation>
+					<xs:documentation>A vein is used for recognition/identification.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="pt:Palm">
+				<xs:annotation>
+					<xs:documentation>A palm is used for recognition/identification.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="pt:Retina">
+				<xs:annotation>
+					<xs:documentation>A retina is used for recognition/identification.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="pt:LicensePlate">
+				<xs:annotation>
+					<xs:documentation>A license plate is used for recognition/identification.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="pt:REX">
+				<xs:annotation>
+					<xs:documentation>
+						A request-to-exit button is used for anonymous recognition (but not for identification).
+					</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<!--===============================-->
+	<xs:simpleType name="StringList">
+		<xs:list itemType="xs:string"/>
+	</xs:simpleType>
 </xs:schema>

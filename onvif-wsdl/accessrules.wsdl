@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?xml-stylesheet type="text/xsl" href="../../../ver20/util/onvif-wsdl-viewer.xsl"?>
 <!--
-Copyright (c) 2010-2015 by ONVIF: Open Network Video Interface Forum. All rights reserved.
+Copyright (c) 2010-2018 by ONVIF: Open Network Video Interface Forum. All rights reserved.
 
 Recipients of this document may copy, distribute, publish, or display this
 document so long as this copyright notice, license and disclaimer are
@@ -36,7 +36,7 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 	<wsdl:types>
 		<xs:schema targetNamespace="http://www.onvif.org/ver10/accessrules/wsdl"
 				   xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:pt="http://www.onvif.org/ver10/pacs"
-				   xmlns:tar="http://www.onvif.org/ver10/accessrules/wsdl" elementFormDefault="qualified" version="1.0">
+				   xmlns:tar="http://www.onvif.org/ver10/accessrules/wsdl" elementFormDefault="qualified" version="18.12">
 			<xs:import namespace="http://www.onvif.org/ver10/pacs" schemaLocation="./types.xsd"/>
 			<!--ServiceCapabilities definitions-->
 			<xs:complexType name="ServiceCapabilities">
@@ -47,7 +47,7 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 					</xs:documentation>
 				</xs:annotation>
 				<xs:sequence>
-					<xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+					<xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>   <!-- first ONVIF then Vendor -->
 				</xs:sequence>
 				<xs:attribute name="MaxLimit" use="required">
 					<xs:annotation>
@@ -95,8 +95,17 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 						</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
+				<xs:attribute name="ClientSuppliedTokenSupported" type="xs:boolean" default="false">
+					<xs:annotation>
+						<xs:documentation>
+							Indicates that the client is allowed to supply the token when creating access profiles. To
+							enable the use of the command SetAccessProfile, the value must be set to true.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
 				<xs:anyAttribute processContents="lax"/>
 			</xs:complexType>
+			<xs:element name="Capabilities" type="tar:ServiceCapabilities"/>
 			<!-- End of definition -->
 			<!--AccessPolicy definitions-->
 			<xs:complexType name="AccessPolicy">
@@ -111,7 +120,7 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 				<xs:sequence>
 					<xs:element name="ScheduleToken" type="pt:ReferenceToken">
 						<xs:annotation>
-							<xs:documentation>Reference to the schedule used by the access policy</xs:documentation>
+							<xs:documentation>Reference to the schedule used by the access policy.</xs:documentation>
 						</xs:annotation>
 					</xs:element>
 					<xs:element name="Entity" type="pt:ReferenceToken">
@@ -126,10 +135,10 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 						<xs:annotation>
 							<xs:documentation>
 								Optional entity type; if missing, an access point type as defined by the ONVIF Access
-								Control service should be assumed. This can also be represented by the QName value
-								“tac:AccessPoint” where tac is the namespace of Access Control Service Specification.
-								This field is provided for future extensions; it will allow an access policy being
-								extended to cover entity types other than access points as well.
+								Control Service Specification should be assumed. This can also be represented by the
+								QName value	“tac:AccessPoint” where tac is the namespace of ONVIF Access Control
+								Service Specification. This field is provided for future extensions; it will allow an
+								access policy being	extended to cover entity types other than access points as well.
 							</xs:documentation>
 						</xs:annotation>
 					</xs:element>
@@ -139,7 +148,7 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 			</xs:complexType>
 			<xs:complexType name="AccessPolicyExtension">
 				<xs:sequence>
-					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first ONVIF then Vendor -->
 				</xs:sequence>
 			</xs:complexType>
 			<!-- End of definition -->
@@ -148,7 +157,7 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 				<xs:annotation>
 					<xs:documentation>
 						The AccessProfileInfo structure contains basic information about an access profile. The device
-						shall provide the following fields for each AccessProfileInfo.
+						shall provide the following fields for each access profile instance.
 					</xs:documentation>
 				</xs:annotation>
 				<xs:complexContent>
@@ -199,7 +208,7 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 			</xs:complexType>
 			<xs:complexType name="AccessProfileExtension">
 				<xs:sequence>
-					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first ONVIF then Vendor -->
 				</xs:sequence>
 			</xs:complexType>
 			<!-- End of data types definition -->
@@ -399,6 +408,25 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<!--===============================-->			
+			<xs:element name="SetAccessProfile">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="AccessProfile" type="tar:AccessProfile">
+							<xs:annotation>
+								<xs:documentation>The AccessProfile item to create or modify</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="SetAccessProfileResponse">
+				<xs:complexType>
+					<xs:sequence>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<!--===============================-->
 			<xs:element name="DeleteAccessProfile">
 				<xs:complexType>
@@ -475,6 +503,13 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 	<wsdl:message name="ModifyAccessProfileResponse">
 		<wsdl:part name="parameters" element="tar:ModifyAccessProfileResponse"/>
 	</wsdl:message>
+  <!--Definition of 'SetAccessProfile' message-->
+	<wsdl:message name="SetAccessProfileRequest">
+		<wsdl:part name="parameters" element="tar:SetAccessProfile"/>
+	</wsdl:message>
+	<wsdl:message name="SetAccessProfileResponse">
+		<wsdl:part name="parameters" element="tar:SetAccessProfileResponse"/>
+	</wsdl:message>
 	<!--===============================-->
 	<!--Definition of 'DeleteAccessProfile' message-->
 	<wsdl:message name="DeleteAccessProfileRequest">
@@ -494,8 +529,8 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 		<wsdl:operation name="GetAccessProfileInfo">
 			<wsdl:documentation>
 				This operation requests a list of AccessProfileInfo items matching the given tokens. The device shall
-				ignore tokens it cannot resolve and shall return an empty list if there are no items matching specified
-				tokens. The device shall not return a fault in this case.
+				ignore tokens it cannot resolve and shall return an empty list if there are no items matching the
+				specified tokens. The device shall not return a fault in this case.
 				If the number of requested items is greater than MaxLimit, a TooManyItems fault shall be returned.
 			</wsdl:documentation>
 			<wsdl:input message="tar:GetAccessProfileInfoRequest"/>
@@ -505,9 +540,8 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 			<wsdl:documentation>
 				This operation requests a list of all of AccessProfileInfo items provided by the device.
 				A call to this method shall return a StartReference when not all data is returned and more data is
-				available. The reference shall be valid for retrieving the next set of data. Please refer Access Control
-				Service Specification for more details.
-				The number of items returned shall not be greater than Limit parameter.
+				available. The reference shall be valid for retrieving the next set of data.
+				The number of items returned shall not be greater than the Limit parameter.
 			</wsdl:documentation>
 			<wsdl:input message="tar:GetAccessProfileInfoListRequest"/>
 			<wsdl:output message="tar:GetAccessProfileInfoListResponse"/>
@@ -517,6 +551,7 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 				This operation returns the specified access profile item matching the given tokens.
 				The device shall ignore tokens it cannot resolve and shall return an empty list if there are no items
 				matching specified tokens. The device shall not return a fault in this case.
+				If the number of requested items is greater than MaxLimit, a TooManyItems fault shall be returned.
 			</wsdl:documentation>
 			<wsdl:input message="tar:GetAccessProfilesRequest"/>
 			<wsdl:output message="tar:GetAccessProfilesResponse"/>
@@ -525,42 +560,55 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 			<wsdl:documentation>
 				This operation requests a list of all of access profile items provided by the device.
 				A call to this method shall return a StartReference when not all data is returned and more data is
-				available. The reference shall be valid for retrieving the next set of data. Please refer Access Control
-				Service Specification for more details.
-				The number of items returned shall not be greater the Limit parameter.
+				available. The reference shall be valid for retrieving the next set of data. 
+				The number of items returned shall not be greater than the Limit parameter.
 			</wsdl:documentation>
 			<wsdl:input message="tar:GetAccessProfileListRequest"/>
 			<wsdl:output message="tar:GetAccessProfileListResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="CreateAccessProfile">
 			<wsdl:documentation>
-				This operation creates the specified access profile. The token field of the access profile shall be
+				This operation creates the specified access profile in the device. The token field of the access profile shall be
 				empty, the service shall allocate a token for the access profile. The allocated token shall be returned
 				in the response. If the client sends any value in the token field, the device shall return InvalidArgVal
 				as generic fault code.
 				In an access profile, if several access policies specifying different schedules for the same access
-				point will result in a union of the schedule.
+				point will result in a union of the schedules.
 			</wsdl:documentation>
 			<wsdl:input message="tar:CreateAccessProfileRequest"/>
 			<wsdl:output message="tar:CreateAccessProfileResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="ModifyAccessProfile">
 			<wsdl:documentation>
-				This operation will modify the access profile for the specified access profile token. If several access
-				policies specifying different schedules for the same access point will result in a union of the
-				schedule.
+				This operation will modify the access profile for the specified access profile token. The token of the
+				access profile to modify is specified in the token field of the AccessProile structure and shall not
+				be empty. All other fields in the structure shall overwrite the fields in the specified access profile.
+				If several access policies specifying different schedules for the same access point will result in a
+				union of the schedules.
 				If the device could not store the access profile information then a fault will be generated.
 			</wsdl:documentation>
 			<wsdl:input message="tar:ModifyAccessProfileRequest"/>
 			<wsdl:output message="tar:ModifyAccessProfileResponse"/>
 		</wsdl:operation>
+		<wsdl:operation name="SetAccessProfile">
+			<wsdl:documentation>
+				This operation will synchronize an access profile in a client with the device.
+				If an access profile with the specified token does not exist in the device, the access profile is
+				created. If an access profile with the specified token exists, then the access profile is modified.
+				A call to this method takes an access profile structure as input parameter. The token field of the
+				access profile must not be empty.
+				A device that signals support for the ClientSuppliedTokenSupported capability shall implement this command.
+			</wsdl:documentation>
+			<wsdl:input message="tar:SetAccessProfileRequest"/>
+			<wsdl:output message="tar:SetAccessProfileResponse"/>
+		</wsdl:operation>
 		<wsdl:operation name="DeleteAccessProfile">
 			<wsdl:documentation>
 				This operation will delete the specified access profile.
-				If it is associated with one or more entities some devices may not be able to delete the access profile,
-				and consequently a ReferenceInUse fault shall be generated.
 				If the access profile is deleted, all access policies associated to the access profile will also be
 				deleted.
+				If it is associated with one or more entities some devices may not be able to delete the access profile,
+				and consequently a ReferenceInUse fault shall be generated.
 			</wsdl:documentation>
 			<wsdl:input message="tar:DeleteAccessProfileRequest"/>
 			<wsdl:output message="tar:DeleteAccessProfileResponse"/>
@@ -625,6 +673,15 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 		</wsdl:operation>
 		<wsdl:operation name="ModifyAccessProfile">
 			<soap:operation soapAction="http://www.onvif.org/ver10/accessrules/wsdl/ModifyAccessProfile"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+    <wsdl:operation name="SetAccessProfile">
+			<soap:operation soapAction="http://www.onvif.org/ver10/accessrules/wsdl/SetAccessProfile"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>

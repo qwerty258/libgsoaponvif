@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?xml-stylesheet type="text/xsl" href="../../../ver20/util/onvif-wsdl-viewer.xsl"?>
 <!--
-Copyright (c) 2008-2012 by ONVIF: Open Network Video Interface Forum. All rights reserved.
+Copyright (c) 2008-2022 by ONVIF: Open Network Video Interface Forum. All rights reserved.
 
 Recipients of this document may copy, distribute, publish, or display this document so long as this copyright notice, license and disclaimer are retained with all copies of the document. No license is granted to modify this document.
 
@@ -10,7 +10,7 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 -->
 <wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tr2="http://www.onvif.org/ver20/media/wsdl" targetNamespace="http://www.onvif.org/ver20/media/wsdl">
 	<wsdl:types>
-		<xs:schema targetNamespace="http://www.onvif.org/ver20/media/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema" xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="1.0">
+		<xs:schema targetNamespace="http://www.onvif.org/ver20/media/wsdl" xmlns:tt="http://www.onvif.org/ver10/schema" xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="22.12">
 			<xs:import namespace="http://www.onvif.org/ver10/schema" schemaLocation="./onvif.xsd"/>
 			<!--  Message Request/Responses elements  -->
 			<!--===============================-->
@@ -19,7 +19,7 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 					<xs:sequence/>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="GetServiceCapabilitiesResponse2">
+			<xs:element name="GetServiceCapabilitiesResponse">
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="Capabilities" type="tr2:Capabilities2">
@@ -43,7 +43,7 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 							<xs:documentation>Streaming capabilities.</xs:documentation>
 						</xs:annotation>
 					</xs:element>
-					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first ONVIF then Vendor -->
 				</xs:sequence>
 				<xs:attribute name="SnapshotUri" type="xs:boolean">
 					<xs:annotation>
@@ -65,13 +65,30 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 						<xs:documentation>Indicates if OSD is supported.</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
+				<xs:attribute name="TemporaryOSDText" type="xs:boolean">
+					<xs:annotation>
+						<xs:documentation>Indicates the support for temporary osd text configuration. </xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="Mask" type="xs:boolean">
+					<xs:annotation>
+						<xs:documentation>Indicates if Masking is supported.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="SourceMask" type="xs:boolean">
+					<xs:annotation>
+						<xs:documentation>Indicates that privacy masks are only supported at the video source level and not the video source configuration level. 
+							If this is true any addition, deletion or change of a privacy mask done for one video source configuration will automatically be 
+							applied by the device to a corresponding privacy mask for all other video source configuration associated with the same video source.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
 				<xs:anyAttribute processContents="lax"/>
 			</xs:complexType>
 			<xs:element name="Capabilities" type="tr2:Capabilities2"/>
 			<!--===============================-->
 			<xs:complexType name="ProfileCapabilities">
 				<xs:sequence>
-					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first ONVIF then Vendor -->
 				</xs:sequence>
 				<xs:attribute name="MaximumNumberOfProfiles" type="xs:int">
 					<xs:annotation>
@@ -80,7 +97,7 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 				</xs:attribute>
 				<xs:attribute name="ConfigurationsSupported" type="tt:StringAttrList">
 					<xs:annotation>
-						<xs:documentation>Enumerates the configurations supported by the device.</xs:documentation>
+						<xs:documentation>The configurations supported by the device as defined by tr2:ConfigurationEnumeration. The enumeration value "All" shall not be included in this list.</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 				<xs:anyAttribute processContents="lax"/>
@@ -88,7 +105,7 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 			<!--===============================-->
 			<xs:complexType name="StreamingCapabilities">
 				<xs:sequence>
-					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first ONVIF then Vendor -->
 				</xs:sequence>
 				<xs:attribute name="RTSPStreaming" type="xs:boolean">
 					<xs:annotation>
@@ -110,6 +127,21 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 						<xs:documentation>Indicates support for non aggregate RTSP control.</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
+				<xs:attribute name="RTSPWebSocketUri" type="xs:anyURI">
+					<xs:annotation>
+						<xs:documentation>If streaming over WebSocket is supported, this shall return the RTSP WebSocket URI as described in Streaming Specification Section 5.1.1.5.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="AutoStartMulticast" type="xs:boolean">
+					<xs:annotation>
+						<xs:documentation>Indicates support for non-RTSP controlled multicast streaming.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="SecureRTSPStreaming" type="xs:boolean">
+					<xs:annotation>
+						<xs:documentation>Indicates support for live media streaming via RTSPS and SRTP.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
 				<xs:anyAttribute processContents="lax"/>
 			</xs:complexType>
 			<!--===============================-->
@@ -125,6 +157,7 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 					<xs:enumeration value="Metadata"/>
 					<xs:enumeration value="Analytics"/>
 					<xs:enumeration value="PTZ"/>
+					<xs:enumeration value="Receiver"/>
 					<!-- Vendors may conceptually add items here prefixing them with there own namespace -->
 				</xs:restriction>
 			</xs:simpleType>
@@ -138,10 +171,23 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 					</xs:element>
 					<xs:element name="Token" type="tt:ReferenceToken" minOccurs="0">
 						<xs:annotation>
-							<xs:documentation>Reference token of an existing configuration. </xs:documentation>
+							<xs:documentation>Reference token of an existing configuration.
+							Token shall be included in the AddConfiguration request along with the type.
+							Token shall be included in the CreateProfile request when Configuration elements are included and type is selected.
+							Token is optional for RemoveConfiguration request. If no token is provided in RemoveConfiguration request, device shall
+							remove the configuration of the type included in the profile.</xs:documentation>
 						</xs:annotation>
 					</xs:element>
 				</xs:sequence>
+			</xs:complexType>
+			<!--===============================-->
+			<xs:complexType name="ReceiverConfiguration">
+				<xs:complexContent>
+					<xs:extension base="tt:ReceiverConfiguration">
+						<xs:attribute name="token" type="tt:ReferenceToken"/>
+						<xs:anyAttribute processContents="lax"/>
+					</xs:extension>
+				</xs:complexContent>
 			</xs:complexType>
 			<!--===============================-->
 			<xs:complexType name="ConfigurationSet">
@@ -171,7 +217,7 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 							<xs:documentation>Optional configuration of the Audio encoder.</xs:documentation>
 						</xs:annotation>
 					</xs:element>
-					<xs:element name="Analytics" type="tt:ConfigurationEntity" minOccurs="0">
+					<xs:element name="Analytics" type="tt:VideoAnalyticsConfiguration" minOccurs="0">
 						<xs:annotation>
 							<xs:documentation>Optional configuration of the analytics module and rule engine.</xs:documentation>
 						</xs:annotation>
@@ -196,9 +242,12 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 							<xs:documentation>Optional configuration of the Audio decoder.</xs:documentation>
 						</xs:annotation>
 					</xs:element>
-					<xs:any minOccurs='0' maxOccurs="unbounded" processContents="skip"/>
-					<!-- Additional elements may be added here in the future -->
-					<!-- Vendors may add items here using there own namespace and prefixed type -->
+					<xs:element name="Receiver" type="tr2:ReceiverConfiguration" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>Optional configuration of the Receiver.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first ONVIF then Vendor -->
 				</xs:sequence>
 				<xs:anyAttribute processContents="lax"/>
 			</xs:complexType>
@@ -215,7 +264,7 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 							<xs:documentation>User readable name of the profile.</xs:documentation>
 						</xs:annotation>
 					</xs:element>
-					<xs:element name="Configurations" type="tr2:ConfigurationSet">
+					<xs:element name="Configurations" type="tr2:ConfigurationSet" minOccurs="0">
 						<xs:annotation>
 							<xs:documentation>The configurations assigned to the profile.</xs:documentation>
 						</xs:annotation>
@@ -244,7 +293,7 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 						</xs:element>
 						<xs:element name="Configuration" type="tr2:ConfigurationRef" minOccurs="0" maxOccurs="unbounded">
 							<xs:annotation>
-								<xs:documentation>Optional set of configurations to be assigned to the profile.</xs:documentation>
+								<xs:documentation>Optional set of configurations to be assigned to the profile. List entries with tr2:ConfigurationEnumeration value "All" shall be ignored.</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -265,18 +314,16 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 			<xs:element name="GetProfiles">
 				<xs:complexType>
 					<xs:sequence>
-						<xs:sequence>
-							<xs:element name="Token" type="tt:ReferenceToken" minOccurs="0">
-								<xs:annotation>
-									<xs:documentation>Optional token of the requested profile.</xs:documentation>
-								</xs:annotation>
-							</xs:element>
-							<xs:element name="Type" type="xs:string" maxOccurs="unbounded" minOccurs="0">
-								<xs:annotation>
-									<xs:documentation>The types shall be provided as defined by tr2:ConfigurationEnumeration.</xs:documentation>
-								</xs:annotation>
-							</xs:element>
-						</xs:sequence>
+						<xs:element name="Token" type="tt:ReferenceToken" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Optional token of the requested profile.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Type" type="xs:string" maxOccurs="unbounded" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>The types shall be provided as defined by tr2:ConfigurationEnumeration.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -309,7 +356,7 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 						<xs:element name="Configuration" type="tr2:ConfigurationRef" minOccurs="0" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>
-									List of configurations to be added. The types shall be provided in the order defined by tr2:ConfigurationEnumeration.
+									List of configurations to be added. The types shall be provided in the order defined by tr2:ConfigurationEnumeration. List entries with tr2:ConfigurationEnumeration value "All" shall be ignored.
 								</xs:documentation>
 							</xs:annotation>
 						</xs:element>
@@ -328,12 +375,12 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 					<xs:sequence>
 						<xs:element name="ProfileToken" type="tt:ReferenceToken">
 							<xs:annotation>
-								<xs:documentation>This element contains a  reference to the media profile from which the AudioDecoderConfiguration shall be removed.</xs:documentation>
+								<xs:documentation>This element contains a  reference to the media profile from which the configuration shall be removed.</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="Configuration" type="tr2:ConfigurationRef" maxOccurs="unbounded">
 							<xs:annotation>
-								<xs:documentation>List of configurations to be removed. The types shall be provided in the order defined by tr2:ConfigurationEnumeration.</xs:documentation>
+								<xs:documentation>List of configurations to be removed. The types shall be provided in the order defined by tr2:ConfigurationEnumeration. Tokens appearing in the configuration list shall be ignored. Presence of the "All" type shall result in an empty profile.</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -360,7 +407,7 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 			<xs:element name="DeleteProfileResponse">
 				<xs:complexType>
 					<xs:sequence>
-         			</xs:sequence>
+					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
 			<!--===============================-->
@@ -489,13 +536,12 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="SetConfigurationResponse">
-				<xs:complexType>
-					<xs:sequence>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
-			<xs:element name="SetVideoSourceConfiguration">
+			<xs:complexType name="SetConfigurationResponse">
+				<xs:sequence>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:element name="SetVideoEncoderConfigurationResponse" type="tr2:SetConfigurationResponse"/>
+						<xs:element name="SetVideoSourceConfiguration">
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="Configuration" type="tt:VideoSourceConfiguration">
@@ -506,7 +552,8 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="SetAudioEncoderConfiguration">
+			<xs:element name="SetVideoSourceConfigurationResponse" type="tr2:SetConfigurationResponse"/>
+						<xs:element name="SetAudioEncoderConfiguration">
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="Configuration" type="tt:AudioEncoder2Configuration">
@@ -517,6 +564,7 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="SetAudioEncoderConfigurationResponse" type="tr2:SetConfigurationResponse"/>
 			<xs:element name="SetAudioSourceConfiguration">
 				<xs:complexType>
 					<xs:sequence>
@@ -528,6 +576,7 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="SetAudioSourceConfigurationResponse" type="tr2:SetConfigurationResponse"/>
 			<xs:element name="SetMetadataConfiguration">
 				<xs:complexType>
 					<xs:sequence>
@@ -539,6 +588,7 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="SetMetadataConfigurationResponse" type="tr2:SetConfigurationResponse"/>
 			<xs:element name="SetAudioOutputConfiguration">
 				<xs:complexType>
 					<xs:sequence>
@@ -550,6 +600,7 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="SetAudioOutputConfigurationResponse" type="tr2:SetConfigurationResponse"/>
 			<xs:element name="SetAudioDecoderConfiguration">
 				<xs:complexType>
 					<xs:sequence>
@@ -561,6 +612,7 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="SetAudioDecoderConfigurationResponse" type="tr2:SetConfigurationResponse"/>
 			<!--===============================-->
 			<xs:element name="GetVideoSourceConfigurationOptions" type="tr2:GetConfiguration"/>
 			<xs:element name="GetVideoSourceConfigurationOptionsResponse">
@@ -648,10 +700,67 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 				<xs:restriction base="xs:string">
 					<xs:enumeration value="RtspUnicast"/>		<!-- RTSP straming RTP as UDP Unicast. -->
 					<xs:enumeration value="RtspMulticast"/>		<!-- RTSP straming RTP as UDP Multicast. -->
+					<xs:enumeration value="RtspsUnicast"/>		<!-- Secure RTSP straming SRTP as UDP Unicast. -->
+					<xs:enumeration value="RtspsMulticast"/>	<!-- Secure RTSP straming SRTP as UDP Multicast. -->
 					<xs:enumeration value="RTSP"/>				<!-- RTSP straming RTP over TCP. -->
 					<xs:enumeration value="RtspOverHttp"/>		<!-- Tunneling both the RTSP control channel and the RTP stream over HTTP or HTTPS. -->
 				</xs:restriction>
 			</xs:simpleType>
+			<!--===============================-->
+			<xs:element name="GetVideoEncoderInstances">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="ConfigurationToken" type="tt:ReferenceToken">
+							<xs:annotation>
+								<xs:documentation>Token of the video source configuration</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:complexType name="EncoderInstance">
+				<xs:sequence>
+					<xs:element name="Encoding" type="xs:string">
+						<xs:annotation>
+					<xs:documentation>Video Media Subtype for the video format. For definitions see tt:VideoEncodingMimeNames and <a href="https://www.iana.org/assignments/media-types/media-types.xhtml#video"> IANA Media Types</a>.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Number" type="xs:int">
+						<xs:annotation>
+							<xs:documentation>The minimum guaranteed number of encoder instances (applications) for the VideoSourceConfiguration.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+						<xs:anyAttribute processContents="lax"/>
+			</xs:complexType>
+			<xs:complexType name="EncoderInstanceInfo">
+				<xs:sequence>
+					<xs:element name="Codec" type="tr2:EncoderInstance" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>If a device limits the number of instances for respective Video Codecs the response contains the information how many streams can be set up at the same time per VideoSource.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Total" type="xs:int">
+						<xs:annotation>
+							<xs:documentation>The minimum guaranteed total number of encoder instances (applications) per VideoSourceConfiguration. The device is able to deliver the Total number of streams</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first ONVIF then Vendor -->
+				</xs:sequence>
+				<xs:anyAttribute processContents="lax"/>
+			</xs:complexType>
+			<xs:element name="GetVideoEncoderInstancesResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Info" type="tr2:EncoderInstanceInfo">
+							<xs:annotation>
+								<xs:documentation>The minimum guaranteed total number of encoder instances (applications) per VideoSourceConfiguration.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<!--===============================-->
 			<xs:element name="GetStreamUri">
 				<xs:complexType>
@@ -695,7 +804,7 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 			<xs:element name="SetSynchronizationPointResponse">
 				<xs:complexType>
 					<xs:sequence>
-          </xs:sequence>
+					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
 			<!--===============================-->
@@ -731,14 +840,10 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 					</xs:element>
 				</xs:sequence>
 			</xs:complexType>
-			<xs:element type="tr2:StartStopMulticastStreaming" name="StartMulticastStreaming"/>
-			<xs:element type="tr2:StartStopMulticastStreaming" name="StopMulticastStreaming"/>
-			<xs:element name="StartStopMulticastStreamingResponse">
-				<xs:complexType>
-					<xs:sequence>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
+			<xs:element name="StartMulticastStreaming" type="tr2:StartStopMulticastStreaming"/>
+			<xs:element name="StartMulticastStreamingResponse" type="tr2:SetConfigurationResponse"/>
+			<xs:element name="StopMulticastStreaming" type="tr2:StartStopMulticastStreaming"/>
+			<xs:element name="StopMulticastStreamingResponse" type="tr2:SetConfigurationResponse"/>
 			<!--================ Video Source Mode ===============-->
 			<xs:element name="GetVideoSourceModes">
 				<xs:complexType>
@@ -791,13 +896,6 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 				</xs:complexType>
 			</xs:element>
 			<!--===============================-->
-			<xs:simpleType name="EncodingTypes">
-				<xs:annotation>
-					<xs:documentation>Indication which encodings are supported for this video source. The list may contain one or more enumeration values of tt:VideoEncoding.</xs:documentation>
-				</xs:annotation>
-				<xs:list itemType="xs:string"/>
-			</xs:simpleType>
-			<!--===============================-->
 			<xs:complexType name="VideoSourceMode"> 
 				<xs:sequence>
 					<xs:element name="MaxFramerate" type="xs:float">
@@ -810,9 +908,9 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 							<xs:documentation>Max horizontal and vertical resolution for this video source mode.</xs:documentation>
 						</xs:annotation>
 					</xs:element>
-					<xs:element name="Encodings" type="tr2:EncodingTypes">
+					<xs:element name="Encodings" type="tt:StringList">
 						<xs:annotation>
-							<xs:documentation>Indication which encodings are supported for this video source. The list may contain one or more enumeration values of tt:VideoEncoding.</xs:documentation>
+							<xs:documentation>List of one or more encodings supported for this video source.  For name definitions see tt:VideoEncodingMimeNames, and see <a href="https://www.iana.org/assignments/media-types/media-types.xhtml#video">IANA Media Types</a>.</xs:documentation>
 						</xs:annotation>
 					</xs:element>
 					<xs:element name="Reboot" type="xs:boolean">
@@ -825,7 +923,7 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 							<xs:documentation>Informative description of this video source mode. This field should be described in English.</xs:documentation>
 						</xs:annotation>
 					</xs:element>
-					<xs:element name="Extension" type="tr2:VideoSourceModeExtension" minOccurs="0"/>
+					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first ONVIF then Vendor -->
 				</xs:sequence>
 				<xs:attribute name="token" type="tt:ReferenceToken" use="required">
 					<xs:annotation>
@@ -838,12 +936,6 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 					</xs:annotation>
 				</xs:attribute>
 				<xs:anyAttribute processContents="lax"/>
-			</xs:complexType>
-			<!--===============================-->
-			<xs:complexType name="VideoSourceModeExtension"> 
-				<xs:sequence>
-					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
-				</xs:sequence>
 			</xs:complexType>
 			<!--============OSD Schema Begin================-->
 			<xs:element name="GetOSDs">
@@ -865,9 +957,9 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 			<xs:element name="GetOSDsResponse">
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="OSD" type="tt:OSDConfiguration">
+						<xs:element name="OSDs" type="tt:OSDConfiguration" minOccurs="0" maxOccurs="unbounded">
 							<xs:annotation>
-								<xs:documentation>The requested OSD configuration.</xs:documentation>
+								<xs:documentation>This element contains a list of requested OSDs.</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -885,6 +977,7 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="SetOSDResponse" type="tr2:SetConfigurationResponse"/>
 			<!--===============================-->
 			<xs:element name="GetOSDOptions">
 				<xs:complexType>
@@ -943,7 +1036,187 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="DeleteOSDResponse" type="tr2:SetConfigurationResponse"/>
 			<!--============OSD Schema End================-->
+			<!--============Masking Schema Begin================-->
+			<xs:simpleType name="MaskType">
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="Color"/>
+					<xs:enumeration value="Pixelated"/>
+					<xs:enumeration value="Blurred"/>
+				</xs:restriction>
+			</xs:simpleType>
+			<xs:complexType name="Mask">
+				<xs:sequence>
+					<xs:element name="ConfigurationToken" type="tt:ReferenceToken">
+						<xs:annotation>
+							<xs:documentation>Token of the VideoSourceConfiguration the Mask is associated with.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Polygon" type="tt:Polygon">
+						<xs:annotation><xs:documentation>Geometric representation of the mask area.</xs:documentation></xs:annotation>
+					</xs:element>
+					<xs:element name="Type" type="xs:string">
+						<xs:annotation><xs:documentation>Type of masking as defined by tr2:MaskType:
+							<ul>
+								<li>Color - The masked area is colored with color defined by the Color field.</li>
+								<li>Pixelated - The masked area is filled in mosaic style to hide details.</li>
+								<li>Blurred - The masked area is low pass filtered to hide details.</li>
+							</ul></xs:documentation></xs:annotation>
+					</xs:element>
+					<xs:element name="Color" type="tt:Color" minOccurs="0">
+						<xs:annotation><xs:documentation>Color of the masked area.</xs:documentation></xs:annotation>
+					</xs:element>
+					<xs:element name="Enabled" type="xs:boolean">
+						<xs:annotation><xs:documentation>If set the mask will cover the image, otherwise it will be fully transparent.</xs:documentation></xs:annotation>
+					</xs:element>
+					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first ONVIF then Vendor -->
+				</xs:sequence>
+				<xs:attribute name="token" type="tt:ReferenceToken">
+					<xs:annotation>
+						<xs:documentation>Token of the mask.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:anyAttribute processContents="lax"/>
+			</xs:complexType>
+			<xs:element name="GetMasks">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Token" type="tt:ReferenceToken" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Optional mask token of an existing mask.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="ConfigurationToken" type="tt:ReferenceToken" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Optional token of a Video Source Configuration.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="GetMasksResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Masks" type="tr2:Mask" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>List of Mask configurations.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="SetMask">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Mask" type="tr2:Mask">
+							<xs:annotation>
+								<xs:documentation>Mask to be updated.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="SetMaskResponse" type="tr2:SetConfigurationResponse"/>
+			<!--===============================-->
+			<xs:element name="GetMaskOptions">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="ConfigurationToken" type="tt:ReferenceToken">
+							<xs:annotation>
+								<xs:documentation>Video Source Configuration Token that specifies an existing video source configuration that the options shall be compatible with.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			
+			<xs:complexType name="MaskOptions">
+				<xs:sequence>
+					<xs:element name="MaxMasks" type="xs:int">
+						<xs:annotation>
+							<xs:documentation>Maximum supported number of masks per VideoSourceConfiguration.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="MaxPoints" type="xs:int">
+						<xs:annotation>
+							<xs:documentation>Maximum supported number of points per mask.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Types" type="xs:string" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>Information which types of tr2:MaskType are supported. Valid values are 'Color', 'Pixelated' and 'Blurred'.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Color" type="tt:ColorOptions">
+						<xs:annotation>
+							<xs:documentation>Colors supported.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first ONVIF then Vendor -->
+				</xs:sequence>
+				<xs:attribute name="RectangleOnly" type="xs:boolean">
+					<xs:annotation>
+						<xs:documentation>Information whether the polygon must have four points and a rectangular shape.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="SingleColorOnly" type="xs:boolean">
+					<xs:annotation>
+						<xs:documentation>Indicates the device capability of change in color of privacy mask for one video source configuration will automatically be applied to all the privacy masks associated with the same video source configuration.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:anyAttribute processContents="lax"/>
+			</xs:complexType>
+			
+			<xs:element name="GetMaskOptionsResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Options" type="tr2:MaskOptions">
+							<xs:annotation>
+								<xs:documentation/>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="CreateMask">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Mask" type="tr2:Mask">
+							<xs:annotation>
+								<xs:documentation>Contain the initial mask configuration for create.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="CreateMaskResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Token" type="tt:ReferenceToken">
+							<xs:annotation>
+								<xs:documentation>Returns Token of the newly created Mask</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="DeleteMask">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Token" type="tt:ReferenceToken">
+							<xs:annotation>
+								<xs:documentation>This element contains a reference to the Mask configuration that should be deleted.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="DeleteMaskResponse" type="tr2:SetConfigurationResponse"/>
+			<!--============Mask Schema End================-->
 			<!--============ Schema End================-->
 		</xs:schema>
 	</wsdl:types>
@@ -951,7 +1224,7 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 		<wsdl:part name="parameters" element="tr2:GetServiceCapabilities"/>
 	</wsdl:message>
 	<wsdl:message name="GetServiceCapabilitiesResponse">
-		<wsdl:part name="parameters" element="tr2:GetServiceCapabilitiesResponse2"/>
+		<wsdl:part name="parameters" element="tr2:GetServiceCapabilitiesResponse"/>
 	</wsdl:message>
 	<wsdl:message name="CreateProfileRequest">
 		<wsdl:part name="parameters" element="tr2:CreateProfile"/>
@@ -1036,26 +1309,44 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 	<wsdl:message name="SetVideoSourceConfigurationRequest">
 		<wsdl:part name="parameters" element="tr2:SetVideoSourceConfiguration"/>
 	</wsdl:message>
-	<wsdl:message name="SetConfigurationResponse">
-		<wsdl:part name="parameters" element="tr2:SetConfigurationResponse"/>
+	<wsdl:message name="SetVideoSourceConfigurationResponse">
+		<wsdl:part name="parameters" element="tr2:SetVideoSourceConfigurationResponse"/>
 	</wsdl:message>
 	<wsdl:message name="SetVideoEncoderConfigurationRequest">
 		<wsdl:part name="parameters" element="tr2:SetVideoEncoderConfiguration"/>
 	</wsdl:message>
+	<wsdl:message name="SetVideoEncoderConfigurationResponse">
+		<wsdl:part name="parameters" element="tr2:SetVideoEncoderConfigurationResponse"/>
+	</wsdl:message>
 	<wsdl:message name="SetAudioSourceConfigurationRequest">
 		<wsdl:part name="parameters" element="tr2:SetAudioSourceConfiguration"/>
+	</wsdl:message>
+	<wsdl:message name="SetAudioSourceConfigurationResponse">
+		<wsdl:part name="parameters" element="tr2:SetAudioSourceConfigurationResponse"/>
 	</wsdl:message>
 	<wsdl:message name="SetAudioEncoderConfigurationRequest">
 		<wsdl:part name="parameters" element="tr2:SetAudioEncoderConfiguration"/>
 	</wsdl:message>
+	<wsdl:message name="SetAudioEncoderConfigurationResponse">
+		<wsdl:part name="parameters" element="tr2:SetAudioEncoderConfigurationResponse"/>
+	</wsdl:message>
 	<wsdl:message name="SetMetadataConfigurationRequest">
 		<wsdl:part name="parameters" element="tr2:SetMetadataConfiguration"/>
+	</wsdl:message>
+	<wsdl:message name="SetMetadataConfigurationResponse">
+		<wsdl:part name="parameters" element="tr2:SetMetadataConfigurationResponse"/>
 	</wsdl:message>
 	<wsdl:message name="SetAudioOutputConfigurationRequest">
 		<wsdl:part name="parameters" element="tr2:SetAudioOutputConfiguration"/>
 	</wsdl:message>
+	<wsdl:message name="SetAudioOutputConfigurationResponse">
+		<wsdl:part name="parameters" element="tr2:SetAudioOutputConfigurationResponse"/>
+	</wsdl:message>
 	<wsdl:message name="SetAudioDecoderConfigurationRequest">
 		<wsdl:part name="parameters" element="tr2:SetAudioDecoderConfiguration"/>
+	</wsdl:message>
+	<wsdl:message name="SetAudioDecoderConfigurationResponse">
+		<wsdl:part name="parameters" element="tr2:SetAudioDecoderConfigurationResponse"/>
 	</wsdl:message>
 	<!--===============================-->
 	<wsdl:message name="GetVideoSourceConfigurationOptionsRequest">
@@ -1101,6 +1392,12 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 		<wsdl:part name="parameters" element="tr2:GetAudioDecoderConfigurationOptionsResponse"/>
 	</wsdl:message>
 	<!--===============================-->
+	<wsdl:message name="GetVideoEncoderInstancesRequest">
+		<wsdl:part name="parameters" element="tr2:GetVideoEncoderInstances"/>
+	</wsdl:message>
+	<wsdl:message name="GetVideoEncoderInstancesResponse">
+		<wsdl:part name="parameters" element="tr2:GetVideoEncoderInstancesResponse"/>
+	</wsdl:message>
 	<wsdl:message name="GetStreamUriRequest">
 		<wsdl:part name="parameters" element="tr2:GetStreamUri"/>
 	</wsdl:message>
@@ -1125,8 +1422,11 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 	<wsdl:message name="StopMulticastStreamingRequest">
 		<wsdl:part name="parameters" element="tr2:StopMulticastStreaming"/>
 	</wsdl:message>
-	<wsdl:message name="StartStopMulticastStreamingResponse">
-		<wsdl:part name="parameters" element="tr2:StartStopMulticastStreamingResponse"/>
+	<wsdl:message name="StopMulticastStreamingResponse">
+		<wsdl:part name="parameters" element="tr2:StopMulticastStreamingResponse"/>
+	</wsdl:message>
+	<wsdl:message name="StartMulticastStreamingResponse">
+		<wsdl:part name="parameters" element="tr2:StartMulticastStreamingResponse"/>
 	</wsdl:message>
 	<wsdl:message name="GetVideoSourceModesRequest">
 		<wsdl:part name="parameters" element="tr2:GetVideoSourceModes"/>
@@ -1155,6 +1455,9 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 	<wsdl:message name="SetOSDRequest">
 		<wsdl:part name="parameters" element="tr2:SetOSD"/>
 	</wsdl:message>
+	<wsdl:message name="SetOSDResponse">
+		<wsdl:part name="parameters" element="tr2:SetOSDResponse"/>
+	</wsdl:message>
 	<wsdl:message name="CreateOSDRequest">
 		<wsdl:part name="parameters" element="tr2:CreateOSD"/>
 	</wsdl:message>
@@ -1163,6 +1466,39 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 	</wsdl:message>
 	<wsdl:message name="DeleteOSDRequest">
 		<wsdl:part name="parameters" element="tr2:DeleteOSD"/>
+	</wsdl:message>
+	<wsdl:message name="DeleteOSDResponse">
+		<wsdl:part name="parameters" element="tr2:DeleteOSDResponse"/>
+	</wsdl:message>
+	<wsdl:message name="GetMasksRequest">
+		<wsdl:part name="parameters" element="tr2:GetMasks"/>
+	</wsdl:message>
+	<wsdl:message name="GetMasksResponse">
+		<wsdl:part name="parameters" element="tr2:GetMasksResponse"/>
+	</wsdl:message>
+	<wsdl:message name="GetMaskOptionsRequest">
+		<wsdl:part name="parameters" element="tr2:GetMaskOptions"/>
+	</wsdl:message>
+	<wsdl:message name="GetMaskOptionsResponse">
+		<wsdl:part name="parameters" element="tr2:GetMaskOptionsResponse"/>
+	</wsdl:message>
+	<wsdl:message name="SetMaskRequest">
+		<wsdl:part name="parameters" element="tr2:SetMask"/>
+	</wsdl:message>
+	<wsdl:message name="SetMaskResponse">
+		<wsdl:part name="parameters" element="tr2:SetMaskResponse"/>
+	</wsdl:message>
+	<wsdl:message name="CreateMaskRequest">
+		<wsdl:part name="parameters" element="tr2:CreateMask"/>
+	</wsdl:message>
+	<wsdl:message name="CreateMaskResponse">
+		<wsdl:part name="parameters" element="tr2:CreateMaskResponse"/>
+	</wsdl:message>
+	<wsdl:message name="DeleteMaskRequest">
+		<wsdl:part name="parameters" element="tr2:DeleteMask"/>
+	</wsdl:message>
+	<wsdl:message name="DeleteMaskResponse">
+		<wsdl:part name="parameters" element="tr2:DeleteMaskResponse"/>
 	</wsdl:message>
 	<wsdl:portType name="Media2">
 		<!--===============================-->
@@ -1183,8 +1519,13 @@ IN NO EVENT WILL THE CORPORATION OR ITS MEMBERS OR THEIR AFFILIATES BE LIABLE FO
 			<wsdl:output message="tr2:CreateProfileResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="GetProfiles">
-			<wsdl:documentation>Retrieve the profile with the specified token or all defined media profiles. If no configuration types are defined only the profile names and token are returned.
-				In case of provided configuration types all information regarding these types is returned. Pass "All" to get all available configurations.</wsdl:documentation>
+			<wsdl:documentation>Retrieve the profile with the specified token or all defined media profiles.
+				<ul>
+					<li>If no Type is provided the returned profiles shall contain no configuration information.</li>
+					<li>If a single Type with value 'All' is provided the returned profiles shall include all associated configurations.</li>
+					<li>Otherwise the requested list of configurations shall for each profile include the configurations present as Type.</li>
+				</ul>
+			</wsdl:documentation>
 			<wsdl:input message="tr2:GetProfilesRequest"/>
 			<wsdl:output message="tr2:GetProfilesResponse"/>
 		</wsdl:operation>
@@ -1200,8 +1541,7 @@ support streaming video data of such a profile.<br/>
 		</wsdl:operation>
 		<wsdl:operation name="RemoveConfiguration">
 			<wsdl:documentation>This operation removes the listed configurations from an existing media profile. If the
-				media profile does not contain one of the listed configurations that item shall be ignored. <br/>
-				Note that the token is only required for the OSD items.</wsdl:documentation>
+				media profile does not contain one of the listed configurations that item shall be ignored.</wsdl:documentation>
 			<wsdl:input message="tr2:RemoveConfigurationRequest"/>
 			<wsdl:output message="tr2:RemoveConfigurationResponse"/>
 		</wsdl:operation>
@@ -1255,12 +1595,12 @@ support streaming video data of such a profile.<br/>
 		<wsdl:operation name="SetVideoSourceConfiguration">
 			<wsdl:documentation>This operation modifies a video source configuration. Running streams using this configuration may be immediately updated according to the new settings. The changes are not guaranteed to take effect unless the client requests a new stream URI and restarts any affected stream. NVC methods for changing a running stream are out of scope for this specification.</wsdl:documentation>
 			<wsdl:input message="tr2:SetVideoSourceConfigurationRequest"/>
-			<wsdl:output message="tr2:SetConfigurationResponse"/>
+			<wsdl:output message="tr2:SetVideoSourceConfigurationResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="SetVideoEncoderConfiguration">
 			<wsdl:documentation>This operation modifies a video encoder configuration. Running streams using this configuration may be immediately updated according to the new settings. The changes are not guaranteed to take effect unless the client requests a new stream URI and restarts any affected stream. NVC methods for changing a running stream are out of scope for this specification. <br/>SessionTimeout is provided as a hint for keeping rtsp session by a device. If necessary the device may adapt parameter values for SessionTimeout elements without returning an error. For the time between keep alive calls the client shall adhere to the timeout value signaled via RTSP.</wsdl:documentation>
 			<wsdl:input message="tr2:SetVideoEncoderConfigurationRequest"/>
-			<wsdl:output message="tr2:SetConfigurationResponse"/>
+			<wsdl:output message="tr2:SetVideoEncoderConfigurationResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="SetAudioSourceConfiguration">
 			<wsdl:documentation>This operation modifies an audio source configuration. Running streams using this configuration
@@ -1268,7 +1608,7 @@ support streaming video data of such a profile.<br/>
 				to take effect unless the client requests a new stream URI and restarts any affected stream
 				NVC methods for changing a running stream are out of scope for this specification.</wsdl:documentation>
 			<wsdl:input message="tr2:SetAudioSourceConfigurationRequest"/>
-			<wsdl:output message="tr2:SetConfigurationResponse"/>
+			<wsdl:output message="tr2:SetAudioSourceConfigurationResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="SetAudioEncoderConfiguration">
 			<wsdl:documentation>This operation modifies an audio encoder configuration. Running streams using this configuration may be immediately updated
@@ -1276,7 +1616,7 @@ support streaming video data of such a profile.<br/>
 				requests a new stream URI and restarts any affected streams. NVC methods for changing a
 				running stream are out of scope for this specification.</wsdl:documentation>
 			<wsdl:input message="tr2:SetAudioEncoderConfigurationRequest"/>
-			<wsdl:output message="tr2:SetConfigurationResponse"/>
+			<wsdl:output message="tr2:SetAudioEncoderConfigurationResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="SetMetadataConfiguration">
 			<wsdl:documentation>This operation modifies a metadata configuration. Running streams using this configuration may be updated immediately
@@ -1284,17 +1624,17 @@ support streaming video data of such a profile.<br/>
 				requests a new stream URI and restarts any affected streams. NVC methods for changing a
 				running stream are out of scope for this specification.</wsdl:documentation>
 			<wsdl:input message="tr2:SetMetadataConfigurationRequest"/>
-			<wsdl:output message="tr2:SetConfigurationResponse"/>
+			<wsdl:output message="tr2:SetMetadataConfigurationResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="SetAudioOutputConfiguration">
 			<wsdl:documentation>This operation modifies an audio output configuration.</wsdl:documentation>
 			<wsdl:input message="tr2:SetAudioOutputConfigurationRequest"/>
-			<wsdl:output message="tr2:SetConfigurationResponse"/>
+			<wsdl:output message="tr2:SetAudioOutputConfigurationResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="SetAudioDecoderConfiguration">
 			<wsdl:documentation>This operation modifies an audio decoder configuration.</wsdl:documentation>
 			<wsdl:input message="tr2:SetAudioDecoderConfigurationRequest"/>
-			<wsdl:output message="tr2:SetConfigurationResponse"/>
+			<wsdl:output message="tr2:SetAudioDecoderConfigurationResponse"/>
 		</wsdl:operation>
 		<!--===============================-->
 		<wsdl:operation name="GetVideoSourceConfigurationOptions">
@@ -1308,8 +1648,6 @@ support streaming video data of such a profile.<br/>
 		<wsdl:operation name="GetVideoEncoderConfigurationOptions">
 			<wsdl:documentation>This operation returns the available options (supported values and ranges for video encoder 
 				configuration parameters) when the video encoder parameters are reconfigured. <br/>
-				For JPEG, MPEG4 and H264 extension elements have been defined that provide additional information. A device must provide the 
-				XxxOption information for all encodings supported and should additionally provide the corresponding XxxOption2 information.<br/>
 				This response contains the available video encoder configuration options. If a video encoder configuration is specified, 
 				the options shall concern that particular configuration. If a media profile is specified, the options shall be 
 				compatible with that media profile. If no tokens are specified, the options shall be considered generic for the device.
@@ -1348,6 +1686,13 @@ support streaming video data of such a profile.<br/>
 			<wsdl:output message="tr2:GetAudioDecoderConfigurationOptionsResponse"/>
 		</wsdl:operation>
 		<!--===============================-->
+		<wsdl:operation name="GetVideoEncoderInstances">
+			<wsdl:documentation>The GetVideoEncoderInstances command can be used to request the
+				minimum number of guaranteed video encoder instances (applications) per Video Source
+				Configuration.</wsdl:documentation>
+			<wsdl:input message="tr2:GetVideoEncoderInstancesRequest"/>
+			<wsdl:output message="tr2:GetVideoEncoderInstancesResponse"/>
+		</wsdl:operation>
 		<!--===============================-->
 		<wsdl:operation name="GetStreamUri">
 			<wsdl:documentation>This operation requests a URI that can be used to initiate a live media stream using RTSP as
@@ -1359,8 +1704,7 @@ support streaming video data of such a profile.<br/>
 				 	<li>RTSP			RTSP streaming RTP over TCP.</li>
 				 	<li>RtspOverHttp	Tunneling both the RTSP control channel and the RTP stream over HTTP or HTTPS.</li>
 				 </ul>
-				If a multicast stream is requested the VideoEncoderConfiguration, AudioEncoderConfiguration and MetadataConfiguration element inside the corresponding 
-				media profile must be configured with valid multicast settings.<br/>
+				If a multicast stream is requested at least one of VideoEncoder2Configuration, AudioEncoder2Configuration and MetadataConfiguration shall have a valid multicast setting.<br/>
 				For full compatibility with other ONVIF services a device should not generate Uris longer than
 				128 octets.</wsdl:documentation>
 			<wsdl:input message="tr2:GetStreamUriRequest"/>
@@ -1374,12 +1718,12 @@ support streaming video data of such a profile.<br/>
 				VideoEncoderConfiguration, AudioEncoderConfiguration and MetadataConfiguration
 				respectively.</wsdl:documentation>
 			<wsdl:input message="tr2:StartMulticastStreamingRequest"/>
-			<wsdl:output message="tr2:StartStopMulticastStreamingResponse"/>
+			<wsdl:output message="tr2:StartMulticastStreamingResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="StopMulticastStreaming">
 			<wsdl:documentation>This command stops multicast streaming using a specified media profile of a device</wsdl:documentation>
 			<wsdl:input message="tr2:StopMulticastStreamingRequest"/>
-			<wsdl:output message="tr2:StartStopMulticastStreamingResponse"/>
+			<wsdl:output message="tr2:StopMulticastStreamingResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="SetSynchronizationPoint">
 			<wsdl:documentation>Synchronization points allow clients to decode and correctly use all data after the
@@ -1420,7 +1764,13 @@ image will be updated automatically and independent from calls to GetSnapshotUri
 		</wsdl:operation>
 		<!--==============OSD Operation Begin=================-->
 		<wsdl:operation name="GetOSDs">
-			<wsdl:documentation>Get the OSD.</wsdl:documentation>
+			<wsdl:documentation>This operation lists existing OSD configurations for the device.
+				<ul>
+					<li>If an OSD token is provided the device shall respond with the requested configuration or provide an error if it does not exist.</li>
+					<li>In case only a video source configuration token is provided the device shall respond with all configurations that exist for the video source configuration.</li>
+					<li>If no tokens are provided the device shall respond with all available OSD configurations.</li>
+				</ul>
+			</wsdl:documentation>
 			<wsdl:input message="tr2:GetOSDsRequest"/>
 			<wsdl:output message="tr2:GetOSDsResponse"/>
 		</wsdl:operation>
@@ -1432,7 +1782,7 @@ image will be updated automatically and independent from calls to GetSnapshotUri
 		<wsdl:operation name="SetOSD">
 			<wsdl:documentation>Set the OSD</wsdl:documentation>
 			<wsdl:input message="tr2:SetOSDRequest"/>
-			<wsdl:output message="tr2:SetConfigurationResponse"/>
+			<wsdl:output message="tr2:SetOSDResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="CreateOSD">
 			<wsdl:documentation>Create the OSD.</wsdl:documentation>
@@ -1442,9 +1792,42 @@ image will be updated automatically and independent from calls to GetSnapshotUri
 		<wsdl:operation name="DeleteOSD">
 			<wsdl:documentation>Delete the OSD.</wsdl:documentation>
 			<wsdl:input message="tr2:DeleteOSDRequest"/>
-			<wsdl:output message="tr2:SetConfigurationResponse"/>
+			<wsdl:output message="tr2:DeleteOSDResponse"/>
 		</wsdl:operation>
 		<!--==============OSD Operation End=================-->
+		<!--==============Mask Operation Begin=================-->
+		<wsdl:operation name="GetMasks">
+			<wsdl:documentation>This operation lists existing Mask configurations for the device.
+				<ul>
+					<li>If an Mask token is provided the device shall respond with the requested configuration or provide an error if it does not exist.</li>
+					<li>In case only a video source configuration token is provided the device shall respond with all configurations that exist for the video source configuration.</li>
+					<li>If no tokens are provided the device shall respond with all available Mask configurations.</li>
+				</ul>
+			</wsdl:documentation>
+			<wsdl:input message="tr2:GetMasksRequest"/>
+			<wsdl:output message="tr2:GetMasksResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="GetMaskOptions">
+			<wsdl:documentation>Get the Mask Options.</wsdl:documentation>
+			<wsdl:input message="tr2:GetMaskOptionsRequest"/>
+			<wsdl:output message="tr2:GetMaskOptionsResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="SetMask">
+			<wsdl:documentation>Set the Mask</wsdl:documentation>
+			<wsdl:input message="tr2:SetMaskRequest"/>
+			<wsdl:output message="tr2:SetMaskResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="CreateMask">
+			<wsdl:documentation>Create the Mask.</wsdl:documentation>
+			<wsdl:input message="tr2:CreateMaskRequest"/>
+			<wsdl:output message="tr2:CreateMaskResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="DeleteMask">
+			<wsdl:documentation>Delete the Mask.</wsdl:documentation>
+			<wsdl:input message="tr2:DeleteMaskRequest"/>
+			<wsdl:output message="tr2:DeleteMaskResponse"/>
+		</wsdl:operation>
+		<!--==============Mask Operation End=================-->
 	</wsdl:portType>
 	<wsdl:binding name="Media2Binding" type="tr2:Media2">
 		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
@@ -1531,7 +1914,7 @@ image will be updated automatically and independent from calls to GetSnapshotUri
 			</wsdl:output>
 		</wsdl:operation>
 		<wsdl:operation name="GetAudioSourceConfigurations">
-			<soap:operation soapAction="http://www.onvif.org/ver20/media/wsdlGetAudioSourceConfigurations/"/>
+			<soap:operation soapAction="http://www.onvif.org/ver20/media/wsdl/GetAudioSourceConfigurations/"/>
 			<wsdl:input>
 				<soap:body parts="parameters" use="literal"/>
 			</wsdl:input>
@@ -1650,7 +2033,7 @@ image will be updated automatically and independent from calls to GetSnapshotUri
 		</wsdl:operation>
 		<!--===============================-->
 		<wsdl:operation name="GetVideoSourceConfigurationOptions">
-			<soap:operation soapAction="http://www.onvif.org/ver20/media/wsdlGetVideoSourceConfigurationOptions/"/>
+			<soap:operation soapAction="http://www.onvif.org/ver20/media/wsdl/GetVideoSourceConfigurationOptions/"/>
 			<wsdl:input>
 				<soap:body parts="parameters" use="literal"/>
 			</wsdl:input>
@@ -1705,6 +2088,16 @@ image will be updated automatically and independent from calls to GetSnapshotUri
 		</wsdl:operation>
 		<wsdl:operation name="GetAudioDecoderConfigurationOptions">
 			<soap:operation soapAction="http://www.onvif.org/ver20/media/wsdl/GetAudioDecoderConfigurationOptions"/>
+			<wsdl:input>
+				<soap:body parts="parameters" use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body parts="parameters" use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<!--===============================-->
+		<wsdl:operation name="GetVideoEncoderInstances">
+			<soap:operation soapAction="http://www.onvif.org/ver20/media/wsdl/GetVideoEncoderInstances"/>
 			<wsdl:input>
 				<soap:body parts="parameters" use="literal"/>
 			</wsdl:input>
@@ -1830,5 +2223,52 @@ image will be updated automatically and independent from calls to GetSnapshotUri
 			</wsdl:output>
 		</wsdl:operation>
 		<!--==============OSD Operation End=================-->
+		<!--==============Mask Operation Begin=================-->
+		<wsdl:operation name="GetMasks">
+			<soap:operation soapAction="http://www.onvif.org/ver20/media/wsdl/GetMasks"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="GetMaskOptions">
+			<soap:operation soapAction="http://www.onvif.org/ver20/media/wsdl/GetMaskOptions"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="SetMask">
+			<soap:operation soapAction="http://www.onvif.org/ver20/media/wsdl/SetMask"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="CreateMask">
+			<soap:operation soapAction="http://www.onvif.org/ver20/media/wsdl/CreateMask"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="DeleteMask">
+			<soap:operation soapAction="http://www.onvif.org/ver20/media/wsdl/DeleteMask"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<!--==============Mask Operation End=================-->
 	</wsdl:binding>
 </wsdl:definitions>

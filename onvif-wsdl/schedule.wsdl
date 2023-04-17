@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?xml-stylesheet type="text/xsl" href="../../../ver20/util/onvif-wsdl-viewer.xsl"?>
 <!--
-Copyright (c) 2010-2015 by ONVIF: Open Network Video Interface Forum. All rights reserved.
+Copyright (c) 2010-2018 by ONVIF: Open Network Video Interface Forum. All rights reserved.
 
 Recipients of this document may copy, distribute, publish, or display this
 document so long as this copyright notice, license and disclaimer are
@@ -36,7 +36,7 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 	<wsdl:types>
 		<xs:schema targetNamespace="http://www.onvif.org/ver10/schedule/wsdl"
 				   xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:pt="http://www.onvif.org/ver10/pacs"
-				   xmlns:tsc="http://www.onvif.org/ver10/schedule/wsdl" elementFormDefault="qualified" version="1.0">
+				   xmlns:tsc="http://www.onvif.org/ver10/schedule/wsdl" elementFormDefault="qualified" version="18.12">
 			<xs:import namespace="http://www.onvif.org/ver10/pacs" schemaLocation="./types.xsd"/>
 			<!--ServiceCapabilities definitions-->
 			<xs:complexType name="ServiceCapabilities">
@@ -48,7 +48,7 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 					</xs:documentation>
 				</xs:annotation>
 				<xs:sequence>
-					<xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+					<xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>   <!-- first ONVIF then Vendor -->
 				</xs:sequence>
 				<xs:attribute name="MaxLimit" type="pt:PositiveInteger" use="required">
 					<xs:annotation>
@@ -136,8 +136,17 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 						</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
+				<xs:attribute name="ClientSuppliedTokenSupported" type="xs:boolean" default="false">
+					<xs:annotation>
+						<xs:documentation>
+							Indicates that the client is allowed to supply the token when creating schedules and special day groups.
+							To enable the use of the commands SetSchedule and SetSpecialDayGroup, the value must be set to true.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
 				<xs:anyAttribute processContents="lax"/>
 			</xs:complexType>
+			<xs:element name="Capabilities" type="tsc:ServiceCapabilities"/>
 			<!-- End of definition -->
 			<!--ScheduleInfo definitions-->
 			<xs:complexType name="ScheduleInfo">
@@ -213,7 +222,7 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 			</xs:complexType>
 			<xs:complexType name="ScheduleExtension">
 				<xs:sequence>
-					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first ONVIF then Vendor -->
 				</xs:sequence>
 			</xs:complexType>
 			<!-- End of definition -->
@@ -251,7 +260,7 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 			</xs:complexType>
 			<xs:complexType name="SpecialDaysScheduleExtension">
 				<xs:sequence>
-					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first ONVIF then Vendor -->
 				</xs:sequence>
 			</xs:complexType>
 			<!-- End of definition -->
@@ -290,7 +299,7 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 			</xs:complexType>
 			<xs:complexType name="ScheduleStateExtension">
 				<xs:sequence>
-					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first ONVIF then Vendor -->
 				</xs:sequence>
 			</xs:complexType>
 			<!-- End of definition -->
@@ -328,7 +337,7 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 			</xs:complexType>
 			<xs:complexType name="TimePeriodExtension">
 				<xs:sequence>
-					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first ONVIF then Vendor -->
 				</xs:sequence>
 			</xs:complexType>
 			<!-- End of definition -->
@@ -391,7 +400,7 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 			</xs:complexType>
 			<xs:complexType name="SpecialDayGroupExtension">
 				<xs:sequence>
-					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first ONVIF then Vendor -->
 				</xs:sequence>
 			</xs:complexType>
 			<!-- End of definition -->
@@ -612,6 +621,25 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 				</xs:complexType>
 			</xs:element>
 			<!--===============================-->
+			<xs:element name="SetSchedule">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Schedule" type="tsc:Schedule" minOccurs="1">
+							<xs:annotation>
+								<xs:documentation>The Schedule to modify/create</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="SetScheduleResponse">
+				<xs:complexType>
+					<xs:sequence>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>			
+			<!--===============================-->
 			<xs:element name="ModifySchedule">
 				<xs:complexType>
 					<xs:sequence>
@@ -815,6 +843,25 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 				</xs:complexType>
 			</xs:element>
 			<!--===============================-->
+			<xs:element name="SetSpecialDayGroup">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="SpecialDayGroup" type="tsc:SpecialDayGroup" minOccurs="1">
+							<xs:annotation>
+								<xs:documentation>The SpecialDayGroup to modify/create</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="SetSpecialDayGroupResponse">
+				<xs:complexType>
+					<xs:sequence>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
 			<xs:element name="ModifySpecialDayGroup">
 				<xs:complexType>
 					<xs:sequence>
@@ -915,6 +962,14 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 		<wsdl:part name="parameters" element="tsc:CreateScheduleResponse"/>
 	</wsdl:message>
 	<!--===============================-->
+	<!--Definition of 'SetSchedule' message-->
+	<wsdl:message name="SetScheduleRequest">
+		<wsdl:part name="parameters" element="tsc:SetSchedule"/>
+	</wsdl:message>
+	<wsdl:message name="SetScheduleResponse">
+		<wsdl:part name="parameters" element="tsc:SetScheduleResponse"/>
+	</wsdl:message>	
+	<!--===============================-->
 	<!--Definition of 'ModifySchedule' message-->
 	<wsdl:message name="ModifyScheduleRequest">
 		<wsdl:part name="parameters" element="tsc:ModifySchedule"/>
@@ -969,6 +1024,14 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 	</wsdl:message>
 	<wsdl:message name="CreateSpecialDayGroupResponse">
 		<wsdl:part name="parameters" element="tsc:CreateSpecialDayGroupResponse"/>
+	</wsdl:message>
+	<!--===============================-->
+	<!--Definition of 'SetSpecialDayGroup' message-->
+	<wsdl:message name="SetSpecialDayGroupRequest">
+		<wsdl:part name="parameters" element="tsc:SetSpecialDayGroup"/>
+	</wsdl:message>
+	<wsdl:message name="SetSpecialDayGroupResponse">
+		<wsdl:part name="parameters" element="tsc:SetSpecialDayGroupResponse"/>
 	</wsdl:message>
 	<!--===============================-->
 	<!--Definition of 'ModifySpecialDayGroup' message-->
@@ -1056,6 +1119,13 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 			<wsdl:input message="tsc:CreateScheduleRequest"/>
 			<wsdl:output message="tsc:CreateScheduleResponse"/>
 		</wsdl:operation>
+		<wsdl:operation name="SetSchedule">
+			<wsdl:documentation>
+				This operation modifies or creates the specified schedule.
+			</wsdl:documentation>
+			<wsdl:input message="tsc:SetScheduleRequest"/>
+			<wsdl:output message="tsc:SetScheduleResponse"/>
+		</wsdl:operation>
 		<wsdl:operation name="ModifySchedule">
 			<wsdl:documentation>
 				This operation modifies or updates the specified schedule.
@@ -1119,6 +1189,13 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 			</wsdl:documentation>
 			<wsdl:input message="tsc:CreateSpecialDayGroupRequest"/>
 			<wsdl:output message="tsc:CreateSpecialDayGroupResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="SetSpecialDayGroup">
+			<wsdl:documentation>
+				This operation modifies or creates the specified special day group.
+			</wsdl:documentation>
+			<wsdl:input message="tsc:SetSpecialDayGroupRequest"/>
+			<wsdl:output message="tsc:SetSpecialDayGroupResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="ModifySpecialDayGroup">
 			<wsdl:documentation>
@@ -1203,6 +1280,15 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 				<soap:body use="literal"/>
 			</wsdl:output>
 		</wsdl:operation>
+		<wsdl:operation name="SetSchedule">
+			<soap:operation soapAction="http://www.onvif.org/ver10/schedule/wsdl/SetSchedule"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
 		<wsdl:operation name="ModifySchedule">
 			<soap:operation soapAction="http://www.onvif.org/ver10/schedule/wsdl/ModifySchedule"/>
 			<wsdl:input>
@@ -1259,6 +1345,15 @@ CERTAIN WRITTEN POLICIES OF THE CORPORATION.
 		</wsdl:operation>
 		<wsdl:operation name="CreateSpecialDayGroup">
 			<soap:operation soapAction="http://www.onvif.org/ver10/schedule/wsdl/CreateSpecialDayGroup"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="SetSpecialDayGroup">
+			<soap:operation soapAction="http://www.onvif.org/ver10/schedule/wsdl/SetSpecialDayGroup"/>
 			<wsdl:input>
 				<soap:body use="literal"/>
 			</wsdl:input>

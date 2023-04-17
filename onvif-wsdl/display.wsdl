@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="http://www.onvif.org/onvif/ver20/util/onvif-wsdl-viewer.xsl"?>
+<?xml-stylesheet type="text/xsl" href="../ver20/util/onvif-wsdl-viewer.xsl"?>
 <!--
 Copyright (c) 2008-2010 by ONVIF: Open Network Video Interface Forum. All rights reserved.
 

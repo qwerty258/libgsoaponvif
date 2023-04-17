@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="../../../ver20/util/onvif-wsdl-viewer.xsl"?>
 <!--
-	Copyright (c) 2013 - 2015 by ONVIF: Open Network Video Interface Forum. All rights reserved.
+	Copyright (c) 2013 - 2019 by ONVIF: Open Network Video Interface Forum. All rights reserved.
 	
 	Recipients of this document may copy, distribute, publish, or display this document so long as this copyright notice, license and disclaimer are retained with all copies of the document. No license is granted to modify this document.
 	
@@ -10,17 +10,17 @@
 -->
 <wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tas="http://www.onvif.org/ver10/advancedsecurity/wsdl" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap12/" targetNamespace="http://www.onvif.org/ver10/advancedsecurity/wsdl">
 	<wsdl:types>
-		<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://www.onvif.org/ver10/advancedsecurity/wsdl" version="1.2">
+		<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://www.onvif.org/ver10/advancedsecurity/wsdl" version="19.12">
 			<!--===================================================-->
-			<!-- Data types used by the advanced security features -->
+			<!-- Data types used by the security configuration features -->
 			<!--===================================================-->
 			<xs:simpleType name="KeyID">
 				<xs:annotation>
 					<xs:documentation>Unique identifier for keys in the keystore.</xs:documentation>
 				</xs:annotation>
-        <xs:restriction base="xs:NCName">
-          <xs:maxLength value="64"/>
-        </xs:restriction>
+				<xs:restriction base="xs:NCName">
+					<xs:maxLength value="64"/>
+				</xs:restriction>
 			</xs:simpleType>
 			<!--===============================-->
 			<xs:simpleType name="CertificateID">
@@ -42,12 +42,21 @@
 			</xs:simpleType>
 			<!--===============================-->
 			<xs:simpleType name="PassphraseID">
-				<xs:annotation> 
+				<xs:annotation>
 					<xs:documentation>Unique identifier for passphrases in the keystore.</xs:documentation>
 				</xs:annotation>
 				<xs:restriction base="xs:NCName">
 					<xs:maxLength value="64"/>
-				</xs:restriction>		
+				</xs:restriction>
+			</xs:simpleType>
+			<!--===============================-->
+			<xs:simpleType name="Dot1XID">
+				<xs:annotation>
+					<xs:documentation>Unique identifier for 802.1X configurations in the keystore.</xs:documentation>
+				</xs:annotation>
+				<xs:restriction base="xs:NCName">
+					<xs:maxLength value="64"/>
+				</xs:restriction>
 			</xs:simpleType>
 			<!--===============================-->
 			<xs:simpleType name="KeyStatus">
@@ -159,7 +168,7 @@
 							<xs:documentation>The value of the attribute.</xs:documentation>
 						</xs:annotation>
 					</xs:element>
-					<xs:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>
+					<xs:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>   <!-- first ONVIF then Vendor -->
 				</xs:sequence>
 				<xs:anyAttribute processContents="lax"/>
 			</xs:complexType>
@@ -276,6 +285,11 @@
 						</xs:annotation>
 						<xs:complexType>
 							<xs:sequence>
+								<xs:element minOccurs="0" maxOccurs="unbounded" name="DomainComponent" type="tas:DNAttributeValue">
+									<xs:annotation>
+										<xs:documentation>Domain Component as specified in RFC3739</xs:documentation>
+									</xs:annotation>
+								</xs:element>
 								<xs:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>
 							</xs:sequence>
 						</xs:complexType>
@@ -325,7 +339,7 @@
 							<xs:documentation>The value of the attribute as a base64-encoded DER representation of an ASN.1 value.</xs:documentation>
 						</xs:annotation>
 					</xs:element>
-					<xs:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>
+					<xs:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>   <!-- first ONVIF then Vendor -->
 				</xs:sequence>
 				<xs:anyAttribute processContents="lax"/>
 			</xs:complexType>
@@ -383,7 +397,7 @@
 							<xs:documentation>The value of the extension field as a base64-encoded DER representation of an ASN.1 value.</xs:documentation>
 						</xs:annotation>
 					</xs:element>
-					<xs:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>
+					<xs:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>   <!-- first ONVIF then Vendor -->
 				</xs:sequence>
 				<xs:anyAttribute processContents="lax"/>
 			</xs:complexType>
@@ -413,7 +427,7 @@
 							<xs:documentation>The base64-encoded DER representation of the X.509 certificate.</xs:documentation>
 						</xs:annotation>
 					</xs:element>
-					<xs:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>
+					<xs:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>   <!-- first ONVIF then Vendor -->
 				</xs:sequence>
 				<xs:anyAttribute processContents="lax"/>
 			</xs:complexType>
@@ -470,89 +484,172 @@
 							<xs:documentation>The alias of the passphrase.</xs:documentation>
 						</xs:annotation>
 					</xs:element>
-					<xs:element minOccurs="0" name="Extension">
+					<xs:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>   <!-- first ONVIF then Vendor -->
+				</xs:sequence>
+				<xs:anyAttribute processContents="lax"/>
+			</xs:complexType>
+			<!--===============================-->
+			<xs:simpleType name="Dot1XMethods">
+				<xs:annotation>
+					<xs:documentation>A list of supported 802.1X authentication methods, such as "EAP-PEAP/MSCHAPv2" and "EAP-MD5".  The '/' character is used as a separator between the outer and inner methods.</xs:documentation>
+				</xs:annotation>
+				<xs:list itemType="xs:string"/>
+			</xs:simpleType>
+			<!--===============================-->
+			<xs:complexType name="Dot1XCapabilities">
+				<xs:annotation>
+					<xs:documentation>The capabilities of the 802.1X implementation on a device.</xs:documentation>
+				</xs:annotation>
+				<xs:sequence>
+					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first ONVIF then Vendor -->
+				</xs:sequence>
+				<xs:attribute name="MaximumNumberOfDot1XConfigurations" type="xs:positiveInteger">
+					<xs:annotation>
+						<xs:documentation>The maximum number of 802.1X configurations that may be defined simultaneously.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="Dot1XMethods" type="tas:Dot1XMethods">
+					<xs:annotation>
+						<xs:documentation>The authentication methods supported by the 802.1X implementation.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:anyAttribute processContents="lax"/>
+			</xs:complexType>
+			<!--===============================-->
+			<xs:complexType name="Dot1XStage">
+				<xs:annotation>
+					<xs:documentation>The configuration parameters required for a particular authentication method.</xs:documentation>
+				</xs:annotation>
+				<xs:sequence>
+					<xs:element name="Identity" type="xs:string" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>The identity used in this authentication method, if required.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="CertificationPathID" type="tas:CertificationPathID" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>The unique identifier of the certification path used in this authentication method, if required.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="PassphraseID" type="tas:PassphraseID" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>The identifier for the password used in this authentication method, if required.  If Identity is used as an anonymous identity for this authentication method, PassphraseID is ignored.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Inner" type="tas:Dot1XStage" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>The configuration of the next stage of authentication, if required.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Extension" type="tas:Dot1XStageExtension" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attribute name="Method" type="xs:string" use="required">
+					<xs:annotation>
+						<xs:documentation>The authentication method for this stage (e.g., "EAP-PEAP").</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:anyAttribute processContents="lax"/>
+			</xs:complexType>
+			<xs:complexType name="Dot1XStageExtension">
+				<xs:sequence>
+					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first ONVIF then Vendor -->
+				</xs:sequence>
+			</xs:complexType>
+			<!--===============================-->
+			<xs:complexType name="Dot1XConfiguration">
+				<xs:sequence>
+					<xs:element name="Dot1XID" type="tas:Dot1XID" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>The unique identifier of the IEEE 802.1X configuration.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Alias" type="xs:string" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>The client-defined alias of the 802.1X configuration.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Outer" type="tas:Dot1XStage">
+						<xs:annotation>
+							<xs:documentation>The outer level authentication method used in this 802.1X configuration.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first ONVIF then Vendor -->
+				</xs:sequence>
+				<xs:anyAttribute processContents="lax"/>
+			</xs:complexType>
+			<!--==========================================-->
+			<!-- Begin Cert-based client auth data types  -->
+			<!--==========================================-->
+			<xs:simpleType name="CRLID">
+				<xs:restriction base="xs:NCName">
+					<xs:maxLength value="64"/>
+				</xs:restriction>
+			</xs:simpleType>
+			<xs:simpleType name="CertPathValidationPolicyID">
+				<xs:restriction base="xs:NCName">
+					<xs:maxLength value="64"/>
+				</xs:restriction>
+			</xs:simpleType>
+			<xs:complexType name="CRL">
+				<xs:sequence>
+					<xs:element name="CRLID" type="tas:CRLID"/>
+					<xs:element name="Alias" type="xs:string"/>
+					<xs:element name="CRLContent" type="tas:Base64DERencodedASN1Value"/>
+					<xs:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>   <!-- first ONVIF then Vendor -->
+				</xs:sequence>
+			</xs:complexType>
+			<!--===============================-->
+			<xs:complexType name="CertPathValidationParameters">
+				<xs:sequence>
+					<xs:element name="RequireTLSWWWClientAuthExtendedKeyUsage" type="xs:boolean" minOccurs="0" default="false">
+						<xs:annotation>
+							<xs:documentation>True if and only if the TLS server shall not authenticate client certificates that do not contain the TLS WWW client authentication key usage extension as specified in RFC 5280, Sect. 4.2.1.12.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="UseDeltaCRLs" type="xs:boolean" minOccurs="0" default="false">
+						<xs:annotation>
+							<xs:documentation>True if and only if delta CRLs, if available, shall be applied to CRLs.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element minOccurs="0" name="anyParameters">
 						<xs:complexType>
 							<xs:sequence>
-								<xs:any maxOccurs="unbounded" namespace="##any" processContents="lax"/>
+								<xs:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>
 							</xs:sequence>
 						</xs:complexType>
 					</xs:element>
 				</xs:sequence>
-				<xs:anyAttribute processContents="lax"/>
 			</xs:complexType>
-      <!--===============================-->
-      <xs:simpleType name="CRLID">
-        <xs:restriction base="xs:ID" />
-      </xs:simpleType>
-      <!--===============================-->
-      <xs:simpleType name="CertPathValidationPolicyID">
-        <xs:restriction base="xs:ID" />
-      </xs:simpleType>
-      <!--===============================-->
-      <xs:complexType name="CRL">
-        <xs:sequence>
-          <xs:element name="CRLID" type="tas:CRLID">
-          </xs:element>
-          <xs:element name="Alias" type="xs:string">
-          </xs:element>
-          <xs:element name="CRLContent" type="tas:Base64DERencodedASN1Value">
-          </xs:element>
-          <xs:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>
-        </xs:sequence>
-      </xs:complexType>
-      <!--===============================-->
-      <xs:complexType name="CertPathValidationParameters">
-        <xs:sequence>
-          <xs:element name="RequireTLSWWWClientAuthExtendedKeyUsage" type="xs:boolean" minOccurs="0" default="false">
-            <xs:annotation>
-              <xs:documentation>True if and only if the TLS server shall not authenticate client certificates that do not contain the TLS WWW client authentication key usage extension as specified in RFC 5280, Sect. 4.2.1.12.</xs:documentation>
-            </xs:annotation>
-          </xs:element>
-          <xs:element name="UseDeltaCRLs" type="xs:boolean" minOccurs="0" default="false">
-            <xs:annotation>
-              <xs:documentation>True if and only if delta CRLs, if available, shall be applied to CRLs.</xs:documentation>
-            </xs:annotation>
-          </xs:element>
-          <xs:element minOccurs="0" name="anyParameters">
-            <xs:complexType>
-              <xs:sequence>
-                <xs:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>
-              </xs:sequence>
-            </xs:complexType>
-          </xs:element>
-        </xs:sequence>
-      </xs:complexType>
-      <!--===============================-->
-      <xs:complexType name="TrustAnchor">
-        <xs:sequence>
-          <xs:element name="CertificateID" type="tas:CertificateID">
-            <xs:annotation>
-              <xs:documentation>The certificate ID of the certificate to be used as trust anchor.</xs:documentation>
-            </xs:annotation>
-          </xs:element>
-          <xs:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>
-        </xs:sequence>
-      </xs:complexType>
-      <!--===============================-->
-      <xs:complexType name="CertPathValidationPolicy">
-        <xs:sequence>
-          <xs:element name="CertPathValidationPolicyID" type="tas:CertPathValidationPolicyID">
-          </xs:element>
-          <xs:element name="Alias" type="xs:string" minOccurs="0">
-          </xs:element>
-          <xs:element name="Parameters" type="tas:CertPathValidationParameters">
-          </xs:element>
-          <xs:element name="TrustAnchor" type="tas:TrustAnchor" maxOccurs="unbounded"></xs:element>
-          <xs:element minOccurs="0" name="anyParameters">
-            <xs:complexType>
-              <xs:sequence>
-                <xs:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>
-              </xs:sequence>
-            </xs:complexType>
-          </xs:element>
-        </xs:sequence>
-      </xs:complexType>
-      <!--===============================-->
+			<!--===============================-->
+			<xs:complexType name="TrustAnchor">
+				<xs:sequence>
+					<xs:element name="CertificateID" type="tas:CertificateID">
+						<xs:annotation>
+							<xs:documentation>The certificate ID of the certificate to be used as trust anchor.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>   <!-- first ONVIF then Vendor -->
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="CertPathValidationPolicy">
+				<xs:sequence>
+					<xs:element name="CertPathValidationPolicyID" type="tas:CertPathValidationPolicyID"/>
+					<xs:element name="Alias" type="xs:string" minOccurs="0"/>
+					<xs:element name="Parameters" type="tas:CertPathValidationParameters"/>
+					<xs:element name="TrustAnchor" type="tas:TrustAnchor" maxOccurs="unbounded"/>
+					<xs:element minOccurs="0" name="anyParameters">
+						<xs:complexType>
+							<xs:sequence>
+								<xs:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+				</xs:sequence>
+			</xs:complexType>
+			<!--========================================-->
+			<!-- End Cert-based client auth data types-->
+			<!--========================================-->
+			<!--===============================-->
 			<xs:simpleType name="RSAKeyLengths">
 				<xs:annotation>
 					<xs:documentation>A list of RSA key lenghts in bits.</xs:documentation>
@@ -662,26 +759,37 @@
 						<xs:documentation>Indicates which password-based encryption algorithms are supported by the device.</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
-				<xs:attribute name="PasswordBasedMACAlgorithms" type="tas:PasswordBasedEncryptionAlgorithms">
+				<xs:attribute name="PasswordBasedMACAlgorithms" type="tas:PasswordBasedMACAlgorithms">
 					<xs:annotation>
 						<xs:documentation>Indicates which password-based MAC algorithms are supported by the device.</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
-        <xs:attribute name="MaximumNumberOfCRLs" type="xs:nonNegativeInteger">
-          <xs:annotation>
-            <xs:documentation>Indicates the maximum number of CRLs that the device is able to store simultaneously.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="MaximumNumberOfCertificationPathValidationPolicies" type="xs:nonNegativeInteger">
-          <xs:annotation>
-            <xs:documentation>Indicates the maximum number of certification path validation policies that the device is able to store simultaneously.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="EnforceTLSWebClientAuthExtKeyUsage" type="xs:boolean">
-          <xs:annotation>
-            <xs:documentation>Indicates whether a device supports checking for the TLS WWW client auth extended key usage extension while validating certification paths.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
+				<!-- ========================================= -->
+				<!-- Begin cert-based client auth capabilities -->
+				<!-- ========================================= -->
+				<xs:attribute name="MaximumNumberOfCRLs" type="xs:nonNegativeInteger">
+					<xs:annotation>
+						<xs:documentation>Indicates the maximum number of CRLs that the device is able to store simultaneously.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="MaximumNumberOfCertificationPathValidationPolicies" type="xs:nonNegativeInteger">
+					<xs:annotation>
+						<xs:documentation>Indicates the maximum number of certification path validation policies that the device is able to store simultaneously.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="EnforceTLSWebClientAuthExtKeyUsage" type="xs:boolean">
+					<xs:annotation>
+						<xs:documentation>Indicates whether a device supports checking for the TLS WWW client auth extended key usage extension while validating certification paths.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<!-- ========================================= -->
+				<!-- End cert-based client auth capabilities   -->
+				<!-- ========================================= -->
+				<xs:attribute name="NoPrivateKeySharing" type="xs:boolean">
+					<xs:annotation>
+						<xs:documentation>Indicates the device requires that each certificate with private key has its own unique key.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
 				<xs:anyAttribute processContents="lax"/>
 			</xs:complexType>
 			<!--===============================-->
@@ -690,11 +798,16 @@
 					<xs:documentation>The capabilities of a TLS server implementation on a device.</xs:documentation>
 				</xs:annotation>
 				<xs:sequence>
-					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   <!-- first ONVIF then Vendor -->
 				</xs:sequence>
 				<xs:attribute name="TLSServerSupported" type="tas:TLSVersions">
 					<xs:annotation>
 						<xs:documentation>Indicates which TLS versions are supported by the device.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="EnabledVersionsSupported" type="xs:boolean">
+					<xs:annotation>
+						<xs:documentation>Indicates whether the device supports enabling and disabling specific TLS versions.</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 				<xs:attribute name="MaximumNumberOfTLSCertificationPaths" type="xs:positiveInteger">
@@ -702,22 +815,33 @@
 						<xs:documentation>Indicates the maximum number of certification paths that may be assigned to the TLS server simultaneously.</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
-        <xs:attribute name="TLSClientAuthSupported" type="xs:boolean">
-          <xs:annotation>
-            <xs:documentation>Indicates whether the device supports TLS client authentication.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="MaximumNumberOfTLSCertificationPathValidationPolicies" type="xs:nonNegativeInteger">
-          <xs:annotation>
-            <xs:documentation>Indicates the maximum number of certification path validation policies that may be assigned to the TLS server simultaneously.</xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
-      	<xs:anyAttribute processContents="lax"/>
+				<!-- ========================================= -->
+				<!-- Begin cert-based client auth capabilities -->
+				<!-- ========================================= -->
+				<xs:attribute name="TLSClientAuthSupported" type="xs:boolean">
+					<xs:annotation>
+						<xs:documentation>Indicates whether the device supports TLS client authentication.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="CnMapsToUserSupported" type="xs:boolean">
+					<xs:annotation>
+						<xs:documentation>Indicates whether the device supports TLS client authorization using common name to local user mapping.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="MaximumNumberOfTLSCertificationPathValidationPolicies" type="xs:nonNegativeInteger">
+					<xs:annotation>
+						<xs:documentation>Indicates the maximum number of certification path validation policies that may be assigned to the TLS server simultaneously.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<!-- ========================================= -->
+				<!-- End cert-based client auth capabilities   -->
+				<!-- ========================================= -->
+				<xs:anyAttribute processContents="lax"/>
 			</xs:complexType>
 			<!--===============================-->
 			<xs:complexType name="Capabilities">
 				<xs:annotation>
-					<xs:documentation>The capabilities of an Advanced Security Service implementation on a device.</xs:documentation>
+					<xs:documentation>The capabilities of a Security Configuration Service implementation on a device.</xs:documentation>
 				</xs:annotation>
 				<xs:sequence>
 					<xs:element name="KeystoreCapabilities" type="tas:KeystoreCapabilities">
@@ -730,7 +854,12 @@
 							<xs:documentation>The capabilities of the TLS server implementation.</xs:documentation>
 						</xs:annotation>
 					</xs:element>
-          <xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="Dot1XCapabilities" type="tas:Dot1XCapabilities" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>The capabilities of the 802.1X implementation.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>   <!-- first ONVIF then Vendor -->
 				</xs:sequence>
 				<xs:anyAttribute processContents="lax"/>
 			</xs:complexType>
@@ -748,7 +877,7 @@
 					<xs:sequence>
 						<xs:element name="Capabilities" type="tas:Capabilities">
 							<xs:annotation>
-								<xs:documentation>The capabilities for the advanced secuirty service is returned in the Capabilities element.</xs:documentation>
+								<xs:documentation>The capabilities for the security configuration service is returned in the Capabilities element.</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -846,8 +975,7 @@
 						</xs:element>
 						<xs:element name="IgnoreAdditionalCertificates" type="xs:boolean" minOccurs="0" default="false">
 							<xs:annotation>
-								<xs:documentation>True if and only if the device shall behave as if
-									the client had only supplied the first certificate in the sequence of certificates.</xs:documentation>
+								<xs:documentation>True if and only if the device shall behave as if the client had only supplied the first certificate in the sequence of certificates.</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="IntegrityPassphraseID" type="tas:PassphraseID" minOccurs="0">
@@ -985,7 +1113,7 @@
 						</xs:element>
 						<xs:element name="SignatureAlgorithm" type="tas:AlgorithmIdentifier">
 							<xs:annotation>
-								<xs:documentation>The signature algorithm to be used to sign the CSR. Defaults to SHA1 with RSA Encryption.</xs:documentation>
+								<xs:documentation>The signature algorithm to be used to sign the CSR.</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -1038,7 +1166,7 @@
 						</xs:element>
 						<xs:element name="SignatureAlgorithm" type="tas:AlgorithmIdentifier">
 							<xs:annotation>
-								<xs:documentation>The signature algorithm to be used for signing the certificate. Defaults to SHA1 with RSA Encryption.</xs:documentation>
+								<xs:documentation>The signature algorithm to be used for signing the certificate.</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element minOccurs="0" maxOccurs="unbounded" name="Extension" type="tas:X509v3Extension">
@@ -1370,339 +1498,558 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-      <!--===============================================-->
-      <!-- Begin Cert-based client auth message types    -->
-      <!--===============================================-->
-      <xs:element name="UploadCRL">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element name="Crl" type="tas:Base64DERencodedASN1Value">
-              <xs:annotation>
-                <xs:documentation>
+			<!--===============================-->
+			<xs:element name="SetEnabledTLSVersions">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Versions" type="tas:TLSVersions">
+							<xs:annotation>
+								<xs:documentation>List of TLS versions to allow.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="SetEnabledTLSVersionsResponse">
+				<xs:complexType>
+					<xs:sequence/>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="GetEnabledTLSVersions">
+				<xs:complexType>
+					<xs:sequence/>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="GetEnabledTLSVersionsResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Versions" type="tas:TLSVersions">
+							<xs:annotation>
+								<xs:documentation>List of allowed TLS versions.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================================-->
+			<!-- Begin Cert-based client auth message types    -->
+			<!--===============================================-->
+			<xs:element name="UploadCRL">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Crl" type="tas:Base64DERencodedASN1Value">
+							<xs:annotation>
+								<xs:documentation>
                   The CRL to be uploaded to the device.
                 </xs:documentation>
-              </xs:annotation>
-            </xs:element>
-            <xs:element name="Alias" type="xs:string" minOccurs="0">
-              <xs:annotation>
-                <xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Alias" type="xs:string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>
                   The alias to assign to the uploaded CRL.
                 </xs:documentation>
-              </xs:annotation>
-            </xs:element>
-            <xs:element minOccurs="0" name="anyParameters">
-              <xs:complexType>
-                <xs:sequence>
-                  <xs:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>
-                </xs:sequence>
-              </xs:complexType>
-            </xs:element>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="UploadCRLResponse">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element name="CrlID" type="tas:CRLID">
-              <xs:annotation>
-                <xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element minOccurs="0" name="anyParameters">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="UploadCRLResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="CrlID" type="tas:CRLID">
+							<xs:annotation>
+								<xs:documentation>
                   The ID of the uploaded CRL.
                 </xs:documentation>
-              </xs:annotation>
-            </xs:element>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
-      <!--===============================-->
-      <xs:element name="GetCRL">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element name="CrlID" type="tas:CRLID">
-              <xs:annotation>
-                <xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="GetCRL">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="CrlID" type="tas:CRLID">
+							<xs:annotation>
+								<xs:documentation>
                   The ID of the CRL to be returned.
                 </xs:documentation>
-              </xs:annotation>
-            </xs:element>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="GetCRLResponse">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element name="Crl" type="tas:CRL">
-              <xs:annotation>
-                <xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="GetCRLResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Crl" type="tas:CRL">
+							<xs:annotation>
+								<xs:documentation>
                   The CRL with the requested ID.
                 </xs:documentation>
-              </xs:annotation>
-            </xs:element>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
-      <!--===============================-->
-      <xs:element name="GetAllCRLs">
-        <xs:complexType>
-          <xs:sequence/>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="GetAllCRLsResponse">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element name="Crl" type="tas:CRL" minOccurs="0" maxOccurs="unbounded">
-              <xs:annotation>
-                <xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="GetAllCRLs">
+				<xs:complexType>
+					<xs:sequence/>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="GetAllCRLsResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Crl" type="tas:CRL" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>
                   A list of all CRLs that are stored in the keystore on the device.
                 </xs:documentation>
-              </xs:annotation>
-            </xs:element>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
-      <!--===============================-->
-      <xs:element name="DeleteCRL">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element name="CrlID" type="tas:CRLID">
-              <xs:annotation>
-                <xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="DeleteCRL">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="CrlID" type="tas:CRLID">
+							<xs:annotation>
+								<xs:documentation>
                   The ID of the CRL to be deleted.
                 </xs:documentation>
-              </xs:annotation>
-            </xs:element>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="DeleteCRLResponse">
-        <xs:complexType>
-          <xs:sequence />
-        </xs:complexType>
-      </xs:element>
-      <!--===============================-->
-      <xs:element name="CreateCertPathValidationPolicy">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element name="Alias" type="xs:string" minOccurs="0">
-              <xs:annotation>
-                <xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="DeleteCRLResponse">
+				<xs:complexType>
+					<xs:sequence/>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="CreateCertPathValidationPolicy">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Alias" type="xs:string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>
                   The alias to assign to the created certification path validation policy.
                 </xs:documentation>
-              </xs:annotation>
-            </xs:element>
-            <xs:element name="Parameters" type="tas:CertPathValidationParameters">
-              <xs:annotation>
-                <xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Parameters" type="tas:CertPathValidationParameters">
+							<xs:annotation>
+								<xs:documentation>
                   The parameters of the certification path validation policy to be created.
                 </xs:documentation>
-              </xs:annotation>
-            </xs:element>
-            <xs:element name="TrustAnchor" type="tas:TrustAnchor" maxOccurs="unbounded">
-              <xs:annotation>
-                <xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="TrustAnchor" type="tas:TrustAnchor" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>
                   The trust anchors of the certification path validation policy to be created.
                 </xs:documentation>
-              </xs:annotation>
-            </xs:element>
-            <xs:element minOccurs="0" name="anyParameters">
-              <xs:complexType>
-                <xs:sequence>
-                  <xs:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>
-                </xs:sequence>
-              </xs:complexType>
-            </xs:element>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="CreateCertPathValidationPolicyResponse">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element name="CertPathValidationPolicyID" type="tas:CertPathValidationPolicyID">
-              <xs:annotation>
-                <xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element minOccurs="0" name="anyParameters">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="CreateCertPathValidationPolicyResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="CertPathValidationPolicyID" type="tas:CertPathValidationPolicyID">
+							<xs:annotation>
+								<xs:documentation>
                   The ID of the created certification path validation policy.
                 </xs:documentation>
-              </xs:annotation>
-            </xs:element>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
-      <!--===============================-->
-      <xs:element name="GetCertPathValidationPolicy">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element name="CertPathValidationPolicyID" type="tas:CertPathValidationPolicyID">
-              <xs:annotation>
-                <xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="GetCertPathValidationPolicy">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="CertPathValidationPolicyID" type="tas:CertPathValidationPolicyID">
+							<xs:annotation>
+								<xs:documentation>
                   The ID of the certification path validation policy to be created.
                 </xs:documentation>
-              </xs:annotation>
-            </xs:element>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="GetCertPathValidationPolicyResponse">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element name="CertPathValidationPolicy" type="tas:CertPathValidationPolicy">
-              <xs:annotation>
-                <xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="GetCertPathValidationPolicyResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="CertPathValidationPolicy" type="tas:CertPathValidationPolicy">
+							<xs:annotation>
+								<xs:documentation>
                   The certification path validation policy that is stored under the requested ID.
                 </xs:documentation>
-              </xs:annotation>
-            </xs:element>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
-      <!--===============================-->
-      <xs:element name="GetAllCertPathValidationPolicies">
-        <xs:complexType>
-          <xs:sequence />
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="GetAllCertPathValidationPoliciesResponse">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element name="CertPathValidationPolicy" type="tas:CertPathValidationPolicy" minOccurs="0" maxOccurs="unbounded">
-              <xs:annotation>
-                <xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="GetAllCertPathValidationPolicies">
+				<xs:complexType>
+					<xs:sequence/>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="GetAllCertPathValidationPoliciesResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="CertPathValidationPolicy" type="tas:CertPathValidationPolicy" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>
                   A list of all certification path validation policies that are stored in the keystore on the device.
                 </xs:documentation>
-              </xs:annotation>
-            </xs:element>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
-      <!--===============================-->
-      <xs:element name="DeleteCertPathValidationPolicy">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element name="CertPathValidationPolicyID" type="tas:CertPathValidationPolicyID">
-              <xs:annotation>
-                <xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="DeleteCertPathValidationPolicy">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="CertPathValidationPolicyID" type="tas:CertPathValidationPolicyID">
+							<xs:annotation>
+								<xs:documentation>
                   The ID of the certification path validation policy to be deleted.
                 </xs:documentation>
-              </xs:annotation>
-            </xs:element>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="DeleteCertPathValidationPolicyResponse">
-        <xs:complexType>
-          <xs:sequence />
-        </xs:complexType>
-      </xs:element>
-      <!--===============================-->
-      <xs:element name="SetClientAuthenticationRequired">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element name="clientAuthenticationRequired" type="xs:boolean">
-            </xs:element>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="SetClientAuthenticationRequiredResponse">
-        <xs:complexType>
-          <xs:sequence />
-        </xs:complexType>
-      </xs:element>
-      <!--===============================-->
-      <xs:element name="GetClientAuthenticationRequired">
-        <xs:complexType>
-          <xs:sequence />
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="GetClientAuthenticationRequiredResponse">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element name="clientAuthenticationRequired" type="xs:boolean">
-            </xs:element>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
-      <!--===============================-->
-      <xs:element name="AddCertPathValidationPolicyAssignment">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element name="CertPathValidationPolicyID" type="tas:CertPathValidationPolicyID">
-              <xs:annotation>
-                <xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="DeleteCertPathValidationPolicyResponse">
+				<xs:complexType>
+					<xs:sequence/>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="SetClientAuthenticationRequired">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="clientAuthenticationRequired" type="xs:boolean">
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="SetClientAuthenticationRequiredResponse">
+				<xs:complexType>
+					<xs:sequence/>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="GetClientAuthenticationRequired">
+				<xs:complexType>
+					<xs:sequence/>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="GetClientAuthenticationRequiredResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="clientAuthenticationRequired" type="xs:boolean">
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="SetCnMapsToUser">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="cnMapsToUser" type="xs:boolean">
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="SetCnMapsToUserResponse">
+				<xs:complexType>
+					<xs:sequence/>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="GetCnMapsToUser">
+				<xs:complexType>
+					<xs:sequence/>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="GetCnMapsToUserResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="cnMapsToUser" type="xs:boolean">
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="AddCertPathValidationPolicyAssignment">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="CertPathValidationPolicyID" type="tas:CertPathValidationPolicyID">
+							<xs:annotation>
+								<xs:documentation>
                   The ID of the certification path validation policy to assign to the TLS server.
                 </xs:documentation>
-              </xs:annotation>
-            </xs:element>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="AddCertPathValidationPolicyAssignmentResponse">
-        <xs:complexType>
-          <xs:sequence />
-        </xs:complexType>
-      </xs:element>
-      <!--===============================-->
-      <xs:element name="RemoveCertPathValidationPolicyAssignment">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element name="CertPathValidationPolicyID" type="tas:CertPathValidationPolicyID">
-              <xs:annotation>
-                <xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="AddCertPathValidationPolicyAssignmentResponse">
+				<xs:complexType>
+					<xs:sequence/>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="RemoveCertPathValidationPolicyAssignment">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="CertPathValidationPolicyID" type="tas:CertPathValidationPolicyID">
+							<xs:annotation>
+								<xs:documentation>
                   The ID of the certification path validation policy to de-assign from the TLS server.
                 </xs:documentation>
-              </xs:annotation>
-            </xs:element>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="RemoveCertPathValidationPolicyAssignmentResponse">
-        <xs:complexType>
-          <xs:sequence />
-        </xs:complexType>
-      </xs:element>
-      <!--===============================-->
-      <xs:element name="ReplaceCertPathValidationPolicyAssignment">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element name="OldCertPathValidationPolicyID" type="tas:CertPathValidationPolicyID">
-              <xs:annotation>
-                <xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="RemoveCertPathValidationPolicyAssignmentResponse">
+				<xs:complexType>
+					<xs:sequence/>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="ReplaceCertPathValidationPolicyAssignment">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="OldCertPathValidationPolicyID" type="tas:CertPathValidationPolicyID">
+							<xs:annotation>
+								<xs:documentation>
                   The ID of the certification path validation policy to be de-assigned from the TLS server.
                 </xs:documentation>
-              </xs:annotation>
-            </xs:element>
-            <xs:element name="NewCertPathValidationPolicyID" type="tas:CertPathValidationPolicyID">
-              <xs:annotation>
-                <xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="NewCertPathValidationPolicyID" type="tas:CertPathValidationPolicyID">
+							<xs:annotation>
+								<xs:documentation>
                   The ID of the certification path validation policy to assign to the TLS server.
                 </xs:documentation>
-              </xs:annotation>
-            </xs:element>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="ReplaceCertPathValidationPolicyAssignmentResponse">
-        <xs:complexType>
-          <xs:sequence />
-        </xs:complexType>
-      </xs:element>
-      <!--===============================-->
-      <xs:element name="GetAssignedCertPathValidationPolicies">
-        <xs:complexType>
-          <xs:sequence />
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="GetAssignedCertPathValidationPoliciesResponse">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element name="CertPathValidationPolicyID" type="tas:CertPathValidationPolicyID" minOccurs="0" maxOccurs="unbounded">
-              <xs:annotation>
-                <xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="ReplaceCertPathValidationPolicyAssignmentResponse">
+				<xs:complexType>
+					<xs:sequence/>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="GetAssignedCertPathValidationPolicies">
+				<xs:complexType>
+					<xs:sequence/>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="GetAssignedCertPathValidationPoliciesResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="CertPathValidationPolicyID" type="tas:CertPathValidationPolicyID" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>
                   A list of IDs of the certification path validation policies that are assigned to the TLS server.
                 </xs:documentation>
-              </xs:annotation>
-            </xs:element>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
-  	</xs:schema>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<!--=============================================-->
+			<!-- Begin Cert-based client auth message types   -->
+			<!--=============================================-->
+			<!--===============================-->
+			<xs:element name="AddDot1XConfiguration">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Dot1XConfiguration" type="tas:Dot1XConfiguration">
+							<xs:annotation>
+								<xs:documentation>The desired 802.1X configuration.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="AddDot1XConfigurationResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Dot1XID" type="tas:Dot1XID">
+							<xs:annotation>
+								<xs:documentation>The unique identifier of the created 802.1X configuration.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="GetAllDot1XConfigurations">
+				<xs:complexType>
+					<xs:sequence/>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="GetAllDot1XConfigurationsResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Configuration" type="tas:Dot1XConfiguration" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>The list of unique identifiers of 802.1X configurations on the device.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="GetDot1XConfiguration">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Dot1XID" type="tas:Dot1XID">
+							<xs:annotation>
+								<xs:documentation>The unique identifier of the desired 802.1X configuration.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="GetDot1XConfigurationResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Dot1XConfiguration" type="tas:Dot1XConfiguration">
+							<xs:annotation>
+								<xs:documentation>The 802.1X configuration, without password information.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="DeleteDot1XConfiguration">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Dot1XID" type="tas:Dot1XID">
+							<xs:annotation>
+								<xs:documentation>The unique identifier of the 802.1X configuration to be deleted.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="DeleteDot1XConfigurationResponse">
+				<xs:complexType>
+					<xs:sequence/>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="SetNetworkInterfaceDot1XConfiguration">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="token" type="xs:string">
+							<xs:annotation>
+								<xs:documentation>The unique identifier of the Network Interface on which the 802.1X configuration is to be set. (NOTE: the network interface token is defined in devicemgmt.wsdl as tt:ReferenceToken, which is a derived type of xs:string.  To avoid importing all of common.xsd for this single type, the base type is used here.)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Dot1XID" type="tas:Dot1XID">
+							<xs:annotation>
+								<xs:documentation>The unique identifier of the 802.1X configuration to be set.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="SetNetworkInterfaceDot1XConfigurationResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="RebootNeeded" type="xs:boolean">
+							<xs:annotation>
+								<xs:documentation>Indicates whether or not a reboot is required after configuration updates.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="GetNetworkInterfaceDot1XConfiguration">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="token" type="xs:string">
+							<xs:annotation>
+								<xs:documentation>The unique identifier of the Network Interface for which the 802.1X configuration is to be retrieved. (NOTE: the network interface token is defined in devicemgmt.wsdl as tt:ReferenceToken, which is a derived type of xs:string.  To avoid importing all of common.xsd for this single type, the base type is used here.)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="GetNetworkInterfaceDot1XConfigurationResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Dot1XID" type="tas:Dot1XID" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>The unique identifier of 802.1X configuration assigned to the Network Interface.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<!--===============================-->
+			<xs:element name="DeleteNetworkInterfaceDot1XConfiguration">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="token" type="xs:string">
+							<xs:annotation>
+								<xs:documentation>The unique identifier of the Network Interface for which the 802.1X configuration is to be deleted. (NOTE: the network interface token is defined in devicemgmt.wsdl as tt:ReferenceToken, which is a derived type of xs:string.  To avoid importing all of common.xsd for this single type, the base type is used here.)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="DeleteNetworkInterfaceDot1XConfigurationResponse">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="RebootNeeded" type="xs:boolean">
+							<xs:annotation>
+								<xs:documentation>Indicates whether or not a reboot is required after configuration updates.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:schema>
 	</wsdl:types>
 	<wsdl:message name="GetServiceCapabilitiesRequest">
 		<wsdl:part name="parameters" element="tas:GetServiceCapabilities"/>
@@ -1848,100 +2195,166 @@
 	<wsdl:message name="ReplaceServerCertificateAssignmentResponse">
 		<wsdl:part name="parameters" element="tas:ReplaceServerCertificateAssignmentResponse"/>
 	</wsdl:message>
+	<wsdl:message name="SetEnabledTLSVersionsRequest">
+		<wsdl:part name="parameters" element="tas:SetEnabledTLSVersions"/>
+	</wsdl:message>
+	<wsdl:message name="SetEnabledTLSVersionsResponse">
+		<wsdl:part name="parameters" element="tas:SetEnabledTLSVersionsResponse"/>
+	</wsdl:message>
+	<wsdl:message name="GetEnabledTLSVersionsRequest">
+		<wsdl:part name="parameters" element="tas:GetEnabledTLSVersions"/>
+	</wsdl:message>
+	<wsdl:message name="GetEnabledTLSVersionsResponse">
+		<wsdl:part name="parameters" element="tas:GetEnabledTLSVersionsResponse"/>
+	</wsdl:message>
 	<wsdl:message name="GetAssignedServerCertificatesRequest">
 		<wsdl:part name="parameters" element="tas:GetAssignedServerCertificates"/>
 	</wsdl:message>
 	<wsdl:message name="GetAssignedServerCertificatesResponse">
 		<wsdl:part name="parameters" element="tas:GetAssignedServerCertificatesResponse"/>
 	</wsdl:message>
-  <wsdl:message name="UploadCRLRequest">
-    <wsdl:part name="parameters" element="tas:UploadCRL"/>
-  </wsdl:message>
-  <wsdl:message name="UploadCRLResponse">
-    <wsdl:part name="parameters" element="tas:UploadCRLResponse"/>
-  </wsdl:message>
-  <wsdl:message name="GetCRLRequest">
-    <wsdl:part name="parameters" element="tas:GetCRL"/>
-  </wsdl:message>
-  <wsdl:message name="GetCRLResponse">
-    <wsdl:part name="parameters" element="tas:GetCRLResponse"/>
-  </wsdl:message>
-  <wsdl:message name="GetAllCRLsRequest">
-    <wsdl:part name="parameters" element="tas:GetAllCRLs"/>
-  </wsdl:message>
-  <wsdl:message name="GetAllCRLsResponse">
-    <wsdl:part name="parameters" element="tas:GetAllCRLsResponse"/>
-  </wsdl:message>
-  <wsdl:message name="DeleteCRLRequest">
-    <wsdl:part name="parameters" element="tas:DeleteCRL"/>
-  </wsdl:message>
-  <wsdl:message name="DeleteCRLResponse">
-    <wsdl:part name="parameters" element="tas:DeleteCRLResponse"/>
-  </wsdl:message>
-  <wsdl:message name="CreateCertPathValidationPolicyRequest">
-    <wsdl:part name="parameters" element="tas:CreateCertPathValidationPolicy"/>
-  </wsdl:message>
-  <wsdl:message name="CreateCertPathValidationPolicyResponse">
-    <wsdl:part name="parameters" element="tas:CreateCertPathValidationPolicyResponse"/>
-  </wsdl:message>
-  <wsdl:message name="GetCertPathValidationPolicyRequest">
-    <wsdl:part name="parameters" element="tas:GetCertPathValidationPolicy"/>
-  </wsdl:message>
-  <wsdl:message name="GetCertPathValidationPolicyResponse">
-    <wsdl:part name="parameters" element="tas:GetCertPathValidationPolicyResponse"/>
-  </wsdl:message>
-  <wsdl:message name="GetAllCertPathValidationPoliciesRequest">
-    <wsdl:part name="parameters" element="tas:GetAllCertPathValidationPolicies"/>
-  </wsdl:message>
-  <wsdl:message name="GetAllCertPathValidationPoliciesResponse">
-    <wsdl:part name="parameters" element="tas:GetAllCertPathValidationPoliciesResponse"/>
-  </wsdl:message>
-  <wsdl:message name="DeleteCertPathValidationPolicyRequest">
-    <wsdl:part name="parameters" element="tas:DeleteCertPathValidationPolicy"/>
-  </wsdl:message>
-  <wsdl:message name="DeleteCertPathValidationPolicyResponse">
-    <wsdl:part name="parameters" element="tas:DeleteCertPathValidationPolicyResponse"/>
-  </wsdl:message>
-  <wsdl:message name="SetClientAuthenticationRequiredRequest">
-    <wsdl:part name="parameters" element="tas:SetClientAuthenticationRequired"/>
-  </wsdl:message>
-  <wsdl:message name="SetClientAuthenticationRequiredResponse">
-    <wsdl:part name="parameters" element="tas:SetClientAuthenticationRequiredResponse"/>
-  </wsdl:message>
-  <wsdl:message name="GetClientAuthenticationRequiredRequest">
-    <wsdl:part name="parameters" element="tas:GetClientAuthenticationRequired"/>
-  </wsdl:message>
-  <wsdl:message name="GetClientAuthenticationRequiredResponse">
-    <wsdl:part name="parameters" element="tas:GetClientAuthenticationRequiredResponse"/>
-  </wsdl:message>
-  <wsdl:message name="AddCertPathValidationPolicyAssignmentRequest">
-    <wsdl:part name="parameters" element="tas:AddCertPathValidationPolicyAssignment"/>
-  </wsdl:message>
-  <wsdl:message name="AddCertPathValidationPolicyAssignmentResponse">
-    <wsdl:part name="parameters" element="tas:AddCertPathValidationPolicyAssignmentResponse"/>
-  </wsdl:message>
-  <wsdl:message name="RemoveCertPathValidationPolicyAssignmentRequest">
-    <wsdl:part name="parameters" element="tas:RemoveCertPathValidationPolicyAssignment"/>
-  </wsdl:message>
-  <wsdl:message name="RemoveCertPathValidationPolicyAssignmentResponse">
-    <wsdl:part name="parameters" element="tas:RemoveCertPathValidationPolicyAssignmentResponse"/>
-  </wsdl:message>
-  <wsdl:message name="ReplaceCertPathValidationPolicyAssignmentRequest">
-    <wsdl:part name="parameters" element="tas:ReplaceCertPathValidationPolicyAssignment"/>
-  </wsdl:message>
-  <wsdl:message name="ReplaceCertPathValidationPolicyAssignmentResponse">
-    <wsdl:part name="parameters" element="tas:ReplaceCertPathValidationPolicyAssignmentResponse"/>
-  </wsdl:message>
-  <wsdl:message name="GetAssignedCertPathValidationPoliciesRequest">
-    <wsdl:part name="parameters" element="tas:GetAssignedCertPathValidationPolicies"/>
-  </wsdl:message>
-  <wsdl:message name="GetAssignedCertPathValidationPoliciesResponse">
-    <wsdl:part name="parameters" element="tas:GetAssignedCertPathValidationPoliciesResponse"/>
-  </wsdl:message>
+	<wsdl:message name="UploadCRLRequest">
+		<wsdl:part name="parameters" element="tas:UploadCRL"/>
+	</wsdl:message>
+	<wsdl:message name="UploadCRLResponse">
+		<wsdl:part name="parameters" element="tas:UploadCRLResponse"/>
+	</wsdl:message>
+	<wsdl:message name="GetCRLRequest">
+		<wsdl:part name="parameters" element="tas:GetCRL"/>
+	</wsdl:message>
+	<wsdl:message name="GetCRLResponse">
+		<wsdl:part name="parameters" element="tas:GetCRLResponse"/>
+	</wsdl:message>
+	<wsdl:message name="GetAllCRLsRequest">
+		<wsdl:part name="parameters" element="tas:GetAllCRLs"/>
+	</wsdl:message>
+	<wsdl:message name="GetAllCRLsResponse">
+		<wsdl:part name="parameters" element="tas:GetAllCRLsResponse"/>
+	</wsdl:message>
+	<wsdl:message name="DeleteCRLRequest">
+		<wsdl:part name="parameters" element="tas:DeleteCRL"/>
+	</wsdl:message>
+	<wsdl:message name="DeleteCRLResponse">
+		<wsdl:part name="parameters" element="tas:DeleteCRLResponse"/>
+	</wsdl:message>
+	<wsdl:message name="CreateCertPathValidationPolicyRequest">
+		<wsdl:part name="parameters" element="tas:CreateCertPathValidationPolicy"/>
+	</wsdl:message>
+	<wsdl:message name="CreateCertPathValidationPolicyResponse">
+		<wsdl:part name="parameters" element="tas:CreateCertPathValidationPolicyResponse"/>
+	</wsdl:message>
+	<wsdl:message name="GetCertPathValidationPolicyRequest">
+		<wsdl:part name="parameters" element="tas:GetCertPathValidationPolicy"/>
+	</wsdl:message>
+	<wsdl:message name="GetCertPathValidationPolicyResponse">
+		<wsdl:part name="parameters" element="tas:GetCertPathValidationPolicyResponse"/>
+	</wsdl:message>
+	<wsdl:message name="GetAllCertPathValidationPoliciesRequest">
+		<wsdl:part name="parameters" element="tas:GetAllCertPathValidationPolicies"/>
+	</wsdl:message>
+	<wsdl:message name="GetAllCertPathValidationPoliciesResponse">
+		<wsdl:part name="parameters" element="tas:GetAllCertPathValidationPoliciesResponse"/>
+	</wsdl:message>
+	<wsdl:message name="DeleteCertPathValidationPolicyRequest">
+		<wsdl:part name="parameters" element="tas:DeleteCertPathValidationPolicy"/>
+	</wsdl:message>
+	<wsdl:message name="DeleteCertPathValidationPolicyResponse">
+		<wsdl:part name="parameters" element="tas:DeleteCertPathValidationPolicyResponse"/>
+	</wsdl:message>
+	<wsdl:message name="SetClientAuthenticationRequiredRequest">
+		<wsdl:part name="parameters" element="tas:SetClientAuthenticationRequired"/>
+	</wsdl:message>
+	<wsdl:message name="SetClientAuthenticationRequiredResponse">
+		<wsdl:part name="parameters" element="tas:SetClientAuthenticationRequiredResponse"/>
+	</wsdl:message>
+	<wsdl:message name="GetClientAuthenticationRequiredRequest">
+		<wsdl:part name="parameters" element="tas:GetClientAuthenticationRequired"/>
+	</wsdl:message>
+	<wsdl:message name="GetClientAuthenticationRequiredResponse">
+		<wsdl:part name="parameters" element="tas:GetClientAuthenticationRequiredResponse"/>
+	</wsdl:message>
+	<wsdl:message name="SetCnMapsToUserRequest">
+		<wsdl:part name="parameters" element="tas:SetCnMapsToUser"/>
+	</wsdl:message>
+	<wsdl:message name="SetCnMapsToUserResponse">
+		<wsdl:part name="parameters" element="tas:SetCnMapsToUserResponse"/>
+	</wsdl:message>
+	<wsdl:message name="GetCnMapsToUserRequest">
+		<wsdl:part name="parameters" element="tas:GetCnMapsToUser"/>
+	</wsdl:message>
+	<wsdl:message name="GetCnMapsToUserResponse">
+		<wsdl:part name="parameters" element="tas:GetCnMapsToUserResponse"/>
+	</wsdl:message>
+	<wsdl:message name="AddCertPathValidationPolicyAssignmentRequest">
+		<wsdl:part name="parameters" element="tas:AddCertPathValidationPolicyAssignment"/>
+	</wsdl:message>
+	<wsdl:message name="AddCertPathValidationPolicyAssignmentResponse">
+		<wsdl:part name="parameters" element="tas:AddCertPathValidationPolicyAssignmentResponse"/>
+	</wsdl:message>
+	<wsdl:message name="RemoveCertPathValidationPolicyAssignmentRequest">
+		<wsdl:part name="parameters" element="tas:RemoveCertPathValidationPolicyAssignment"/>
+	</wsdl:message>
+	<wsdl:message name="RemoveCertPathValidationPolicyAssignmentResponse">
+		<wsdl:part name="parameters" element="tas:RemoveCertPathValidationPolicyAssignmentResponse"/>
+	</wsdl:message>
+	<wsdl:message name="ReplaceCertPathValidationPolicyAssignmentRequest">
+		<wsdl:part name="parameters" element="tas:ReplaceCertPathValidationPolicyAssignment"/>
+	</wsdl:message>
+	<wsdl:message name="ReplaceCertPathValidationPolicyAssignmentResponse">
+		<wsdl:part name="parameters" element="tas:ReplaceCertPathValidationPolicyAssignmentResponse"/>
+	</wsdl:message>
+	<wsdl:message name="GetAssignedCertPathValidationPoliciesRequest">
+		<wsdl:part name="parameters" element="tas:GetAssignedCertPathValidationPolicies"/>
+	</wsdl:message>
+	<wsdl:message name="GetAssignedCertPathValidationPoliciesResponse">
+		<wsdl:part name="parameters" element="tas:GetAssignedCertPathValidationPoliciesResponse"/>
+	</wsdl:message>
+	<wsdl:message name="AddDot1XConfigurationRequest">
+		<wsdl:part name="parameters" element="tas:AddDot1XConfiguration"/>
+	</wsdl:message>
+	<wsdl:message name="AddDot1XConfigurationResponse">
+		<wsdl:part name="parameters" element="tas:AddDot1XConfigurationResponse"/>
+	</wsdl:message>
+	<wsdl:message name="GetAllDot1XConfigurationsRequest">
+		<wsdl:part name="parameters" element="tas:GetAllDot1XConfigurations"/>
+	</wsdl:message>
+	<wsdl:message name="GetAllDot1XConfigurationsResponse">
+		<wsdl:part name="parameters" element="tas:GetAllDot1XConfigurationsResponse"/>
+	</wsdl:message>
+	<wsdl:message name="GetDot1XConfigurationRequest">
+		<wsdl:part name="parameters" element="tas:GetDot1XConfiguration"/>
+	</wsdl:message>
+	<wsdl:message name="GetDot1XConfigurationResponse">
+		<wsdl:part name="parameters" element="tas:GetDot1XConfigurationResponse"/>
+	</wsdl:message>
+	<wsdl:message name="DeleteDot1XConfigurationRequest">
+		<wsdl:part name="parameters" element="tas:DeleteDot1XConfiguration"/>
+	</wsdl:message>
+	<wsdl:message name="DeleteDot1XConfigurationResponse">
+		<wsdl:part name="parameters" element="tas:DeleteDot1XConfigurationResponse"/>
+	</wsdl:message>
+	<wsdl:message name="SetNetworkInterfaceDot1XConfigurationRequest">
+		<wsdl:part name="parameters" element="tas:SetNetworkInterfaceDot1XConfiguration"/>
+	</wsdl:message>
+	<wsdl:message name="SetNetworkInterfaceDot1XConfigurationResponse">
+		<wsdl:part name="parameters" element="tas:SetNetworkInterfaceDot1XConfigurationResponse"/>
+	</wsdl:message>
+	<wsdl:message name="GetNetworkInterfaceDot1XConfigurationRequest">
+		<wsdl:part name="parameters" element="tas:GetNetworkInterfaceDot1XConfiguration"/>
+	</wsdl:message>
+	<wsdl:message name="GetNetworkInterfaceDot1XConfigurationResponse">
+		<wsdl:part name="parameters" element="tas:GetNetworkInterfaceDot1XConfigurationResponse"/>
+	</wsdl:message>
+	<wsdl:message name="DeleteNetworkInterfaceDot1XConfigurationRequest">
+		<wsdl:part name="parameters" element="tas:DeleteNetworkInterfaceDot1XConfiguration"/>
+	</wsdl:message>
+	<wsdl:message name="DeleteNetworkInterfaceDot1XConfigurationResponse">
+		<wsdl:part name="parameters" element="tas:DeleteNetworkInterfaceDot1XConfigurationResponse"/>
+	</wsdl:message>
 	<wsdl:portType name="AdvancedSecurityService">
-		<wsdl:documentation>Common functionality for all advanced security service parts.</wsdl:documentation>
+		<wsdl:documentation>Common functionality for all security configuraiton service parts.</wsdl:documentation>
 		<wsdl:operation name="GetServiceCapabilities">
-			<wsdl:documentation>Returns the capabilities of the advanced security service. The result is returned in a typed answer.</wsdl:documentation>
+			<wsdl:documentation>Returns the capabilities of the security configuraiton service. The result is returned in a typed answer.</wsdl:documentation>
 			<wsdl:input message="tas:GetServiceCapabilitiesRequest"/>
 			<wsdl:output message="tas:GetServiceCapabilitiesResponse"/>
 		</wsdl:operation>
@@ -2209,44 +2622,47 @@
 			<wsdl:input message="tas:DeletePassphraseRequest"/>
 			<wsdl:output message="tas:DeletePassphraseResponse"/>
 		</wsdl:operation>
-    <wsdl:operation name="UploadCRL">
-      <wsdl:documentation>
+		<!--==========================================-->
+		<!-- Begin Cert-based client auth operations  -->
+		<!--==========================================-->
+		<wsdl:operation name="UploadCRL">
+			<wsdl:documentation>
         This operation uploads a certificate revocation list (CRL) as specified in [RFC 5280] to the keystore on the device.
         If the device does not have enough storage space to store the CRL to be uploaded, the device shall produce a MaximumNumberOfCRLsReached fault and shall not store the supplied CRL.
         If the device is not able to process the supplied CRL, the device shall produce a BadCRL fault and shall not store the supplied CRL.
         If the device does not support the signature algorithm that was used to sign the supplied CRL, the device shall produce an UnsupportedSignatureAlgorithm fault and shall not store the supplied CRL.
       </wsdl:documentation>
-      <wsdl:input message="tas:UploadCRLRequest"/>
-      <wsdl:output message="tas:UploadCRLResponse"/>
-    </wsdl:operation>
-    <wsdl:operation name="GetCRL">
-      <wsdl:documentation>
+			<wsdl:input message="tas:UploadCRLRequest"/>
+			<wsdl:output message="tas:UploadCRLResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="GetCRL">
+			<wsdl:documentation>
         This operation returns a specific certificate revocation list (CRL) from the keystore on the device.
         Certification revocation lists are uniquely identified using CRLIDs. If no CRL is stored under the requested CRLID, the device shall produce a CRLID fault.
       </wsdl:documentation>
-      <wsdl:input message="tas:GetCRLRequest"/>
-      <wsdl:output message="tas:GetCRLResponse"/>
-    </wsdl:operation>
-    <wsdl:operation name="GetAllCRLs">
-      <wsdl:documentation>
+			<wsdl:input message="tas:GetCRLRequest"/>
+			<wsdl:output message="tas:GetCRLResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="GetAllCRLs">
+			<wsdl:documentation>
         This operation returns all certificate revocation lists (CRLs) that are stored in the keystore on the device.
         If no certificate revocation list is stored in the device’s keystore, an empty list is returned.
       </wsdl:documentation>
-      <wsdl:input message="tas:GetAllCRLsRequest"/>
-      <wsdl:output message="tas:GetAllCRLsResponse"/>
-    </wsdl:operation>
-    <wsdl:operation name="DeleteCRL">
-      <wsdl:documentation>
+			<wsdl:input message="tas:GetAllCRLsRequest"/>
+			<wsdl:output message="tas:GetAllCRLsResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="DeleteCRL">
+			<wsdl:documentation>
         This operation deletes a certificate revocation list (CRL) from the keystore on the device.
         Certification revocation lists are uniquely identified using CRLIDs. If no CRL is stored under the requested CRLID, the device shall produce a CRLID fault.
         If a reference exists for the specified CRL, the device shall produce a ReferenceExists fault and shall not delete the CRL.
         After a CRL has been successfully deleted, a device may assign its former ID to other CRLs.
       </wsdl:documentation>
-      <wsdl:input message="tas:DeleteCRLRequest"/>
-      <wsdl:output message="tas:DeleteCRLResponse"/>
-    </wsdl:operation>
-    <wsdl:operation name="CreateCertPathValidationPolicy">
-      <wsdl:documentation>
+			<wsdl:input message="tas:DeleteCRLRequest"/>
+			<wsdl:output message="tas:DeleteCRLResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="CreateCertPathValidationPolicy">
+			<wsdl:documentation>
         This operation creates a certification path validation policy.
         Certification path validation policies are uniquely identified using certification path validation policy IDs. The device shall generate a new certification path validation policy ID for the created certification path validation policy.
         For the certification path validation parameters that are not represented in the certPathValidationParameters data type, the device shall use the default values specified in Sect. 3.
@@ -2254,35 +2670,38 @@
         If there is at least one trust anchor certificate ID in the request for which there exists no certificate in the device’s keystore, the device shall produce a CertificateID fault and shall not create a certification path validation policy.
         If the device cannot process the supplied certification path validation parameters, the device shall produce a CertPathValidationParameters fault and shall not create a certification path validation policy.
       </wsdl:documentation>
-      <wsdl:input message="tas:CreateCertPathValidationPolicyRequest"/>
-      <wsdl:output message="tas:CreateCertPathValidationPolicyResponse"/>
-    </wsdl:operation>
-    <wsdl:operation name="GetCertPathValidationPolicy">
-      <wsdl:documentation>
+			<wsdl:input message="tas:CreateCertPathValidationPolicyRequest"/>
+			<wsdl:output message="tas:CreateCertPathValidationPolicyResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="GetCertPathValidationPolicy">
+			<wsdl:documentation>
         This operation returns a certification path validation policy from the keystore on the device.
         Certification path validation policies are uniquely identified using certification path validation policy IDs. If no certification path validation policy is stored under the requested certification path validation policy ID, the device shall produce a CertPathValidationPolicyID fault.
       </wsdl:documentation>
-      <wsdl:input message="tas:GetCertPathValidationPolicyRequest"/>
-      <wsdl:output message="tas:GetCertPathValidationPolicyResponse"/>
-    </wsdl:operation>
-    <wsdl:operation name="GetAllCertPathValidationPolicies">
-      <wsdl:documentation>
+			<wsdl:input message="tas:GetCertPathValidationPolicyRequest"/>
+			<wsdl:output message="tas:GetCertPathValidationPolicyResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="GetAllCertPathValidationPolicies">
+			<wsdl:documentation>
         This operation returns all certification path validation policies that are stored in the keystore on the device.
         If no certification path validation policy is stored in the device’s keystore, an empty list is returned.
       </wsdl:documentation>
-      <wsdl:input message="tas:GetAllCertPathValidationPoliciesRequest"/>
-      <wsdl:output message="tas:GetAllCertPathValidationPoliciesResponse"/>
-    </wsdl:operation>
-    <wsdl:operation name="DeleteCertPathValidationPolicy">
-      <wsdl:documentation>
+			<wsdl:input message="tas:GetAllCertPathValidationPoliciesRequest"/>
+			<wsdl:output message="tas:GetAllCertPathValidationPoliciesResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="DeleteCertPathValidationPolicy">
+			<wsdl:documentation>
         This operation deletes a certification path validation policy from the keystore on the device.
         Certification path validation policies are uniquely identified using certification path validation policy IDs. If no certification path validation policy is stored under the requested certification path validation policy ID, the device shall produce an InvalidCertPathValidationPolicyID fault.
         If a reference exists for the requested certification path validation policy, the device shall produce a ReferenceExists fault and shall not delete the certification path validation policy.
         After the certification path validation policy has been deleted, the device may assign its former ID to other certification path validation policies.
       </wsdl:documentation>
-      <wsdl:input message="tas:DeleteCertPathValidationPolicyRequest"/>
-      <wsdl:output message="tas:DeleteCertPathValidationPolicyResponse"/>
-    </wsdl:operation>
+			<wsdl:input message="tas:DeleteCertPathValidationPolicyRequest"/>
+			<wsdl:output message="tas:DeleteCertPathValidationPolicyResponse"/>
+		</wsdl:operation>
+		<!--==========================================-->
+		<!-- End Cert-based client auth operations    -->
+		<!--==========================================-->
 	</wsdl:portType>
 	<wsdl:portType name="TLSServer">
 		<wsdl:documentation>TLS server functionality.</wsdl:documentation>
@@ -2337,6 +2756,24 @@
 			<wsdl:input message="tas:ReplaceServerCertificateAssignmentRequest"/>
 			<wsdl:output message="tas:ReplaceServerCertificateAssignmentResponse"/>
 		</wsdl:operation>
+		<wsdl:operation name="SetEnabledTLSVersions">
+			<wsdl:documentation>
+				This operation sets the version(s) of TLS which the device shall use.  Valid values are taken from the TLSServerSupported capability.<br/>
+				A client initiates a TLS session by sending a ClientHello with the hightest TLS version it supports.  This suggests to the server that the client can accept any TLS version up to and including that version.<br/>
+				The server then chooses the TLS version to use.  This is generally the highest TLS version the server supports that is within the range of the client.  For example, if a ClientHello indicates TLS version 1.1, the server can proceed with TLS 1.0 or TLS 1.1.<br/>
+				In the event that an ONVIF installation wishes to disable certain version(s) of TLS, it may do so with this operation.  For example, to disable TLS 1.0 on a device signaling support for TLS versions 1.0, 1.1, and 1.2, the enabled version list may be set to "1.1 1.2", omitting 1.0.  If a client then attempts to connect with a ClientHello containing TLS 1.0, the server shall send a "protocol_version" alert message and close the connection.  This handshake indicates to the client that TLS 1.0 is not supported by the server.  The client must try again with a higher TLS version suggestion.<br/>
+				An empty list is not permitted.  Disabling all versions of TLS is not the intent of this operation.  See AddServerCertificateAssignment and RemoveServerCertificateAssignment.
+			</wsdl:documentation>
+			<wsdl:input message="tas:SetEnabledTLSVersionsRequest"/>
+			<wsdl:output message="tas:SetEnabledTLSVersionsResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="GetEnabledTLSVersions">
+			<wsdl:documentation>
+				This operation retrieves the version(s) of TLS which are currently enabled on the device.
+			</wsdl:documentation>
+			<wsdl:input message="tas:GetEnabledTLSVersionsRequest"/>
+			<wsdl:output message="tas:GetEnabledTLSVersionsResponse"/>
+		</wsdl:operation>
 		<wsdl:operation name="GetAssignedServerCertificates">
 			<wsdl:documentation>
 				This operation returns the IDs of all key pairs and certificates (including certification paths) that are assigned to the TLS server on the device.<br/>
@@ -2346,56 +2783,129 @@
 			<wsdl:input message="tas:GetAssignedServerCertificatesRequest"/>
 			<wsdl:output message="tas:GetAssignedServerCertificatesResponse"/>
 		</wsdl:operation>
-    <wsdl:operation name="SetClientAuthenticationRequired">
-      <wsdl:documentation>
+		<!--==========================================-->
+		<!-- Begin Cert-based client auth operations  -->
+		<!--==========================================-->
+		<wsdl:operation name="SetClientAuthenticationRequired">
+			<wsdl:documentation>
         This operation activates or deactivates TLS client authentication for the TLS server on the device.
         The TLS server on the device shall require client authentication if and only if clientAuthenticationRequired is set to true.
         If TLS client authentication is requested to be enabled and no certification path validation policy is assigned to the TLS server, the device shall return an EnablingTLSClientAuthenticationFailed fault and shall not enable TLS client authentication.
         The device shall execute this command regardless of the TLS enabled/disabled state configured in the ONVIF Device Management Service.
       </wsdl:documentation>
-      <wsdl:input message="tas:SetClientAuthenticationRequiredRequest"/>
-      <wsdl:output message="tas:SetClientAuthenticationRequiredResponse"/>
-    </wsdl:operation>
-    <wsdl:operation name="GetClientAuthenticationRequired">
-      <wsdl:documentation>
+			<wsdl:input message="tas:SetClientAuthenticationRequiredRequest"/>
+			<wsdl:output message="tas:SetClientAuthenticationRequiredResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="GetClientAuthenticationRequired">
+			<wsdl:documentation>
         This operation returns whether TLS client authentication is active.
       </wsdl:documentation>
-      <wsdl:input message="tas:GetClientAuthenticationRequiredRequest"/>
-      <wsdl:output message="tas:GetClientAuthenticationRequiredResponse"/>
-    </wsdl:operation>
-    <wsdl:operation name="AddCertPathValidationPolicyAssignment">
-      <wsdl:documentation>
+			<wsdl:input message="tas:GetClientAuthenticationRequiredRequest"/>
+			<wsdl:output message="tas:GetClientAuthenticationRequiredResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="SetCnMapsToUser">
+			<wsdl:documentation>
+        This operation enables or disables mapping of the Common Name present in the TLS client certificate to an existing user name in the device.
+        The TLS server on the device shall perform mapping if parameter clientAuthenticationRequired is set to true.
+      </wsdl:documentation>
+			<wsdl:input message="tas:SetCnMapsToUserRequest"/>
+			<wsdl:output message="tas:SetCnMapsToUserResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="GetCnMapsToUser">
+			<wsdl:documentation>
+        This operation returns whether the Common Name Mapping to User is enabled.
+      </wsdl:documentation>
+            <wsdl:input message="tas:GetCnMapsToUserRequest"/>
+            <wsdl:output message="tas:GetCnMapsToUserResponse"/>
+        </wsdl:operation>
+		<wsdl:operation name="AddCertPathValidationPolicyAssignment">
+			<wsdl:documentation>
         This operation assigns a certification path validation policy to the TLS server on the device. The TLS server shall enforce the policy when authenticating TLS clients and consider a client authentic if and only if the algorithm returns valid.
         If no certification path validation policy is stored under the requested CertPathValidationPolicyID, the device shall produce a CertPathValidationPolicyID fault.
         A TLS server may use different certification path validation policies to authenticate clients. Therefore more than one certification path validation policy may be assigned to the TLS server. If the maximum number of certification path validation policies that may be assigned to the  TLS server simultaneously is reached, the device shall produce a MaximumNumberOfTLSCertPathValidationPoliciesReached fault and shall not assign the requested certification path validation policy to the TLS server.
       </wsdl:documentation>
-      <wsdl:input message="tas:AddCertPathValidationPolicyAssignmentRequest"/>
-      <wsdl:output message="tas:AddCertPathValidationPolicyAssignmentResponse"/>
-    </wsdl:operation>
-    <wsdl:operation name="RemoveCertPathValidationPolicyAssignment">
-      <wsdl:documentation>
+			<wsdl:input message="tas:AddCertPathValidationPolicyAssignmentRequest"/>
+			<wsdl:output message="tas:AddCertPathValidationPolicyAssignmentResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="RemoveCertPathValidationPolicyAssignment">
+			<wsdl:documentation>
         This operation removes a certification path validation policy assignment from the TLS server on the device.
         If the certification path validation policy identified by the requested CertPathValidationPolicyID is not associated to the TLS server, the device shall produce a CertPathValidationPolicy fault.
       </wsdl:documentation>
-      <wsdl:input message="tas:RemoveCertPathValidationPolicyAssignmentRequest"/>
-      <wsdl:output message="tas:RemoveCertPathValidationPolicyAssignmentResponse"/>
-    </wsdl:operation>
-    <wsdl:operation name="ReplaceCertPathValidationPolicyAssignment">
-      <wsdl:documentation>
+			<wsdl:input message="tas:RemoveCertPathValidationPolicyAssignmentRequest"/>
+			<wsdl:output message="tas:RemoveCertPathValidationPolicyAssignmentResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="ReplaceCertPathValidationPolicyAssignment">
+			<wsdl:documentation>
         This operation replaces a certification path validation policy assignment to the TLS server on the device with another certification path validation policy assignment.
         If the certification path validation policy identified by the requested OldCertPathValidationPolicyID is not associated to the TLS server, the device shall produce an OldCertPathValidationPolicyID fault and shall not associate the certification path validation policy identified by the NewCertPathValidationPolicyID to the TLS server.
         If no certification path validation policy exists under the requested NewCertPathValidationPolicyID in the device’s keystore, the device shall produce a NewCertPathValidationPolicyID fault and shall not remove the association of the old certification path validation policy to the TLS server.
       </wsdl:documentation>
-      <wsdl:input message="tas:ReplaceCertPathValidationPolicyAssignmentRequest"/>
-      <wsdl:output message="tas:ReplaceCertPathValidationPolicyAssignmentResponse"/>
-    </wsdl:operation>
-    <wsdl:operation name="GetAssignedCertPathValidationPolicies">
-      <wsdl:documentation>
+			<wsdl:input message="tas:ReplaceCertPathValidationPolicyAssignmentRequest"/>
+			<wsdl:output message="tas:ReplaceCertPathValidationPolicyAssignmentResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="GetAssignedCertPathValidationPolicies">
+			<wsdl:documentation>
         This operation returns the IDs of all certification path validation policies that are assigned to the TLS server on the device.
       </wsdl:documentation>
-      <wsdl:input message="tas:GetAssignedCertPathValidationPoliciesRequest"/>
-      <wsdl:output message="tas:GetAssignedCertPathValidationPoliciesResponse"/>
-    </wsdl:operation>
+			<wsdl:input message="tas:GetAssignedCertPathValidationPoliciesRequest"/>
+			<wsdl:output message="tas:GetAssignedCertPathValidationPoliciesResponse"/>
+		</wsdl:operation>
+		<!--==========================================-->
+		<!-- End Cert-based client auth operations    -->
+		<!--==========================================-->
+	</wsdl:portType>
+	<wsdl:portType name="Dot1X">
+		<wsdl:documentation>802.1X configuration.</wsdl:documentation>
+		<wsdl:operation name="AddDot1XConfiguration">
+			<wsdl:documentation>
+				(to be written)
+			</wsdl:documentation>
+			<wsdl:input message="tas:AddDot1XConfigurationRequest"/>
+			<wsdl:output message="tas:AddDot1XConfigurationResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="GetAllDot1XConfigurations">
+			<wsdl:documentation>
+				(to be written)
+			</wsdl:documentation>
+			<wsdl:input message="tas:GetAllDot1XConfigurationsRequest"/>
+			<wsdl:output message="tas:GetAllDot1XConfigurationsResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="GetDot1XConfiguration">
+			<wsdl:documentation>
+				(to be written)
+			</wsdl:documentation>
+			<wsdl:input message="tas:GetDot1XConfigurationRequest"/>
+			<wsdl:output message="tas:GetDot1XConfigurationResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="DeleteDot1XConfiguration">
+			<wsdl:documentation>
+				(to be written)
+			</wsdl:documentation>
+			<wsdl:input message="tas:DeleteDot1XConfigurationRequest"/>
+			<wsdl:output message="tas:DeleteDot1XConfigurationResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="SetNetworkInterfaceDot1XConfiguration">
+			<wsdl:documentation>
+				(to be written)
+			</wsdl:documentation>
+			<wsdl:input message="tas:SetNetworkInterfaceDot1XConfigurationRequest"/>
+			<wsdl:output message="tas:SetNetworkInterfaceDot1XConfigurationResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="GetNetworkInterfaceDot1XConfiguration">
+			<wsdl:documentation>
+				(to be written)
+			</wsdl:documentation>
+			<wsdl:input message="tas:GetNetworkInterfaceDot1XConfigurationRequest"/>
+			<wsdl:output message="tas:GetNetworkInterfaceDot1XConfigurationResponse"/>
+		</wsdl:operation>
+		<wsdl:operation name="DeleteNetworkInterfaceDot1XConfiguration">
+			<wsdl:documentation>
+				(to be written)
+			</wsdl:documentation>
+			<wsdl:input message="tas:DeleteNetworkInterfaceDot1XConfigurationRequest"/>
+			<wsdl:output message="tas:DeleteNetworkInterfaceDot1XConfigurationResponse"/>
+		</wsdl:operation>
 	</wsdl:portType>
 	<wsdl:binding name="AdvancedSecurityServiceBinding" type="tas:AdvancedSecurityService">
 		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
@@ -2591,78 +3101,84 @@
 				<soap:body use="literal"/>
 			</wsdl:output>
 		</wsdl:operation>
-    <wsdl:operation name="UploadCRL">
-      <soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/UploadCRL"/>
-      <wsdl:input>
-        <soap:body use="literal"/>
-      </wsdl:input>
-      <wsdl:output>
-        <soap:body use="literal"/>
-      </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="GetCRL">
-      <soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/GetCRL"/>
-      <wsdl:input>
-        <soap:body use="literal"/>
-      </wsdl:input>
-      <wsdl:output>
-        <soap:body use="literal"/>
-      </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="GetAllCRLs">
-      <soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/GetAllCRLs"/>
-      <wsdl:input>
-        <soap:body use="literal"/>
-      </wsdl:input>
-      <wsdl:output>
-        <soap:body use="literal"/>
-      </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="DeleteCRL">
-      <soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/DeleteCRL"/>
-      <wsdl:input>
-        <soap:body use="literal"/>
-      </wsdl:input>
-      <wsdl:output>
-        <soap:body use="literal"/>
-      </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="CreateCertPathValidationPolicy">
-      <soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/CreateCertPathValidationPolicy"/>
-      <wsdl:input>
-        <soap:body use="literal"/>
-      </wsdl:input>
-      <wsdl:output>
-        <soap:body use="literal"/>
-      </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="GetCertPathValidationPolicy">
-      <soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/GetCertPathValidationPolicy"/>
-      <wsdl:input>
-        <soap:body use="literal"/>
-      </wsdl:input>
-      <wsdl:output>
-        <soap:body use="literal"/>
-      </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="GetAllCertPathValidationPolicies">
-      <soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/GetAllCertPathValidationPolicies"/>
-      <wsdl:input>
-        <soap:body use="literal"/>
-      </wsdl:input>
-      <wsdl:output>
-        <soap:body use="literal"/>
-      </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="DeleteCertPathValidationPolicy">
-      <soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/DeleteCertPathValidationPolicy"/>
-      <wsdl:input>
-        <soap:body use="literal"/>
-      </wsdl:input>
-      <wsdl:output>
-        <soap:body use="literal"/>
-      </wsdl:output>
-    </wsdl:operation>
+		<!--==========================================-->
+		<!-- Begin Cert-based client auth bindings    -->
+		<!--==========================================-->
+		<wsdl:operation name="UploadCRL">
+			<soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/UploadCRL"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="GetCRL">
+			<soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/GetCRL"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="GetAllCRLs">
+			<soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/GetAllCRLs"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="DeleteCRL">
+			<soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/DeleteCRL"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="CreateCertPathValidationPolicy">
+			<soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/CreateCertPathValidationPolicy"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="GetCertPathValidationPolicy">
+			<soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/GetCertPathValidationPolicy"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="GetAllCertPathValidationPolicies">
+			<soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/GetAllCertPathValidationPolicies"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="DeleteCertPathValidationPolicy">
+			<soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/DeleteCertPathValidationPolicy"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<!--==========================================-->
+		<!-- End Cert-based client auth bindings      -->
+		<!--==========================================-->
 	</wsdl:binding>
 	<wsdl:binding name="TLSServerBinding" type="tas:TLSServer">
 		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
@@ -2702,59 +3218,173 @@
 				<soap:body use="literal"/>
 			</wsdl:output>
 		</wsdl:operation>
-    <wsdl:operation name="SetClientAuthenticationRequired">
-      <soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/SetClientAuthenticationRequired"/>
-      <wsdl:input>
-        <soap:body use="literal"/>
-      </wsdl:input>
-      <wsdl:output>
-        <soap:body use="literal"/>
-      </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="GetClientAuthenticationRequired">
-      <soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/GetClientAuthenticationRequired"/>
-      <wsdl:input>
-        <soap:body use="literal"/>
-      </wsdl:input>
-      <wsdl:output>
-        <soap:body use="literal"/>
-      </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="AddCertPathValidationPolicyAssignment">
-      <soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/AddCertPathValidationPolicyAssignment"/>
-      <wsdl:input>
-        <soap:body use="literal"/>
-      </wsdl:input>
-      <wsdl:output>
-        <soap:body use="literal"/>
-      </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="RemoveCertPathValidationPolicyAssignment">
-      <soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/RemoveCertPathValidationPolicyAssignment"/>
-      <wsdl:input>
-        <soap:body use="literal"/>
-      </wsdl:input>
-      <wsdl:output>
-        <soap:body use="literal"/>
-      </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="ReplaceCertPathValidationPolicyAssignment">
-      <soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/ReplaceCertPathValidationPolicyAssignment"/>
-      <wsdl:input>
-        <soap:body use="literal"/>
-      </wsdl:input>
-      <wsdl:output>
-        <soap:body use="literal"/>
-      </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="GetAssignedCertPathValidationPolicies">
-      <soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/GetAssignedCertPathValidationPolicies"/>
-      <wsdl:input>
-        <soap:body use="literal"/>
-      </wsdl:input>
-      <wsdl:output>
-        <soap:body use="literal"/>
-      </wsdl:output>
-    </wsdl:operation>
+		<wsdl:operation name="SetEnabledTLSVersions">
+			<soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/SetEnabledTLSVersions"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="GetEnabledTLSVersions">
+			<soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/GetEnabledTLSVersions"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<!--==========================================-->
+		<!-- Begin Cert-based client auth bindings    -->
+		<!--==========================================-->
+		<wsdl:operation name="SetClientAuthenticationRequired">
+			<soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/SetClientAuthenticationRequired"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="GetClientAuthenticationRequired">
+			<soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/GetClientAuthenticationRequired"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="SetCnMapsToUser">
+			<soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/SetCnMapsToUser"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="GetCnMapsToUser">
+			<soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/GetCnMapsToUser"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="AddCertPathValidationPolicyAssignment">
+			<soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/AddCertPathValidationPolicyAssignment"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="RemoveCertPathValidationPolicyAssignment">
+			<soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/RemoveCertPathValidationPolicyAssignment"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="ReplaceCertPathValidationPolicyAssignment">
+			<soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/ReplaceCertPathValidationPolicyAssignment"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="GetAssignedCertPathValidationPolicies">
+			<soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/GetAssignedCertPathValidationPolicies"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<!--==========================================-->
+		<!-- End Cert-based client auth bindings      -->
+		<!--==========================================-->
 	</wsdl:binding>
+	<wsdl:binding name="Dot1XBinding" type="tas:Dot1X">
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="AddDot1XConfiguration">
+			<soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/AddDot1XConfiguration"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="GetAllDot1XConfigurations">
+			<soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/GetAllDot1XConfigurations"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="GetDot1XConfiguration">
+			<soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/GetDot1XConfiguration"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="DeleteDot1XConfiguration">
+			<soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/DeleteDot1XConfiguration"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="SetNetworkInterfaceDot1XConfiguration">
+			<soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/SetNetworkInterfaceDot1XConfiguration"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="GetNetworkInterfaceDot1XConfiguration">
+			<soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/GetNetworkInterfaceDot1XConfiguration"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="DeleteNetworkInterfaceDot1XConfiguration">
+			<soap:operation soapAction="http://www.onvif.org/ver10/advancedsecurity/wsdl/DeleteNetworkInterfaceDot1XConfiguration"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+	</wsdl:binding>
+	<!--==========================================-->
+	<!-- Begin Cert-based client auth messages    -->
+	<!--==========================================-->
+	<!--==========================================-->
+	<!-- End Cert-based client auth messages      -->
+	<!--==========================================-->
 </wsdl:definitions>
