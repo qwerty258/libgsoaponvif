@@ -3,10 +3,14 @@ libgsoaponvif
 
 An ONVIF library base on gsoap generated C/C++ code.
 
+This project comes from old VS ONVIF project.
+
+I still do not have much time to put into this.
+
 # Project Goal
 
-- [ ] Generate C library.
-- [ ] Generate C++ library.
+- [ ] Generate C library by config.
+- [ ] Generate C++ library by config.
 - [ ] Generate client side code by config.
 - [ ] Generate server side code by config.
 - [ ] Generate different component by config.
