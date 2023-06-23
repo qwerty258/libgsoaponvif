@@ -1,0 +1,6 @@
+gsoaponvif.h
+soapC.c
+soapClient.c
+soapClientLib.c
+soapH.h
+soapStub.h
