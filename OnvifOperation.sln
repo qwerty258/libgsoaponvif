@@ -1,7 +1,7 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33815.320
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OnvifOperation", "OnvifOperation\OnvifOperation.vcxproj", "{F7543FD0-A6EF-43BA-8060-2AC19CF572AD}"
 EndProject
@@ -10,14 +10,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "multiThreadTest", "multiThreadTest\multiThreadTest.vcxproj", "{161145CE-63A0-4CDF-B5E3-286E976AF3CE}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testMemoryLeak", "testMemoryLeak\testMemoryLeak.vcxproj", "{E3A84817-DAA6-49F5-9DE7-A6FA3DD48F9A}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testProbeByMyself", "testProbeByMyself\testProbeByMyself.vcxproj", "{99DDF287-2879-4886-BCD4-281C18DE5D1F}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testLibXML", "testLibXML\testLibXML.vcxproj", "{ED970D44-B795-45D7-A6CA-9716A11B26E8}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testTinyXML2", "testTinyXML2\testTinyXML2.vcxproj", "{BFFA8750-BD39-467E-84F3-B219B9A6BB29}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testMSXML", "testMSXML\testMSXML.vcxproj", "{97E39B48-635C-4234-8EF7-7ADAFA493AB5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,38 +51,6 @@ Global
 		{E3A84817-DAA6-49F5-9DE7-A6FA3DD48F9A}.Release|Win32.Build.0 = Release|Win32
 		{E3A84817-DAA6-49F5-9DE7-A6FA3DD48F9A}.Release|x64.ActiveCfg = Release|x64
 		{E3A84817-DAA6-49F5-9DE7-A6FA3DD48F9A}.Release|x64.Build.0 = Release|x64
-		{99DDF287-2879-4886-BCD4-281C18DE5D1F}.Debug|Win32.ActiveCfg = Debug|Win32
-		{99DDF287-2879-4886-BCD4-281C18DE5D1F}.Debug|Win32.Build.0 = Debug|Win32
-		{99DDF287-2879-4886-BCD4-281C18DE5D1F}.Debug|x64.ActiveCfg = Debug|x64
-		{99DDF287-2879-4886-BCD4-281C18DE5D1F}.Debug|x64.Build.0 = Debug|x64
-		{99DDF287-2879-4886-BCD4-281C18DE5D1F}.Release|Win32.ActiveCfg = Release|Win32
-		{99DDF287-2879-4886-BCD4-281C18DE5D1F}.Release|Win32.Build.0 = Release|Win32
-		{99DDF287-2879-4886-BCD4-281C18DE5D1F}.Release|x64.ActiveCfg = Release|x64
-		{99DDF287-2879-4886-BCD4-281C18DE5D1F}.Release|x64.Build.0 = Release|x64
-		{ED970D44-B795-45D7-A6CA-9716A11B26E8}.Debug|Win32.ActiveCfg = Debug|Win32
-		{ED970D44-B795-45D7-A6CA-9716A11B26E8}.Debug|Win32.Build.0 = Debug|Win32
-		{ED970D44-B795-45D7-A6CA-9716A11B26E8}.Debug|x64.ActiveCfg = Debug|x64
-		{ED970D44-B795-45D7-A6CA-9716A11B26E8}.Debug|x64.Build.0 = Debug|x64
-		{ED970D44-B795-45D7-A6CA-9716A11B26E8}.Release|Win32.ActiveCfg = Release|Win32
-		{ED970D44-B795-45D7-A6CA-9716A11B26E8}.Release|Win32.Build.0 = Release|Win32
-		{ED970D44-B795-45D7-A6CA-9716A11B26E8}.Release|x64.ActiveCfg = Release|x64
-		{ED970D44-B795-45D7-A6CA-9716A11B26E8}.Release|x64.Build.0 = Release|x64
-		{BFFA8750-BD39-467E-84F3-B219B9A6BB29}.Debug|Win32.ActiveCfg = Debug|Win32
-		{BFFA8750-BD39-467E-84F3-B219B9A6BB29}.Debug|Win32.Build.0 = Debug|Win32
-		{BFFA8750-BD39-467E-84F3-B219B9A6BB29}.Debug|x64.ActiveCfg = Debug|x64
-		{BFFA8750-BD39-467E-84F3-B219B9A6BB29}.Debug|x64.Build.0 = Debug|x64
-		{BFFA8750-BD39-467E-84F3-B219B9A6BB29}.Release|Win32.ActiveCfg = Release|Win32
-		{BFFA8750-BD39-467E-84F3-B219B9A6BB29}.Release|Win32.Build.0 = Release|Win32
-		{BFFA8750-BD39-467E-84F3-B219B9A6BB29}.Release|x64.ActiveCfg = Release|x64
-		{BFFA8750-BD39-467E-84F3-B219B9A6BB29}.Release|x64.Build.0 = Release|x64
-		{97E39B48-635C-4234-8EF7-7ADAFA493AB5}.Debug|Win32.ActiveCfg = Debug|Win32
-		{97E39B48-635C-4234-8EF7-7ADAFA493AB5}.Debug|Win32.Build.0 = Debug|Win32
-		{97E39B48-635C-4234-8EF7-7ADAFA493AB5}.Debug|x64.ActiveCfg = Debug|x64
-		{97E39B48-635C-4234-8EF7-7ADAFA493AB5}.Debug|x64.Build.0 = Debug|x64
-		{97E39B48-635C-4234-8EF7-7ADAFA493AB5}.Release|Win32.ActiveCfg = Release|Win32
-		{97E39B48-635C-4234-8EF7-7ADAFA493AB5}.Release|Win32.Build.0 = Release|Win32
-		{97E39B48-635C-4234-8EF7-7ADAFA493AB5}.Release|x64.ActiveCfg = Release|x64
-		{97E39B48-635C-4234-8EF7-7ADAFA493AB5}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
